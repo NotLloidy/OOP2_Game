@@ -5,9 +5,9 @@ import Foundation.Skill;
 
 public class KijEl extends GameCharacter {
 
-    Skill arcaneBlast;
-    Skill cinderLance;
-    Skill cataclysmSigil;
+    private Skill arcaneBlast;
+    private Skill cinderLance;
+    private Skill cataclysmSigil;
 
     public KijEl() {
         super("Kij-EL", "Human", "Arcane Mage", 200, 50, 100);
@@ -43,5 +43,17 @@ public class KijEl extends GameCharacter {
                 }
                 break;
         }
+    }
+
+    public Skill getArcaneBlast() { 
+        return this.arcaneBlast; 
+    }
+
+    public Skill getCinderLance() { 
+        return this.cinderLance; 
+    }
+
+    public Skill getCataclysmSigil() { 
+        return this.cataclysmSigil; 
     }
 }

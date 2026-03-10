@@ -3,7 +3,7 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class AVin  extends GameCharacter {
+public class AVin  extends GameCharacter implements _SkillsInterface {
     private Skill codeJab;
     private Skill codeSurge;
     private Skill overClock;
@@ -62,15 +62,18 @@ public class AVin  extends GameCharacter {
         }
     }
 
-    public Skill getCodeJab() { 
+    @Override
+    public Skill getSkill1() { 
         return this.codeJab; 
     }
 
-    public Skill getOverClock() { 
+    @Override
+    public Skill getSkill2() { 
         return this.overClock; 
     }
 
-    public Skill getLogicCrash() { 
+    @Override
+    public Skill getSkill3() { 
         return this.logicCrash;
     }
 }

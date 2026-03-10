@@ -3,7 +3,7 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class BrivanJawmir extends GameCharacter {
+public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
 
     Skill riftCleaverThrust;
     Skill crescentReaver;
@@ -43,15 +43,18 @@ public class BrivanJawmir extends GameCharacter {
         }
     }
 
-    public Skill getRiftCleaverThrust() { 
+    @Override
+    public Skill getSkill1() { 
         return this.riftCleaverThrust; 
     }
 
-    public Skill getCrescentReaver() { 
+    @Override
+    public Skill getSkill2() { 
         return this.crescentReaver; 
     }
-
-    public Skill getEmberVault() { 
+    
+    @Override
+    public Skill getSkill3() { 
         return this.emberVault; 
     }
 }

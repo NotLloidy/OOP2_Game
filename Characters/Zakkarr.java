@@ -3,7 +3,7 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class Zakkarr extends GameCharacter {
+public class Zakkarr extends GameCharacter implements _SkillsInterface {
 
     private Skill guardiansBlade;
     private Skill shieldOfValor;
@@ -96,15 +96,18 @@ public class Zakkarr extends GameCharacter {
         }
     }
 
-    public Skill getGuardiansBlade() {
+    @Override
+    public Skill getSkill1() {
         return guardiansBlade;
     }
 
-    public Skill getShieldOfValor() {
+    @Override
+    public Skill getSkill2() {
         return shieldOfValor;
     }
 
-    public Skill getDeathsReturn() {
+    @Override
+    public Skill getSkill3() {
         return deathsReturn;
     }
 }

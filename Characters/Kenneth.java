@@ -3,7 +3,7 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class Kenneth extends GameCharacter {
+public class Kenneth extends GameCharacter implements _SkillsInterface {
 
     private Skill aimedShot;
     private Skill overwatchStance;
@@ -89,15 +89,18 @@ public class Kenneth extends GameCharacter {
     }
 
 
-    public Skill getAimedShot() {
+    @Override
+    public Skill getSkill1() {
         return aimedShot;
     }
 
-    public Skill getOverwatchStance() {
+    @Override
+    public Skill getSkill2() {
         return overwatchStance;
     }
 
-    public Skill getSuppressiveVolley() {
+    @Override
+    public Skill getSkill3() {
         return suppressiveVolley;
     }
 }

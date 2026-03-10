@@ -3,7 +3,7 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class SungJinWoo extends GameCharacter {
+public class SungJinWoo extends GameCharacter implements _SkillsInterface {
     
     private Skill shadowSlash;
     private Skill shadowExtraction;
@@ -55,16 +55,19 @@ public class SungJinWoo extends GameCharacter {
         }
     }
 
-    public Skill getShadowSlash() { 
-        return this.shadowSlash; 
+    @Override
+    public Skill getSkill1() {
+        return this.shadowSlash;
     }
 
-    public Skill getShadowExtraction() { 
-        return this.shadowExtraction; 
+    @Override
+    public Skill getSkill2() {
+        return this.shadowExtraction;
     }
 
-    public Skill getSummonIgris() { 
-        return this.summonIgris; 
+    @Override
+    public Skill getSkill3() {
+        return this.summonIgris;
     }
     
 }

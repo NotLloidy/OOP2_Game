@@ -3,7 +3,7 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class ChungMyung extends GameCharacter {
+public class ChungMyung extends GameCharacter implements _SkillsInterface {
 
     private Skill blossomThrust;
     private Skill plumPetalDance;
@@ -45,15 +45,18 @@ public class ChungMyung extends GameCharacter {
         }
     }
 
-    public Skill getBlossomThrust() { 
+    @Override
+    public Skill getSkill1() { 
         return this.blossomThrust; 
     }
 
-    public Skill getPlumPetalDance() { 
+    @Override
+    public Skill getSkill2() { 
         return this.plumPetalDance; 
     }
 
-    public Skill getSaintVerdict() { 
+    @Override
+    public Skill getSkill3() { 
         return this.saintVerdict; 
     }
 }

@@ -3,7 +3,7 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class Soleilmooncrest extends GameCharacter {
+public class Soleilmooncrest extends GameCharacter implements _SkillsInterface {
 
     private Skill moonStrike;
     private Skill moonlightShine;
@@ -57,15 +57,18 @@ public class Soleilmooncrest extends GameCharacter {
         }
     }
 
-    public Skill getMoonStrike() {
+    @Override
+    public Skill getSkill1() {
         return moonStrike;
     }
 
-    public Skill getMoonlightShine() {
+    @Override
+    public Skill getSkill2() {
         return moonlightShine;
     }
 
-    public Skill getShadowBlast() {
+    @Override
+    public Skill getSkill3() {
         return shadowBlast;
     }
 }

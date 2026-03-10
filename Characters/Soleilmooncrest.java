@@ -21,39 +21,27 @@ public class SoleilMooncrest extends GameCharacter {
     public void useSkill(int skillNumber, GameCharacter target) {
 
         switch(skillNumber) {
-
             case 1:
                 if(moonStrike.isSkillAvailable()) {
-
                     target.takeDamage(moonStrike.getSkillDamage());
-
                     regenMana(moonStrike.getSkillManaRegen());
-
                     moonStrike.triggerSkillCooldown();
                 }
-            break;
-
+                break;
             case 2:
                 if(moonlightShine.isSkillAvailable() && getCharacterCurrentMana() >= moonlightShine.getSkillManaCost()) {
-
                     target.takeDamage(moonlightShine.getSkillDamage());
-
                     useMana(moonlightShine.getSkillManaCost());
-
                     moonlightShine.triggerSkillCooldown();
                 }
-            break;
-
+                break;
             case 3:
                 if(shadowBlast.isSkillAvailable() && getCharacterCurrentMana() >= shadowBlast.getSkillManaCost()) {
-
                     target.takeDamage(shadowBlast.getSkillDamage());
-
                     useMana(shadowBlast.getSkillManaCost());
-
                     shadowBlast.triggerSkillCooldown();
                 }
-            break;
+                 break;
         }
     }
 

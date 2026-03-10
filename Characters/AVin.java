@@ -4,10 +4,10 @@ import Foundation.GameCharacter;
 import Foundation.Skill;
 
 public class AVin  extends GameCharacter {
-    Skill codeJab;
-    Skill codeSurge;
-    Skill overClock;
-    Skill logicCrash;
+    private Skill codeJab;
+    private Skill codeSurge;
+    private Skill overClock;
+    private Skill logicCrash;
     private boolean isOverclocked;
     private boolean usedUlt;
 
@@ -37,10 +37,9 @@ public class AVin  extends GameCharacter {
                         isOverclocked = false;
                     }
                     break;
-                }
-                if(codeJab.isSkillAvailable() && (getCharacterCurrentMana() >= codeJab.getSkillManaCost())) {
+                } else if(codeJab.isSkillAvailable() && (getCharacterCurrentMana() >= codeJab.getSkillManaCost())) {
                     target.takeDamage(codeJab.getSkillDamage());
-                    useMana(codeJab.getSkillManaCost());
+                    regenMana(codeJab.getSkillManaRegen());
                     codeJab.triggerSkillCooldown();
                 }
                 break;

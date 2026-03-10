@@ -3,13 +3,13 @@ package Characters;
 import Foundation.GameCharacter;
 import Foundation.Skill;
 
-public class SoleilMooncrest extends GameCharacter {
+public class Soleilmooncrest extends GameCharacter {
 
     private Skill moonStrike;
     private Skill moonlightShine;
     private Skill shadowBlast;
 
-    public SoleilMooncrest() {
+    public Soleilmooncrest() {
         super("Soleil Mooncrest", "Human", "Moonlit Witch", 200, 50, 100);
 
         moonStrike = new Skill("Moon Strike", 10, 0, 10, 0);

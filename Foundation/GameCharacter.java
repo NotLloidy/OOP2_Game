@@ -76,7 +76,7 @@ public abstract class GameCharacter {
 
     //Reduces characters mana with the specified skill's mana cost.
     public void useMana(int amount) {
-        if (amount <= 0 || !isCharacterAlive) return;
+        if (this.characterCurrentMana <= 0 || !isCharacterAlive) return;
 
         this.characterCurrentMana -= amount;
     }

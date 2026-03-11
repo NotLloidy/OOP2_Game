@@ -30,6 +30,7 @@ public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
                 if(crescentReaver.isSkillAvailable() && (getCharacterCurrentMana() >= crescentReaver.getSkillManaCost())) {
                     target.takeDamage(crescentReaver.getSkillDamage());
                     useMana(crescentReaver.getSkillManaCost());
+                    regenMana(crescentReaver.getSkillManaRegen());
                     crescentReaver.triggerSkillCooldown();
                 }
                 break;
@@ -37,6 +38,7 @@ public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
                 if(emberVault.isSkillAvailable() && (getCharacterCurrentMana() >= emberVault.getSkillManaCost())) {
                     target.takeDamage(emberVault.getSkillDamage());
                     useMana(emberVault.getSkillManaCost());
+                    regenMana(emberVault.getSkillManaRegen());
                     emberVault.triggerSkillCooldown();
                 }
                 break;

@@ -27,6 +27,7 @@ public class SungJinWoo extends GameCharacter implements _SkillsInterface {
                 if(shadowSlash.isSkillAvailable() && (getCharacterCurrentMana() >= shadowSlash.getSkillManaCost())) {
                     target.takeDamage(shadowSlash.getSkillDamage());
                     useMana(shadowSlash.getSkillManaCost());
+                    regenMana(shadowSlash.getSkillManaRegen());
                     if(isIgrisSummoned) {
                         target.takeDamage(summonIgris.getSkillDamage());
                         isIgrisSummoned = false;
@@ -37,6 +38,7 @@ public class SungJinWoo extends GameCharacter implements _SkillsInterface {
                 if(shadowExtraction.isSkillAvailable() && (getCharacterCurrentMana() >= shadowExtraction.getSkillManaCost())) {
                     target.takeDamage(shadowExtraction.getSkillDamage());
                     useMana(shadowExtraction.getSkillManaCost());
+                    regenMana(shadowExtraction.getSkillManaRegen());
                     shadowExtraction.triggerSkillCooldown();
                     if(isIgrisSummoned) {
                         target.takeDamage(summonIgris.getSkillDamage());
@@ -48,6 +50,7 @@ public class SungJinWoo extends GameCharacter implements _SkillsInterface {
                 if(summonIgris.isSkillAvailable() && (getCharacterCurrentMana() >= summonIgris.getSkillManaCost())) {
                     target.takeDamage(summonIgris.getSkillDamage());
                     useMana(summonIgris.getSkillManaCost());
+                    regenMana(summonIgris.getSkillManaRegen());
                     summonIgris.triggerSkillCooldown();
                     isIgrisSummoned = true;
                 }

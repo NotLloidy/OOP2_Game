@@ -30,6 +30,7 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
                 if(usedUlt || isOverclocked) {
                     target.takeDamage(codeSurge.getSkillDamage());
                     useMana(codeSurge.getSkillManaCost());
+                    regenMana(codeSurge.getSkillManaRegen());
                     if(usedUlt) {
                         usedUlt = false;
                     }
@@ -46,6 +47,7 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
             case 2:
                 if(overClock.isSkillAvailable() && (getCharacterCurrentMana() >= overClock.getSkillManaCost())) {
                     useMana(overClock.getSkillManaCost());
+                    regenMana(overClock.getSkillManaRegen());
                     overClock.triggerSkillCooldown();
                     isOverclocked = true;
                 }
@@ -54,6 +56,7 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
                 if(logicCrash.isSkillAvailable() && (getCharacterCurrentMana() >= logicCrash.getSkillManaCost())) {
                     target.takeDamage(logicCrash.getSkillDamage());
                     useMana(logicCrash.getSkillManaCost());
+                    regenMana(logicCrash.getSkillManaRegen());
                     logicCrash.triggerSkillCooldown();
                     isOverclocked = true;
                     usedUlt = true;

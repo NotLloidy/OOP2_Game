@@ -1,13 +1,12 @@
 package Characters;
 
-import Foundation.GameCharacter;
-import Foundation.Skill;
+import Foundation.*;
 
-public class AVin  extends GameCharacter {
-    Skill codeJab;
-    Skill codeSurge;
-    Skill overClock;
-    Skill logicCrash;
+public class AVin extends GameCharacter  {
+    private Skill codeJab;
+    private Skill codeSurge;
+    private Skill overClock;
+    private Skill logicCrash;
     private boolean isOverclocked;
     private boolean usedUlt;
 

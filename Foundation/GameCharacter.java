@@ -50,6 +50,12 @@ public abstract class GameCharacter {
         return this.characterCurrentMana;
     }
 
+    protected void revive(int hpAmount, int manaAmount) {
+        this.characterCurrentHealthPoints = Math.min(characterMaxHealthPoints, hpAmount);
+        this.characterCurrentMana = Math.min(characterMaxMana, manaAmount);
+        this.isCharacterAlive = true;
+    }
+
     public boolean isCharacterAlive() {
         return this.isCharacterAlive;
     }

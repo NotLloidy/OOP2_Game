@@ -38,4 +38,5 @@ public class Main {
 
         battleSystem.inBattle(player1, ai);
     }
+    
 }

@@ -1,13 +1,15 @@
 package GameEngine;
 
 import Characters.*;                                                 
-import Foundation.GameCharacter;
+import Foundation.*;
 import java.util.*;
-import Foundation.Skill;
 
 public class BattleSystem extends BattleSystemAbs {
     Scanner sc = new Scanner(System.in);
     Random rand = new Random();
+    
+
+    
 
     @Override
     public GameCharacter selectCharacter(int choice) {
@@ -16,7 +18,7 @@ public class BattleSystem extends BattleSystemAbs {
         switch(choice) {
             case 1:
                 character = new AVin();
-                System.out.println("You have selected A-Vin");
+                System.out.println("Selected A-Vin");
                 return character;
             case 2:
                 character = new BrivanJawmir();
@@ -52,51 +54,95 @@ public class BattleSystem extends BattleSystemAbs {
         }
     }
 
+    
+
+    @Override
     public void inBattle(GameCharacter player1, GameCharacter ai) {
+        _SkillsInterface charSkills = (_SkillsInterface) player1;
+
+
         while(player1.isCharacterAlive() && ai.isCharacterAlive()) {
             System.out.println("\nYour HP: " + player1.getCharacterCurrentHealthPoints() + "/" + player1.getCharacterMaxHealthPoints() + " | Your Mana: " + player1.getCharacterCurrentMana() + "/" + player1.getCharacterMaxMana());
             System.out.println("AI HP: " + ai.getCharacterCurrentHealthPoints() + "/" + ai.getCharacterMaxHealthPoints() + " | AI Mana: " + ai.getCharacterCurrentMana() + "/" + ai.getCharacterMaxMana());
-            System.out.print("Choose your action:\n1. Use Skill 1\n2. Use Skill 2\n3. Use Skill 3\nEnter the number corresponding to your action: ");
+            System.out.print("Choose your action: ");
             int action = sc.nextInt();
             
-            if(action < 1 || action > 3) {
-                System.out.println("Invalid action. Please choose a valid skill.");
-                continue;
+            switch(action) {
+                case 1:
+                    if(player1.getCharacterCurrentMana() < charSkills.getSkill1().getSkillManaCost()) {
+                        System.out.println("\nYou don't have enough mana to use a skill. Please choose a different action.");
+                        continue;
+                    }
+                    player1.useSkill(action, ai);
+                    System.out.println("\nYou used " + charSkills.getSkill1().getSkillName() + "!");
+                    break;
+                case 2:
+                    if(player1.getCharacterCurrentMana() < charSkills.getSkill2().getSkillManaCost()) {
+                        System.out.println("\nYou don't have enough mana to use a skill. Please choose a different action.");
+                        continue;
+                    }
+                    player1.useSkill(action, ai);
+                    System.out.println("\nYou used " + charSkills.getSkill2().getSkillName() + "!");
+                     break;
+                case 3:
+                    if(player1.getCharacterCurrentMana() < charSkills.getSkill3().getSkillManaCost()) {
+                        System.out.println("\n  You don't have enough mana to use a skill. Please choose a different action.");
+                        continue;
+                    }
+                    player1.useSkill(action, ai);
+                    System.out.println("\nYou used " + charSkills.getSkill3().getSkillName() + "!");
+                    break;
+                default:
+                    System.out.println("\nInvalid action. Please choose a valid skill.");
+                    continue;
             }
-            if(player1.getCharacterCurrentMana() < 0) {
-                System.out.println("You don't have enough mana to use a skill. Please select a different action.");
-                continue;
-            }
-
-            player1.useSkill(action, ai);
-            System.out.println("You used Skill " + action + "!");
 
             if(!ai.isCharacterAlive()) {
                 System.out.println("Congratulations! You have defeated the AI!");
                 break;
             }
-            // AI's turn (simple random action)
-            int aiAction = rand.nextInt(3) + 1;
-
-            if(aiAction < 1 || aiAction > 3) {
-                System.out.println("Invalid action. Please choose a valid skill.");
-                continue;
-            }
-            if(ai.getCharacterCurrentMana() <= 0) {
-                System.out.println("AI doesn't have enough mana to use a skill. Selecting a different action.");
-                continue;
-            }
-
-            ai.useSkill(aiAction, player1);
-            System.out.println("AI used Skill " + aiAction + "!");
-
-            if(!player1.isCharacterAlive()) {
-                System.out.println("You have been defeated by the AI. Better luck next time!");
-                break;
-            }
+            
+            aiTurn(ai, player1);
         }
     }
         
 
+    @Override
+    public void aiTurn(GameCharacter ai, GameCharacter player) {
+        _SkillsInterface charSkills = (_SkillsInterface) ai;
+        
+
+        while(ai.isCharacterAlive() && player.isCharacterAlive()) {
+            int aiAction = rand.nextInt(3) + 1;
+            switch(aiAction) {
+                case 1:
+                    if(ai.getCharacterCurrentMana() < charSkills.getSkill1().getSkillManaCost()) {
+                        continue;
+                    }
+                    ai.useSkill(aiAction, player);
+                    System.out.println("AI used " + charSkills.getSkill1().getSkillName() + "!");
+                    break;
+                case 2:
+                    if(ai.getCharacterCurrentMana() < charSkills.getSkill2().getSkillManaCost()) {
+                        continue;
+                    }
+                    ai.useSkill(aiAction, player);
+                    System.out.println("AI used " + charSkills.getSkill2().getSkillName() + "!");
+                    break;
+                case 3:
+                    if(ai.getCharacterCurrentMana() < charSkills.getSkill3().getSkillManaCost()) {
+                        continue;
+                    }
+                    ai.useSkill(aiAction, player);
+                    System.out.println("AI used " + charSkills.getSkill3().getSkillName() + "!");
+                    break;
+            }
+            if(!player.isCharacterAlive()) {
+                System.out.println("You have been defeated by the AI. Better luck next time!");
+                break;
+            }
+            return;
+        }
+    }
 }
 

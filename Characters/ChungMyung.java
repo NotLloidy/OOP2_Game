@@ -66,14 +66,15 @@ public class ChungMyung extends GameCharacter {
                 if (saintVerdict.isSkillAvailable() && getCharacterCurrentMana() >= saintVerdict.getSkillManaCost()) {
                     int damage = saintVerdict.getSkillDamage();
 
+                    addPlumResolveStack(damage);
                     // Apply Plum Resolve passive
                     damage = applyPlumResolve(damage);
+                    plumResolveStacks = 0;
 
                     target.takeDamage(damage);
                     useMana(saintVerdict.getSkillManaCost());
                     saintVerdict.triggerSkillCooldown();
 
-                    addPlumResolveStack(damage);
                     lastSkillWasBlossom = false;
                 }
                 break;
@@ -87,7 +88,7 @@ public class ChungMyung extends GameCharacter {
         if (plumResolveStacks > 0 && plumResolveStacks < 3) {
             damage += damage * (plumResolveStacks * 5) / 100; // +5% per stack
         } else if (plumResolveStacks >= 3) {
-            damage += damage * 30 / 100; // +30% bonus at 3 stacks
+            damage += damage * (plumResolveStacks * 10) / 100; // +30% bonus at 3 stacks
             regenMana(20); // restore 20 mana
             plumResolveStacks = 0; // reset stacks after boost
         }

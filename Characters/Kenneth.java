@@ -1,15 +1,16 @@
 package Characters;
 
-import Foundation.GameCharacter;
-import Foundation.Skill;
+import Foundation.*;
 
-public class Kenneth extends GameCharacter implements _SkillsInterface {
+public class Kenneth extends GameCharacter {
 
     private Skill aimedShot;
     private Skill overwatchStance;
     private Skill suppressiveVolley;
 
     private int disciplineStacks = 0; // Passive stacks (max 2)
+    private int nextAttackBonus = 0;  // +30 damage from Overwatch
+    private boolean overwatchReady = false;
 
     public Kenneth() {
         super("Kenneth", "Human", "Marksman", 150, 30, 60);
@@ -19,88 +20,75 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
         suppressiveVolley = new Skill("Suppressive Volley", 40, 20, 0, 4);
     }
 
+    private int applyMarksmanDisciplineBonus(int baseDamage) {
+        int bonusDamage = baseDamage + baseDamage * disciplineStacks * 30 / 100 + nextAttackBonus;
+        disciplineStacks = 0;   // Reset stacks after a damaging skill
+        nextAttackBonus = 0;     // Reset Overwatch bonus after use
+        return bonusDamage;
+    }
+
+    public void skipTurn() {
+        if (disciplineStacks < 2) {
+            disciplineStacks++;
+        }
+        System.out.println(getCharacterName() + " skipped their turn. Discipline stacks: " + disciplineStacks);
+    }
+
     @Override
     public void useSkill(int skillNumber, GameCharacter target) {
-
-        switch(skillNumber) {
-
-            case 1:
-                if(aimedShot.isSkillAvailable() && getCharacterCurrentMana() >= aimedShot.getSkillManaCost()) {
-
-                    int damage = aimedShot.getSkillDamage();
-
-                    // Passive: Marksman's Discipline bonus
-                    damage += damage * (disciplineStacks * 30) / 100;
-
-                    // Bonus vs enemies below 50% HP
-                    if(target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
-                        damage += damage * 20 / 100;
+        switch (skillNumber) {
+            case 1: // Aimed Shot
+                if (aimedShot.isSkillAvailable() && getCharacterCurrentMana() >= aimedShot.getSkillManaCost()) {
+                    int damage = applyMarksmanDisciplineBonus(aimedShot.getSkillDamage());
+                    if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
+                        damage += damage * 20 / 100; // bonus vs low HP
                     }
-
                     target.takeDamage(damage);
-
                     useMana(aimedShot.getSkillManaCost());
-
                     aimedShot.triggerSkillCooldown();
-
-                    disciplineStacks = 0;
                 }
-            break;
+                break;
 
-
-            case 2:
-                if(overwatchStance.isSkillAvailable() && getCharacterCurrentMana() >= overwatchStance.getSkillManaCost()) {
-
+            case 2: // Overwatch Stance
+                if (overwatchStance.isSkillAvailable() && getCharacterCurrentMana() >= overwatchStance.getSkillManaCost()) {
                     useMana(overwatchStance.getSkillManaCost());
-
-                    // Random counter-shot damage (0–30)
-                    int damage = (int)(Math.random() * 31);
-
-                    target.takeDamage(damage);
-
-                    // Counts as passive stack
-                    if(disciplineStacks < 2) {
-                        disciplineStacks++;
-                    }
-
+                    overwatchReady = true; // counter next attack
                     overwatchStance.triggerSkillCooldown();
+                    System.out.println(getCharacterName() + " is in Overwatch stance!");
                 }
-            break;
+                break;
 
-
-            case 3:
-                if(suppressiveVolley.isSkillAvailable() && getCharacterCurrentMana() >= suppressiveVolley.getSkillManaCost()) {
-
-                    int damage = suppressiveVolley.getSkillDamage();
-
-                    // Passive bonus
-                    damage += damage * (disciplineStacks * 30) / 100;
-
+            case 3: // Suppressive Volley
+                if (suppressiveVolley.isSkillAvailable() && getCharacterCurrentMana() >= suppressiveVolley.getSkillManaCost()) {
+                    int damage = applyMarksmanDisciplineBonus(suppressiveVolley.getSkillDamage());
                     target.takeDamage(damage);
-
                     useMana(suppressiveVolley.getSkillManaCost());
-
                     suppressiveVolley.triggerSkillCooldown();
-
-                    disciplineStacks = 0;
                 }
-            break;
+                break;
         }
     }
 
-
     @Override
-    public Skill getSkill1() {
-        return aimedShot;
+    public void takeDamage(int amount) {
+        if (!isCharacterAlive() || amount <= 0) return;
+
+        if (overwatchReady) {
+            // Nullify this damage and add 30 bonus to next attack
+            nextAttackBonus += 30;
+            overwatchReady = false;
+            System.out.println(getCharacterName() + " avoided damage and stored +30 damage for next attack!");
+            return;
+        }
+
+        // Apply damage normally
+        super.takeDamage(amount);
     }
 
-    @Override
-    public Skill getSkill2() {
-        return overwatchStance;
-    }
-
-    @Override
-    public Skill getSkill3() {
-        return suppressiveVolley;
-    }
+    // Getters
+    public Skill getAimedShot() { return aimedShot; }
+    public Skill getOverwatchStance() { return overwatchStance; }
+    public Skill getSuppressiveVolley() { return suppressiveVolley; }
+    public int getDisciplineStacks() { return disciplineStacks; }
+    public int getNextAttackBonus() { return nextAttackBonus; }
 }

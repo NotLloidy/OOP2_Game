@@ -1,7 +1,6 @@
 package Characters;
 
-import Foundation.GameCharacter;
-import Foundation.Skill;
+import Foundation.*;
 
 public class Zakkarr extends GameCharacter implements _SkillsInterface {
 
@@ -11,9 +10,8 @@ public class Zakkarr extends GameCharacter implements _SkillsInterface {
 
     private int bladeStacks = 0;
     private boolean hasRevived = false;
-
-    // Passive: Guardian Warrior
     private boolean guardianBoost = false;
+    private int reviveTurnsRemaining = 0;
 
     public Zakkarr() {
         super("Zakkarr", "Spirit", "Warrior", 250, 20, 100);
@@ -26,75 +24,70 @@ public class Zakkarr extends GameCharacter implements _SkillsInterface {
     // Passive trigger when taking damage
     @Override
     public void takeDamage(int amount) {
+        if (!isCharacterAlive()) return;
+
         super.takeDamage(amount);
 
-        if(isCharacterAlive()) {
-            guardianBoost = true;
+        if (!hasRevived && getCharacterCurrentHealthPoints() <= 0 && getCharacterCurrentMana() >= deathsReturn.getSkillManaCost()) {
+            revive(150, 100); // revive HP and mana
+            hasRevived = true;
+            deathsReturn.triggerSkillCooldown();
+
+            System.out.println(getCharacterName() + " activated Death's Return and revived!");
+        }
+
+        // Guardian Warrior passive
+        if (isCharacterAlive()) {
+            guardianBoost = true; 
         }
     }
 
     @Override
     public void useSkill(int skillNumber, GameCharacter target) {
 
+        Skill skillToUse = null;
+        int damage = 0;
+
         switch(skillNumber) {
-
-            case 1:
-                if(guardiansBlade.isSkillAvailable()) {
-
-                    int damage = guardiansBlade.getSkillDamage() + (bladeStacks * 5);
-
-                    // Passive bonus
+            case 1: // Guardian's Blade
+                skillToUse = guardiansBlade;
+                if(skillToUse.isSkillAvailable()) {
+                    damage = skillToUse.getSkillDamage() + (bladeStacks * 5);
                     if(guardianBoost) {
-                        damage += damage * 10 / 100;
-                        guardianBoost = false;
+                        damage += damage * 10 / 100; // +10% boost
+                        guardianBoost = false;       // reset boost
                     }
-
                     target.takeDamage(damage);
+                    regenMana(skillToUse.getSkillManaRegen());
 
-                    regenMana(guardiansBlade.getSkillManaRegen());
-
-                    if(bladeStacks < 2) {
-                        bladeStacks++;
-                    }
-
-                    guardiansBlade.triggerSkillCooldown();
+                    // Blade stacking mechanic
+                    if(bladeStacks < 2) bladeStacks++;
+                    skillToUse.triggerSkillCooldown();
                 }
-            break;
-
-            case 2:
-                if(shieldOfValor.isSkillAvailable()) {
-
-                    int damage = shieldOfValor.getSkillDamage();
-
+                break;
+            case 2: // Shield of Valor
+                skillToUse = shieldOfValor;
+                if(skillToUse.isSkillAvailable()) {
+                    damage = skillToUse.getSkillDamage();
                     if(guardianBoost) {
                         damage += damage * 10 / 100;
                         guardianBoost = false;
                     }
-
                     target.takeDamage(damage);
-
                     heal(20);
-
-                    shieldOfValor.triggerSkillCooldown();
+                    skillToUse.triggerSkillCooldown();
                 }
-            break;
-
-            case 3:
-                if(!hasRevived && deathsReturn.isSkillAvailable() && getCharacterCurrentMana() >= deathsReturn.getSkillManaCost()) {
-
-                    useMana(deathsReturn.getSkillManaCost());
-
-                    heal(150);
-
-                    regenMana(100);
-
-                    hasRevived = true;
-
-                    deathsReturn.triggerSkillCooldown();
-                }
-            break;
+                break;
         }
-    }
+
+        if (hasRevived && reviveTurnsRemaining > 0) {
+            reviveTurnsRemaining--;
+            if (reviveTurnsRemaining == 0) {
+                takeDamage(getCharacterCurrentHealthPoints());
+                System.out.println(getCharacterName() + "'s Death's Return effect ended. She has fallen!");
+            }
+        }
+}
 
     @Override
     public Skill getSkill1() {

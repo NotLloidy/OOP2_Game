@@ -1,18 +1,15 @@
 package Characters;
 
-import Foundation.GameCharacter;
-import Foundation.Skill;
+import Foundation.*;
 
-public class KijEl extends GameCharacter implements _SkillsInterface {
-
+public class KijEl extends GameCharacter {
     private Skill arcaneBlast;
     private Skill cinderLance;
     private Skill cataclysmSigil;
 
     public KijEl() {
         super("Kij-EL", "Human", "Arcane Mage", 200, 50, 100);
-
-
+        
         arcaneBlast = new Skill("Arcane Blast", 10, 0, 10, 0);
         cinderLance = new Skill("Cinder Lance", 20, 30, 0, 2);
         cataclysmSigil = new Skill("Cataclysm Sigil", 60, 70, 0, 999);
@@ -20,43 +17,52 @@ public class KijEl extends GameCharacter implements _SkillsInterface {
 
     @Override
     public void useSkill(int skillNumber, GameCharacter target) {
+        Skill skillToUse = null;
+
         switch(skillNumber) {
-            case 1:
-                if(arcaneBlast.isSkillAvailable() && (getCharacterCurrentMana() >= arcaneBlast.getSkillManaCost())) {
-                    target.takeDamage(arcaneBlast.getSkillDamage());
-                    regenMana(arcaneBlast.getSkillManaRegen());
-                    arcaneBlast.triggerSkillCooldown();
-                }
+            case 1: 
+                skillToUse = arcaneBlast; 
                 break;
-            case 2:
-                if(cinderLance.isSkillAvailable() && (getCharacterCurrentMana() >= cinderLance.getSkillManaCost())) {
-                    target.takeDamage(cinderLance.getSkillDamage());
-                    useMana(cinderLance.getSkillManaCost());
-                    cinderLance.triggerSkillCooldown();
-                }
+            case 2: 
+                skillToUse = cinderLance; 
                 break;
-            case 3:
-                if(cataclysmSigil.isSkillAvailable() && (getCharacterCurrentMana() >= cataclysmSigil.getSkillManaCost())) {
-                    target.takeDamage(cataclysmSigil.getSkillDamage());
-                    useMana(cataclysmSigil.getSkillManaCost());
-                    cinderLance.triggerSkillCooldown();
-                }
+            case 3: 
+                skillToUse = cataclysmSigil; 
                 break;
+        }
+
+        // check if skill can be used
+        if(skillToUse.isSkillAvailable() && getCharacterCurrentMana() >= skillToUse.getSkillManaCost()) {
+
+            // calculate damage
+            int damage = skillToUse.getSkillDamage();
+
+            // --- PASSIVE: Arcane's Oath ---
+            if(!target.getCharacterRace().equals("Human")) {
+                damage += (int)(damage * 0.25); // +25% damage vs non-Human
+            }
+
+            // apply damage
+            target.takeDamage(damage);
+
+            // mana adjustments
+            regenMana(skillToUse.getSkillManaRegen());
+            useMana(skillToUse.getSkillManaCost());
+
+            // trigger cooldown
+            skillToUse.triggerSkillCooldown();
         }
     }
 
-    @Override
-    public Skill getSkill1() { 
+    public Skill getArcaneBlast() { 
         return this.arcaneBlast; 
     }
 
-    @Override
-    public Skill getSkill2() { 
+    public Skill getCinderLance() { 
         return this.cinderLance; 
     }
 
-    @Override
-    public Skill getSkill3() { 
+    public Skill getCataclysmSigil() { 
         return this.cataclysmSigil; 
     }
 }

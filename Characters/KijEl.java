@@ -2,7 +2,8 @@ package Characters;
 
 import Foundation.*;
 
-public class KijEl extends GameCharacter {
+public class KijEl extends GameCharacter implements _SkillsInterface {
+
     private Skill arcaneBlast;
     private Skill cinderLance;
     private Skill cataclysmSigil;
@@ -54,15 +55,18 @@ public class KijEl extends GameCharacter {
         }
     }
 
-    public Skill getArcaneBlast() { 
+    @Override
+    public Skill getSkill1() { 
         return this.arcaneBlast; 
     }
 
-    public Skill getCinderLance() { 
+    @Override
+    public Skill getSkill2() { 
         return this.cinderLance; 
     }
 
-    public Skill getCataclysmSigil() { 
+    @Override
+    public Skill getSkill3() { 
         return this.cataclysmSigil; 
     }
 }

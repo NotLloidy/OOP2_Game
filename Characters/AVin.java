@@ -1,8 +1,9 @@
 package Characters;
 
-import Foundation.*;
+import Foundation.GameCharacter;
+import Foundation.Skill;
 
-public class AVin extends GameCharacter  {
+public class AVin  extends GameCharacter implements _SkillsInterface {
     private Skill codeJab;
     private Skill codeSurge;
     private Skill overClock;
@@ -29,6 +30,7 @@ public class AVin extends GameCharacter  {
                 if(usedUlt || isOverclocked) {
                     target.takeDamage(codeSurge.getSkillDamage());
                     useMana(codeSurge.getSkillManaCost());
+                    regenMana(codeSurge.getSkillManaRegen());
                     if(usedUlt) {
                         usedUlt = false;
                     }
@@ -36,16 +38,16 @@ public class AVin extends GameCharacter  {
                         isOverclocked = false;
                     }
                     break;
-                }
-                if(codeJab.isSkillAvailable() && (getCharacterCurrentMana() >= codeJab.getSkillManaCost())) {
+                } else if(codeJab.isSkillAvailable() && (getCharacterCurrentMana() >= codeJab.getSkillManaCost())) {
                     target.takeDamage(codeJab.getSkillDamage());
-                    useMana(codeJab.getSkillManaCost());
+                    regenMana(codeJab.getSkillManaRegen());
                     codeJab.triggerSkillCooldown();
                 }
                 break;
             case 2:
                 if(overClock.isSkillAvailable() && (getCharacterCurrentMana() >= overClock.getSkillManaCost())) {
                     useMana(overClock.getSkillManaCost());
+                    regenMana(overClock.getSkillManaRegen());
                     overClock.triggerSkillCooldown();
                     isOverclocked = true;
                 }
@@ -54,6 +56,7 @@ public class AVin extends GameCharacter  {
                 if(logicCrash.isSkillAvailable() && (getCharacterCurrentMana() >= logicCrash.getSkillManaCost())) {
                     target.takeDamage(logicCrash.getSkillDamage());
                     useMana(logicCrash.getSkillManaCost());
+                    regenMana(logicCrash.getSkillManaRegen());
                     logicCrash.triggerSkillCooldown();
                     isOverclocked = true;
                     usedUlt = true;
@@ -62,15 +65,18 @@ public class AVin extends GameCharacter  {
         }
     }
 
-    public Skill getCodeJab() { 
+    @Override
+    public Skill getSkill1() { 
         return this.codeJab; 
     }
 
-    public Skill getOverClock() { 
+    @Override
+    public Skill getSkill2() { 
         return this.overClock; 
     }
 
-    public Skill getLogicCrash() { 
+    @Override
+    public Skill getSkill3() { 
         return this.logicCrash;
     }
 }

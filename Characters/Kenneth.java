@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class Kenneth extends GameCharacter {
+public class Kenneth extends GameCharacter implements _SkillsInterface {
 
     private Skill aimedShot;
     private Skill overwatchStance;
@@ -85,10 +85,18 @@ public class Kenneth extends GameCharacter {
         super.takeDamage(amount);
     }
 
-    // Getters
-    public Skill getAimedShot() { return aimedShot; }
-    public Skill getOverwatchStance() { return overwatchStance; }
-    public Skill getSuppressiveVolley() { return suppressiveVolley; }
-    public int getDisciplineStacks() { return disciplineStacks; }
-    public int getNextAttackBonus() { return nextAttackBonus; }
+    @Override
+    public Skill getSkill1() {
+        return aimedShot;
+    }
+
+    @Override
+    public Skill getSkill2() {
+        return overwatchStance;
+    }
+
+    @Override
+    public Skill getSkill3() {
+        return suppressiveVolley;
+    }
 }

@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class ChungMyung extends GameCharacter {
+public class ChungMyung extends GameCharacter implements _SkillsInterface {
 
     private Skill blossomThrust;
     private Skill plumPetalDance;
@@ -102,9 +102,18 @@ public class ChungMyung extends GameCharacter {
         }
     }
 
-    // Getters for skills
-    public Skill getBlossomThrust() { return blossomThrust; }
-    public Skill getPlumPetalDance() { return plumPetalDance; }
-    public Skill getSaintVerdict() { return saintVerdict; }
-    public int getPlumResolveStacks() { return plumResolveStacks; }
+    @Override
+    public Skill getSkill1() { 
+        return this.blossomThrust; 
+    }
+
+    @Override
+    public Skill getSkill2() { 
+        return this.plumPetalDance; 
+    }
+
+    @Override
+    public Skill getSkill3() { 
+        return this.saintVerdict; 
+    }
 }

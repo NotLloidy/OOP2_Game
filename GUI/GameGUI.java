@@ -18,8 +18,8 @@ public class GameGUI extends JFrame {
         // Add all your screens (JPanels) to the container
         container.add(new TitleScreen(this), "TitleScreen");
         container.add(new AccountScreen(this), "AccountScreen");
-        container.add(new LoginScreen(this), "LogIn");
-        container.add(new RegisterScreen(this), "Register");
+        container.add(new LoginScreen(this), "LoginScreen");
+        container.add(new RegisterScreen(this), "RegisterScreen");
         container.add(new MainMenu(this), "MainMenu");
 
         this.add(container);           // add container to the single JFrame

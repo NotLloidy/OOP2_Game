@@ -21,6 +21,7 @@ public class Main {
         player1 = new BattleSystem().selectCharacter(choice);
         if (player1 == null) {
             System.out.println("Invalid choice. Please restart the game.");
+            sc.close();
             return;
         }
 
@@ -31,12 +32,14 @@ public class Main {
         ai = new BattleSystem().selectCharacter(aiChoice);
         if (ai == null) {
             System.out.println("Error selecting AI character.");
+            sc.close();
             return;
         }
 
         System.out.println("Let the battle begin!");
 
         battleSystem.inBattle(player1, ai);
+        sc.close();
     }
     
 }

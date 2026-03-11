@@ -37,7 +37,7 @@ public class BattleSystem extends BattleSystemAbs {
                 System.out.println("Selected Kij-El");
                 return character;
             case 6:
-                character = new Soleilmooncrest();
+                character = new SoleilMooncrest();
                 System.out.println("Selected Soleil Mooncrest");
                 return character;
             case 7:

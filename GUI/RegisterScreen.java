@@ -6,6 +6,7 @@ import java.awt.*;
 public class RegisterScreen extends JPanel {
 
     private Image bgImage;  // field to store the GIF
+    private JButton register;
 
     public RegisterScreen(GameGUI gui) {
         this.setLayout(null);
@@ -15,13 +16,20 @@ public class RegisterScreen extends JPanel {
         bgImage = icon.getImage();
 
         // Create full-screen invisible button
-        JButton start = new JButton();
-        start.setOpaque(false);
-        start.setContentAreaFilled(false);
-        start.setBorderPainted(false);
-        start.addActionListener(e -> gui.showScreen("MainMenu"));
+        register = createButton();  
+        register.addActionListener(e -> gui.showScreen("AccountScreen"));  // go to main menu
+        this.add(register);
+    }
 
-        this.add(start);
+    private JButton createButton() {
+        JButton btn = new JButton();
+
+        btn.setBounds(335, 360, 120, 45);
+        btn.setOpaque(false);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        return btn;
     }
 
     // Override paintComponent to draw the image scaled to current panel size

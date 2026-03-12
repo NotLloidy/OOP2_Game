@@ -6,6 +6,7 @@ import java.awt.*;
 public class LoginScreen extends JPanel {
 
     private Image bgImage;  // field to store the GIF
+    private JButton enterButton;
 
     public LoginScreen(GameGUI gui) {
         this.setLayout(null);
@@ -14,14 +15,21 @@ public class LoginScreen extends JPanel {
         ImageIcon icon = new ImageIcon("Assets/accountLogInScreen.gif");
         bgImage = icon.getImage();
 
-        // Create full-screen invisible button
-        JButton start = new JButton();
-        start.setOpaque(false);
-        start.setContentAreaFilled(false);
-        start.setBorderPainted(false);
-        start.addActionListener(e -> gui.showScreen("MainMenu"));
+        
+        enterButton = createButton();  
+        enterButton.addActionListener(e -> gui.showScreen("MainMenu"));  // go to main menu
+        this.add(enterButton);
+    }
 
-        this.add(start);
+    private JButton createButton() {
+        JButton btn = new JButton();
+
+        btn.setBounds(345, 370, 115, 45);
+        btn.setOpaque(false);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        return btn;
     }
 
     // Override paintComponent to draw the image scaled to current panel size

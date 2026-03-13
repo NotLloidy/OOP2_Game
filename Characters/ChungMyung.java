@@ -15,9 +15,9 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
     public ChungMyung() {
         super("Chung-Myung", "Human", "Sword Saint", 190, 50, 100);
 
-        blossomThrust = new Skill("Blossom Thrust", 10, 0, 5, 0);
-        plumPetalDance = new Skill("Plum Petal Dance", 25, 20, 0, 3);
-        saintVerdict = new Skill("Saint's Verdict", 46, 70, 0, 999);
+        blossomThrust = new Skill("Blossom Thrust", 10, 0, 5, 0,0);
+        plumPetalDance = new Skill("Plum Petal Dance", 25, 20, 0, 3,0);
+        saintVerdict = new Skill("Saint's Verdict", 46, 70, 0, 999,0);
     }
 
     @Override
@@ -33,6 +33,7 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
                     }
 
                     target.takeDamage(damage);
+                    useMana(blossomThrust.getSkillManaCost());
                     regenMana(blossomThrust.getSkillManaRegen());
                     blossomThrust.triggerSkillCooldown();
 
@@ -56,6 +57,7 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
 
                     target.takeDamage(damage);
                     useMana(plumPetalDance.getSkillManaCost());
+                    regenMana(plumPetalDance.getSkillManaRegen());
                     plumPetalDance.triggerSkillCooldown();
 
                     addPlumResolveStack(damage);
@@ -73,6 +75,7 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
 
                     target.takeDamage(damage);
                     useMana(saintVerdict.getSkillManaCost());
+                    regenMana(saintVerdict.getSkillManaRegen());
                     saintVerdict.triggerSkillCooldown();
 
                     lastSkillWasBlossom = false;

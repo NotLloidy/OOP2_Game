@@ -9,6 +9,8 @@ public abstract class GameCharacter {
     private int characterMaxMana;
     private int characterCurrentMana;
     private boolean isCharacterAlive;
+    private boolean isBlocking;
+    private int remainingBlocks;
 
     //Initializes all the character stats.
     public GameCharacter(String characterName, String characterRace, String characterClass, int characterMaxHealthPoints, int characterCurrentMana, int characterMaxMana) {
@@ -20,6 +22,8 @@ public abstract class GameCharacter {
         this.characterMaxMana = characterMaxMana;
         this.characterCurrentMana = characterCurrentMana;
         this.isCharacterAlive = true;
+        this.isBlocking = false;
+        this.remainingBlocks = 2;
     }
 
     public String getCharacterName() {
@@ -48,6 +52,21 @@ public abstract class GameCharacter {
 
     public int getCharacterCurrentMana() {
         return this.characterCurrentMana;
+    }
+
+    public void setIsBlocking(boolean isBlocking) {
+        this.isBlocking = isBlocking;
+    }
+
+    public boolean getIsBlocking() {
+        return this.isBlocking;
+    }
+
+    public void setRemainingBlocks(int remainingBlocks) {
+        this.remainingBlocks = remainingBlocks;
+    }
+    public int getRemainingBlocks() {
+        return this.remainingBlocks;
     }
 
     protected void revive(int hpAmount, int manaAmount) {

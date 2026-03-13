@@ -8,13 +8,13 @@ public class Skill {
     private int skillCooldown;
     private int skillCurrentCooldown;
 
-    public Skill(String skillName, int skillDamage, int skillManaCost, int skillManaRegen, int skillCooldown) {
+    public Skill(String skillName, int skillDamage, int skillManaCost, int skillManaRegen, int skillCooldown, int skillCurrentCooldown) {
         this.skillName = skillName;
         this.skillDamage = skillDamage;
         this.skillManaCost = skillManaCost;
         this.skillManaRegen = skillManaRegen;
         this.skillCooldown = skillCooldown;
-        this.skillCurrentCooldown = 0;
+        this.skillCurrentCooldown = skillCurrentCooldown;
     }
 
     public String getSkillName() {
@@ -31,6 +31,10 @@ public class Skill {
 
     public int getSkillManaRegen() {
         return (10 + this.skillManaRegen);
+    }
+
+    public int getSkillCurrentCooldown() {
+        return this.skillCurrentCooldown;
     }
 
     public boolean isSkillAvailable() {

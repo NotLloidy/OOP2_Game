@@ -13,9 +13,9 @@ public class SungJinWoo extends GameCharacter implements _SkillsInterface {
     public SungJinWoo() {
         super("Sung Jun-Woo", "Primordial", "Shadow Monarch", 180, 40, 80);
 
-        shadowSlash = new Skill("Shadow Slash", 15, 5, 0, 0);
-        shadowExtraction = new Skill("Shadow Extraction", 25, 20, 0, 2);
-        summonIgris = new Skill("Summon Igris", 30, 50, 0, 5);
+        shadowSlash = new Skill("Shadow Slash", 15, 5, 0, 0,0);
+        shadowExtraction = new Skill("Shadow Extraction", 25, 20, 0, 2,0);
+        summonIgris = new Skill("Summon Igris", 30, 50, 0, 5,0);
 
         isIgrisSummoned = false;
     }

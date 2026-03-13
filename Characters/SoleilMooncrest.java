@@ -15,9 +15,9 @@ public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
     public SoleilMooncrest() {
         super("Soleil Mooncrest", "Human", "Moonlit Witch", 200, 50, 100);
 
-        moonStrike = new Skill("Moon Strike", 10, 0, 10, 0);
-        moonlightShine = new Skill("Moonlight Shine", 20, 30, 0, 2);
-        shadowBlast = new Skill("Shadow Blast", 40, 50, 0, 5);
+        moonStrike = new Skill("Moon Strike", 10, 0, 10, 0,0);
+        moonlightShine = new Skill("Moonlight Shine", 20, 30, 0, 2,0);
+        shadowBlast = new Skill("Shadow Blast", 40, 50, 0, 5,0);
     }
 
     @Override
@@ -49,6 +49,7 @@ public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
                     if (target == this && moonsBlessingCooldown == 0) {
                         // Lunar's Gift: Moon's Blessing (self-heal/mana regen)
                         heal(10);
+                        useMana(moonStrike.getSkillManaCost());
                         regenMana(20);
                         moonsBlessingCooldown = 2; // set passive cooldown
                         System.out.println(getCharacterName() + " activated Moon's Blessing!");
@@ -67,6 +68,7 @@ public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
                         // Lunar's Gift: Eclipse Empowerment (one-time self-boost)
                         int boostedDamage = (int)(moonlightShine.getSkillDamage() * 1.25);
                         useMana(moonlightShine.getSkillManaCost());
+                        regenMana(moonlightShine.getSkillManaRegen());
                         target.takeDamage(boostedDamage);
                         eclipseEmpowermentUsed = true;
                         System.out.println(getCharacterName() + " activated Eclipse Empowerment!");
@@ -86,6 +88,7 @@ public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
                         reversePowerUsed = true;
                         reflectNextAttack = true; // mark self to reflect next incoming attack
                         useMana(shadowBlast.getSkillManaCost());
+                        regenMana(shadowBlast.getSkillManaRegen());
                         System.out.println("Activated Reverse Power!");
                     } else {
                         // Normal attack

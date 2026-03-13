@@ -15,9 +15,9 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
     public Kenneth() {
         super("Kenneth", "Human", "Marksman", 150, 30, 60);
 
-        aimedShot = new Skill("Aimed Shot", 20, 10, 0, 1);
-        overwatchStance = new Skill("Overwatch Stance", 0, 15, 0, 2);
-        suppressiveVolley = new Skill("Suppressive Volley", 40, 20, 0, 4);
+        aimedShot = new Skill("Aimed Shot", 20, 10, 10, 0,0);
+        overwatchStance = new Skill("Overwatch Stance", 0, 15, 0, 2,0);
+        suppressiveVolley = new Skill("Suppressive Volley", 140, 20, 0, 4,0);
     }
 
     private int applyMarksmanDisciplineBonus(int baseDamage) {
@@ -45,6 +45,7 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
                     }
                     target.takeDamage(damage);
                     useMana(aimedShot.getSkillManaCost());
+                    regenMana(aimedShot.getSkillManaRegen());
                     aimedShot.triggerSkillCooldown();
                 }
                 break;
@@ -52,6 +53,7 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
             case 2: // Overwatch Stance
                 if (overwatchStance.isSkillAvailable() && getCharacterCurrentMana() >= overwatchStance.getSkillManaCost()) {
                     useMana(overwatchStance.getSkillManaCost());
+                    regenMana(overwatchStance.getSkillManaRegen());
                     overwatchReady = true; // counter next attack
                     overwatchStance.triggerSkillCooldown();
                     System.out.println(getCharacterName() + " is in Overwatch stance!");
@@ -63,6 +65,7 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
                     int damage = applyMarksmanDisciplineBonus(suppressiveVolley.getSkillDamage());
                     target.takeDamage(damage);
                     useMana(suppressiveVolley.getSkillManaCost());
+                    regenMana(suppressiveVolley.getSkillManaRegen());
                     suppressiveVolley.triggerSkillCooldown();
                 }
                 break;

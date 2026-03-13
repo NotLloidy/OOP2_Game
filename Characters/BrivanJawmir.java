@@ -12,9 +12,9 @@ public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
     public BrivanJawmir() {
         super("Brivan Jawmir", "Human", "Arcane Warden", 160, 60, 10);
 
-        riftCleaverThrust = new Skill("Rift Cleaver Thrust", 10, 0, 10, 0);
-        crescentReaver = new Skill("Crescent Reaver", 10, 20, 0, 3);
-        emberVault = new Skill("Ember Vault", 50, 50, 0, 4);
+        riftCleaverThrust = new Skill("Rift Cleaver Thrust", 10, 0, 10, 0,0);
+        crescentReaver = new Skill("Crescent Reaver", 10, 20, 0, 3,0);
+        emberVault = new Skill("Ember Vault", 50, 50, 0, 4,0);
     }
 
     @Override
@@ -23,6 +23,7 @@ public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
             case 1:
                 if(riftCleaverThrust.isSkillAvailable() && (getCharacterCurrentMana() >= riftCleaverThrust.getSkillManaCost())) {
                     target.takeDamage(riftCleaverThrust.getSkillDamage());
+                    useMana(riftCleaverThrust.getSkillManaCost());
                     regenMana(riftCleaverThrust.getSkillManaRegen());
                 }
                 break;

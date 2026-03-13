@@ -10,14 +10,15 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
     private Skill logicCrash;
     private boolean isOverclocked;
     private boolean usedUlt;
+    private Skill lastSkillUsed;
 
     public AVin() {
         super("A-Vin", "Dalek", "Time Manipulator", 140, 40, 80);
         
-        codeJab = new Skill("Code Jab", 20, 0, 10, 0);
-        codeSurge = new Skill("Code Surge", 40, 10, 0, 0);
-        overClock = new Skill("Overclock", 0, 15, 0, 3);
-        logicCrash = new Skill("Logic Crash", 50, 60, 0, 999);
+        codeJab = new Skill("Code Jab", 20, 0, 10, 0,0);
+        codeSurge = new Skill("Code Surge", 40, 10, 0, 0,0);
+        overClock = new Skill("Overclock", 0, 15, 0, 3,0);
+        logicCrash = new Skill("Logic Crash", 50, 60, 0, 999,0);
 
         isOverclocked = false;
         usedUlt = false;
@@ -31,6 +32,7 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
                     target.takeDamage(codeSurge.getSkillDamage());
                     useMana(codeSurge.getSkillManaCost());
                     regenMana(codeSurge.getSkillManaRegen());
+                    lastSkillUsed = codeSurge;
                     if(usedUlt) {
                         usedUlt = false;
                     }
@@ -40,8 +42,10 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
                     break;
                 } else if(codeJab.isSkillAvailable() && (getCharacterCurrentMana() >= codeJab.getSkillManaCost())) {
                     target.takeDamage(codeJab.getSkillDamage());
+                    useMana(codeJab.getSkillManaCost());
                     regenMana(codeJab.getSkillManaRegen());
                     codeJab.triggerSkillCooldown();
+                    lastSkillUsed = codeJab;
                 }
                 break;
             case 2:
@@ -65,9 +69,14 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
         }
     }
 
+
     @Override
-    public Skill getSkill1() { 
-        return this.codeJab; 
+    public Skill getSkill1() {
+        if(lastSkillUsed == codeSurge) {
+            return codeSurge;
+        } else {
+            return codeJab; 
+        }
     }
 
     @Override

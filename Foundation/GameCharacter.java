@@ -11,6 +11,8 @@ public abstract class GameCharacter {
     private boolean isCharacterAlive;
     private boolean isBlocking;
     private int remainingBlocks;
+    private boolean isMarked;
+    private boolean isStunned;
 
     //Initializes all the character stats.
     public GameCharacter(String characterName, String characterRace, String characterClass, int characterMaxHealthPoints, int characterCurrentMana, int characterMaxMana) {
@@ -24,6 +26,9 @@ public abstract class GameCharacter {
         this.isCharacterAlive = true;
         this.isBlocking = false;
         this.remainingBlocks = 2;
+
+        this.isMarked = false;
+        this.isStunned = false;
     }
 
     public String getCharacterName() {
@@ -67,6 +72,21 @@ public abstract class GameCharacter {
     }
     public int getRemainingBlocks() {
         return this.remainingBlocks;
+    }
+    
+    public void setIsStunned(boolean isStunned) {
+        this.isStunned = isStunned;
+    }
+    public boolean getIsStunned() {
+        return this.isStunned;
+    }
+
+    public void setIsMarked(boolean isMarked) {
+        this.isMarked = isMarked;
+    }
+
+    public boolean getIsMarked() {
+        return this.isMarked;
     }
 
     public void block(GameCharacter target) {

@@ -48,6 +48,12 @@ public class Zakkarr extends GameCharacter implements _SkillsInterface {
         Skill skillToUse = null;
         int damage = 0;
 
+        if(getIsStunned()) {
+            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
+            setIsStunned(false); // Remove stun after skipping turn
+            return;
+        }
+
         switch(skillNumber) {
             case 1: // Guardian's Blade
                 if(target.getIsBlocking()){

@@ -24,6 +24,10 @@ public class SungJinWoo extends GameCharacter implements _SkillsInterface {
     public void useSkill(int skillNumber, GameCharacter target) {
         switch(skillNumber) {
             case 1:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(shadowSlash.isSkillAvailable() && (getCharacterCurrentMana() >= shadowSlash.getSkillManaCost())) {
                     target.takeDamage(shadowSlash.getSkillDamage());
                     useMana(shadowSlash.getSkillManaCost());
@@ -35,6 +39,10 @@ public class SungJinWoo extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 2:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(shadowExtraction.isSkillAvailable() && (getCharacterCurrentMana() >= shadowExtraction.getSkillManaCost())) {
                     target.takeDamage(shadowExtraction.getSkillDamage());
                     useMana(shadowExtraction.getSkillManaCost());
@@ -47,6 +55,10 @@ public class SungJinWoo extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 3:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(summonIgris.isSkillAvailable() && (getCharacterCurrentMana() >= summonIgris.getSkillManaCost())) {
                     target.takeDamage(summonIgris.getSkillDamage());
                     useMana(summonIgris.getSkillManaCost());

@@ -27,13 +27,14 @@ public class Main {
 
         System.out.println("Now selecting AI character...");
         Random rand = new Random();
-        int aiChoice = rand.nextInt(8) + 1;
-
-        ai = new BattleSystem().selectCharacter(aiChoice);
-        if (ai == null) {
-            System.out.println("Error selecting AI character.");
-            sc.close();
-            return;
+        while(true) {
+            int tempChoice = rand.nextInt(8) + 1;
+            if(tempChoice != choice) {
+                ai = new BattleSystem().selectCharacter(tempChoice);
+                if (ai != null) {
+                    break;
+                }
+            }
         }
 
         System.out.println("Let the battle begin!");

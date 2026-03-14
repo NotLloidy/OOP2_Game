@@ -56,7 +56,6 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
                     regenMana(overwatchStance.getSkillManaRegen());
                     overwatchReady = true; // counter next attack
                     overwatchStance.triggerSkillCooldown();
-                    System.out.println(getCharacterName() + " is in Overwatch stance!");
                 }
                 break;
 

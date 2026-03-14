@@ -30,7 +30,7 @@ public class Main {
         while(true) {
             int tempChoice = rand.nextInt(8) + 1;
             if(tempChoice != choice) {
-                ai = new BattleSystem().selectCharacter(tempChoice);
+                ai = new BattleSystem().selectCharacter(tempChoice); 
                 if (ai != null) {
                     break;
                 }

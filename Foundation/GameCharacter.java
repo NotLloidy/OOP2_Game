@@ -69,6 +69,12 @@ public abstract class GameCharacter {
         return this.remainingBlocks;
     }
 
+    public void block(GameCharacter target) {
+        System.out.println("\n" + target.getCharacterName() + " blocked the attack!\nDealt no damage.");
+        target.setIsBlocking(false); // reset block status
+        target.setRemainingBlocks(target.getRemainingBlocks() - 1); // reduce block count
+    }
+
     protected void revive(int hpAmount, int manaAmount) {
         this.characterCurrentHealthPoints = Math.min(characterMaxHealthPoints, hpAmount);
         this.characterCurrentMana = Math.min(characterMaxMana, manaAmount);

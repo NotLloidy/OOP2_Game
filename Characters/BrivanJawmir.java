@@ -21,6 +21,10 @@ public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
     public void useSkill(int skillNumber, GameCharacter target) {
         switch(skillNumber) {
             case 1:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(riftCleaverThrust.isSkillAvailable() && (getCharacterCurrentMana() >= riftCleaverThrust.getSkillManaCost())) {
                     target.takeDamage(riftCleaverThrust.getSkillDamage());
                     useMana(riftCleaverThrust.getSkillManaCost());
@@ -28,6 +32,10 @@ public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 2:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(crescentReaver.isSkillAvailable() && (getCharacterCurrentMana() >= crescentReaver.getSkillManaCost())) {
                     target.takeDamage(crescentReaver.getSkillDamage());
                     useMana(crescentReaver.getSkillManaCost());
@@ -36,6 +44,10 @@ public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 3:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(emberVault.isSkillAvailable() && (getCharacterCurrentMana() >= emberVault.getSkillManaCost())) {
                     target.takeDamage(emberVault.getSkillDamage());
                     useMana(emberVault.getSkillManaCost());

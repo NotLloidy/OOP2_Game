@@ -50,6 +50,10 @@ public class Zakkarr extends GameCharacter implements _SkillsInterface {
 
         switch(skillNumber) {
             case 1: // Guardian's Blade
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 skillToUse = guardiansBlade;
                 if(skillToUse.isSkillAvailable()) {
                     damage = skillToUse.getSkillDamage() + (bladeStacks * 5);
@@ -67,6 +71,10 @@ public class Zakkarr extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 2: // Shield of Valor
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 skillToUse = shieldOfValor;
                 if(skillToUse.isSkillAvailable()) {
                     damage = skillToUse.getSkillDamage();

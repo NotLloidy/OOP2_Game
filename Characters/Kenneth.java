@@ -38,6 +38,10 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
     public void useSkill(int skillNumber, GameCharacter target) {
         switch (skillNumber) {
             case 1: // Aimed Shot
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (aimedShot.isSkillAvailable() && getCharacterCurrentMana() >= aimedShot.getSkillManaCost()) {
                     int damage = applyMarksmanDisciplineBonus(aimedShot.getSkillDamage());
                     if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
@@ -51,6 +55,10 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
                 break;
 
             case 2: // Overwatch Stance
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (overwatchStance.isSkillAvailable() && getCharacterCurrentMana() >= overwatchStance.getSkillManaCost()) {
                     useMana(overwatchStance.getSkillManaCost());
                     regenMana(overwatchStance.getSkillManaRegen());
@@ -60,6 +68,10 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
                 break;
 
             case 3: // Suppressive Volley
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (suppressiveVolley.isSkillAvailable() && getCharacterCurrentMana() >= suppressiveVolley.getSkillManaCost()) {
                     int damage = applyMarksmanDisciplineBonus(suppressiveVolley.getSkillDamage());
                     target.takeDamage(damage);

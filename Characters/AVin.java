@@ -11,6 +11,7 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
     private boolean isOverclocked;
     private boolean usedUlt;
     private Skill lastSkillUsed;
+    private int codeJabCounter;
 
     public AVin() {
         super("A-Vin", "Dalek", "Time Manipulator", 140, 40, 80);
@@ -22,14 +23,21 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
 
         isOverclocked = false;
         usedUlt = false;
+        lastSkillUsed = null;
+        codeJabCounter = 0;
     }
 
     @Override
     public void useSkill(int skillNumber, GameCharacter target) {
         switch(skillNumber) {
             case 1:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(usedUlt || isOverclocked) {
-                    target.takeDamage(codeSurge.getSkillDamage());
+                    System.out.println("\n" + getCharacterName() + " used Code Surge with Overclock bonus! +10 bonus damage!");
+                    target.takeDamage(codeSurge.getSkillDamage() + 10);
                     useMana(codeSurge.getSkillManaCost());
                     regenMana(codeSurge.getSkillManaRegen());
                     lastSkillUsed = codeSurge;
@@ -41,6 +49,14 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
                     }
                     break;
                 } else if(codeJab.isSkillAvailable() && (getCharacterCurrentMana() >= codeJab.getSkillManaCost())) {
+                    codeJabCounter++;
+                    if(codeJabCounter == 2) {
+                        codeJabCounter = 0;
+                        System.out.println("\n" + getCharacterName() + " executed a perfect Code Jab combo! +10 bonus damage!");
+                        target.takeDamage(codeJab.getSkillDamage() + 10);
+                    } else {
+                        target.takeDamage(codeJab.getSkillDamage());
+                    }
                     target.takeDamage(codeJab.getSkillDamage());
                     useMana(codeJab.getSkillManaCost());
                     regenMana(codeJab.getSkillManaRegen());
@@ -49,6 +65,9 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 2:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                }
                 if(overClock.isSkillAvailable() && (getCharacterCurrentMana() >= overClock.getSkillManaCost())) {
                     useMana(overClock.getSkillManaCost());
                     regenMana(overClock.getSkillManaRegen());
@@ -57,8 +76,18 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 3:
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if(logicCrash.isSkillAvailable() && (getCharacterCurrentMana() >= logicCrash.getSkillManaCost())) {
-                    target.takeDamage(logicCrash.getSkillDamage());
+                    int bonusDamage = 0;
+                    if(isOverclocked) {
+                        bonusDamage = 10;
+                        System.out.println("\n" + getCharacterName() + " unleashed an Overclocked Logic Crash! +10 bonus damage!");
+                    }
+                    target.takeDamage(logicCrash.getSkillDamage() + bonusDamage);
+                    bonusDamage = 0; // reset bonus after use
                     useMana(logicCrash.getSkillManaCost());
                     regenMana(logicCrash.getSkillManaRegen());
                     logicCrash.triggerSkillCooldown();

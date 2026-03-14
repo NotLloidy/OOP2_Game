@@ -34,7 +34,10 @@ public class KijEl extends GameCharacter implements _SkillsInterface {
 
         // check if skill can be used
         if(skillToUse.isSkillAvailable() && getCharacterCurrentMana() >= skillToUse.getSkillManaCost()) {
-
+            if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
             // calculate damage
             int damage = skillToUse.getSkillDamage();
 

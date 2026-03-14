@@ -24,6 +24,10 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
     public void useSkill(int skillNumber, GameCharacter target) {
         switch (skillNumber) {
             case 1: // Blossom Thrust
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (blossomThrust.isSkillAvailable() && getCharacterCurrentMana() >= blossomThrust.getSkillManaCost()) {
                     int damage = applyPlumResolve(blossomThrust.getSkillDamage());
 
@@ -44,6 +48,10 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 2: // Plum Petal Dance
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (plumPetalDance.isSkillAvailable() && getCharacterCurrentMana() >= plumPetalDance.getSkillManaCost()) {
                     int damage = plumPetalDance.getSkillDamage();
 
@@ -65,6 +73,10 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
                 }
                 break;
             case 3: // Saint's Verdict
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (saintVerdict.isSkillAvailable() && getCharacterCurrentMana() >= saintVerdict.getSkillManaCost()) {
                     int damage = saintVerdict.getSkillDamage();
 

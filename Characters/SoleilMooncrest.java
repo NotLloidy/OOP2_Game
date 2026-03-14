@@ -45,6 +45,10 @@ public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
 
         switch(skillNumber) {
             case 1: // Moon Strike
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (moonStrike.isSkillAvailable()) {
                     if (target == this && moonsBlessingCooldown == 0) {
                         // Lunar's Gift: Moon's Blessing (self-heal/mana regen)
@@ -63,6 +67,10 @@ public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
                 break;
 
             case 2: // Moonlight Shine
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
                 if (moonlightShine.isSkillAvailable() && getCharacterCurrentMana() >= moonlightShine.getSkillManaCost()) {
                     if (target == this && !eclipseEmpowermentUsed) {
                         // Lunar's Gift: Eclipse Empowerment (one-time self-boost)
@@ -82,6 +90,11 @@ public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
                 break;
 
             case 3: // Shadow Blast
+                if(target.getIsBlocking()){
+                    target.block(target);
+                    return;
+                }
+
                 if (shadowBlast.isSkillAvailable() && getCharacterCurrentMana() >= shadowBlast.getSkillManaCost()) {
                     if (target == this && !reversePowerUsed) {
                         // Lunar's Gift: Reverse Power (one-time self-reflect)

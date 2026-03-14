@@ -57,54 +57,37 @@ public class BattleSystem extends BattleSystemAbs {
         _SkillsInterface charSkills = (_SkillsInterface) attacker;
 
         if(action == 1) {
+            attacker.useSkill(action, defender);
             if(isPlayer) {
                 System.out.println("\nYou used " + charSkills.getSkill1().getSkillName() + "!");
             } else {
                 System.out.println("\nAI used " + charSkills.getSkill1().getSkillName() + "!");
             }
-             if(defender.getRemainingBlocks() > 0 && defender.getIsBlocking()) {
-                System.out.println("Attack blocked. Dealt no damage.");
-                defender.setIsBlocking(false);
-                defender.setRemainingBlocks(defender.getRemainingBlocks() - 1);
-                return;
-            }
-            attacker.useSkill(action, defender);
             if(isPlayer) {
                 System.out.println("You dealt " + charSkills.getSkill1().getSkillDamage() + " damage to the enemy!");
             } else {
                 System.out.println("AI dealt " + charSkills.getSkill1().getSkillDamage() + " damage to you!");
             }
         } else if(action == 2) {
+            attacker.useSkill(action, defender);
             if(isPlayer) {
                 System.out.println("\nYou used " + charSkills.getSkill2().getSkillName() + "!");
             } else {
                 System.out.println("\nAI used " + charSkills.getSkill2().getSkillName() + "!");
             }
-             if(defender.getRemainingBlocks() > 0 && defender.getIsBlocking()) {
-                System.out.println("Attack blocked. Dealt no damage.");
-                defender.setIsBlocking(false);
-                defender.setRemainingBlocks(defender.getRemainingBlocks() - 1);
-                return;
-            }
-            attacker.useSkill(action, defender);
             if(isPlayer) {
                 System.out.println("You dealt " + charSkills.getSkill2().getSkillDamage() + " damage to the enemy!");
             } else {
                 System.out.println("AI dealt " + charSkills.getSkill2().getSkillDamage() + " damage to you!");
             }
         } else if(action == 3) {
+            attacker.useSkill(action, defender);
             if(isPlayer) {
                 System.out.println("\nYou used " + charSkills.getSkill3().getSkillName() + "!");
             } else {
                 System.out.println("\nAI used " + charSkills.getSkill3().getSkillName() + "!");
             }
-             if(defender.getRemainingBlocks() > 0 && defender.getIsBlocking()) {
-                System.out.println("Attack blocked. Dealt no damage.");
-                defender.setIsBlocking(false);
-                defender.setRemainingBlocks(defender.getRemainingBlocks() - 1);
-                return;
-            }
-            attacker.useSkill(action, defender);
+            
             if(isPlayer) {
                 System.out.println("You dealt " + charSkills.getSkill3().getSkillDamage() + " damage to the enemy!");
             } else {
@@ -135,7 +118,14 @@ public class BattleSystem extends BattleSystemAbs {
                         System.out.println("\nThis skill is on cooldown for " + charSkills.getSkill1().getSkillCurrentCooldown() + " turns. Please choose a different action.");
                         continue;
                     }
-                    attack(player1, ai, action, true);
+                    if(ai.getRemainingBlocks() > 0 && ai.getIsBlocking()) {
+                        System.out.println("\nYou used " + charSkills.getSkill1().getSkillName() + "!");
+                        System.out.println("Attack blocked. Dealt no damage.");
+                        ai.setIsBlocking(false);
+                        ai.setRemainingBlocks(ai.getRemainingBlocks() - 1);
+                    } else {
+                        attack(player1, ai, action, true);
+                    }
                     break;
                 case 2:
                     if(player1.getCharacterCurrentMana() < charSkills.getSkill2().getSkillManaCost()) {
@@ -146,7 +136,14 @@ public class BattleSystem extends BattleSystemAbs {
                         System.out.println("\nThis skill is on cooldown for " + charSkills.getSkill2().getSkillCurrentCooldown() + " turns. Please choose a different action.");
                         continue;
                     }
-                    attack(player1, ai, action, true);
+                    if(ai.getRemainingBlocks() > 0 && ai.getIsBlocking()) {
+                        System.out.println("\nYou used " + charSkills.getSkill2().getSkillName() + "!");
+                        System.out.println("Attack blocked. Dealt no damage.");
+                        ai.setIsBlocking(false);
+                        ai.setRemainingBlocks(ai.getRemainingBlocks() - 1);
+                    } else {
+                        attack(player1, ai, action, true);
+                    }
                     break;
                 case 3:
                     if(player1.getCharacterName() == "Zakkarr") {
@@ -161,7 +158,14 @@ public class BattleSystem extends BattleSystemAbs {
                         System.out.println("\nThis skill is on cooldown for " + charSkills.getSkill3().getSkillCurrentCooldown() + " turns. Please choose a different action.");
                         continue;
                     }
-                    attack(player1, ai, action, true);
+                    if(ai.getRemainingBlocks() > 0 && ai.getIsBlocking()) {
+                        System.out.println("\nYou used " + charSkills.getSkill3().getSkillName() + "!");
+                        System.out.println("Attack blocked. Dealt no damage.");
+                        ai.setIsBlocking(false);
+                        ai.setRemainingBlocks(ai.getRemainingBlocks() - 1);
+                    } else {
+                        attack(player1, ai, action, true);
+                    }
                     break;
                 case 4:
                     if(player1.getRemainingBlocks() <= 0) {
@@ -169,7 +173,7 @@ public class BattleSystem extends BattleSystemAbs {
                         continue;
                     }
                     player1.setIsBlocking(true);
-                    System.out.println("\nYou are blocking! You will block the next incoming attack.");
+                    System.out.println("\nYou are blocking! You have " + (player1.getRemainingBlocks() - 1) + " block charge left.");
                     break;
 
                 default:
@@ -197,7 +201,7 @@ public class BattleSystem extends BattleSystemAbs {
         
 
         while(ai.isCharacterAlive() && player.isCharacterAlive()) {
-            int aiAction = rand.nextInt(3) + 1;
+            int aiAction = rand.nextInt(4) + 1;
             switch(aiAction) {
                 case 1:
                     if(ai.getCharacterCurrentMana() < charSkills.getSkill1().getSkillManaCost()) {
@@ -206,7 +210,14 @@ public class BattleSystem extends BattleSystemAbs {
                     if(charSkills.getSkill1().getSkillCurrentCooldown() > 0) {
                         continue;
                     }
-                    attack(ai, player, aiAction, false);
+                    if(player.getRemainingBlocks() > 0 && player.getIsBlocking()) {
+                        System.out.println("\nAI used " + charSkills.getSkill1().getSkillName() + "!");
+                        System.out.println("Attack blocked. Dealt no damage.");
+                        player.setIsBlocking(false);
+                        player.setRemainingBlocks(player.getRemainingBlocks() - 1);
+                    } else {
+                        attack(ai, player, aiAction, false);
+                    }
                     break;
                 case 2:
                     if(ai.getCharacterCurrentMana() < charSkills.getSkill2().getSkillManaCost()) {
@@ -215,7 +226,14 @@ public class BattleSystem extends BattleSystemAbs {
                     if(charSkills.getSkill2().getSkillCurrentCooldown() > 0) {
                         continue;
                     }
-                    attack(ai, player, aiAction, false);
+                    if(player.getRemainingBlocks() > 0 && player.getIsBlocking()) {
+                        System.out.println("\nAI used " + charSkills.getSkill2().getSkillName() + "!");
+                        System.out.println("Attack blocked. Dealt no damage.");
+                        player.setIsBlocking(false);
+                        player.setRemainingBlocks(player.getRemainingBlocks() - 1);
+                    } else {
+                        attack(ai, player, aiAction, false);
+                    }
                     break;
                 case 3:
                     if(ai.getCharacterName() == "Zakkarr") {
@@ -227,14 +245,21 @@ public class BattleSystem extends BattleSystemAbs {
                     if(charSkills.getSkill3().getSkillCurrentCooldown() > 0) {
                         continue;
                     }
-                    attack(ai, player, aiAction, false);
+                    if(player.getRemainingBlocks() > 0 && player.getIsBlocking()) {
+                        System.out.println("\nAI used " + charSkills.getSkill3().getSkillName() + "!");
+                        System.out.println("Attack blocked. Dealt no damage.");
+                        player.setIsBlocking(false);
+                        player.setRemainingBlocks(player.getRemainingBlocks() - 1);
+                    } else {
+                        attack(ai, player, aiAction, false);
+                    }
                     break;
                 case 4:
                     if(ai.getRemainingBlocks() <= 0) {
                         continue;
                     }
                     ai.setIsBlocking(true);
-                    System.out.println("\nAI is blocking! It will block the next incoming attack.");
+                    System.out.println("\nAI is blocking! It has " + (ai.getRemainingBlocks() - 1) + " block charge left.");
                     break;
             }
             if(!player.isCharacterAlive()) {

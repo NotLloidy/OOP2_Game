@@ -58,6 +58,12 @@ public class BattleSystem extends BattleSystemAbs {
 
         if(action == 1) {
             if(defender.getIsBlocking()) {
+                attacker.useMana(charSkills.getSkill1().getSkillManaCost()); // Refund mana cost if attack is blocked
+                attacker.regenMana(charSkills.getSkill1().getSkillManaRegen()); // Refund mana regen if attack is blocked
+                attacker.useSkill(action, defender);
+                return;
+            }
+            if(attacker.getIsStunned()) {
                 attacker.useSkill(action, defender);
                 return;
             }
@@ -74,6 +80,12 @@ public class BattleSystem extends BattleSystemAbs {
             }
         } else if(action == 2) {
             if(defender.getIsBlocking()) {
+                attacker.useMana(charSkills.getSkill2().getSkillManaCost()); // Refund mana cost if attack is blocked
+                attacker.regenMana(charSkills.getSkill2().getSkillManaRegen()); // Refund
+                attacker.useSkill(action, defender);
+                return;
+            }
+            if(attacker.getIsStunned()) {
                 attacker.useSkill(action, defender);
                 return;
             }
@@ -90,6 +102,12 @@ public class BattleSystem extends BattleSystemAbs {
             }
         } else if(action == 3) {
             if(defender.getIsBlocking()) {
+                attacker.useMana(charSkills.getSkill3().getSkillManaCost()); // Refund mana cost if attack is blocked
+                attacker.regenMana(charSkills.getSkill3().getSkillManaRegen()); // Refund mana regen if attack is blocked
+                attacker.useSkill(action, defender);
+                return;
+            }
+            if(attacker.getIsStunned()) {
                 attacker.useSkill(action, defender);
                 return;
             }

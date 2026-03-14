@@ -29,6 +29,11 @@ public class AVin  extends GameCharacter implements _SkillsInterface {
 
     @Override
     public void useSkill(int skillNumber, GameCharacter target) {
+        if(getIsStunned()) {
+            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
+            setIsStunned(false); // Remove stun after skipping turn
+            return;
+        }
         switch(skillNumber) {
             case 1:
                 if(target.getIsBlocking()){

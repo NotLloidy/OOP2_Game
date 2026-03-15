@@ -177,6 +177,9 @@ public class BattleSystem extends BattleSystemAbs {
                         attack(player1, ai, action, true);
                     break;
                 case 4:
+                    if(ai.getIsBlocking()) {
+                        ai.setRemainingBlocks(ai.getRemainingBlocks() - 1);
+                    }
                     if(player1.getRemainingBlocks() <= 0) {
                         System.out.println("\nYou have no blocks remaining. Please choose a different action.");
                         continue;
@@ -243,6 +246,9 @@ public class BattleSystem extends BattleSystemAbs {
                     attack(ai, player, aiAction, false);
                     break;
                 case 4:
+                    if(player.getIsBlocking()) {
+                        player.setRemainingBlocks(player.getRemainingBlocks() - 1);
+                    }
                     if(ai.getRemainingBlocks() <= 0) {
                         continue;
                     }

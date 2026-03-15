@@ -89,7 +89,7 @@ public abstract class GameCharacter {
         return this.isMarked;
     }
 
-    public void block(GameCharacter target) {
+    public void block(GameCharacter target) { 
         System.out.println("\n" + target.getCharacterName() + " blocked the attack!\nDealt no damage.");
         target.setIsBlocking(false); // reset block status
         target.setRemainingBlocks(target.getRemainingBlocks() - 1); // reduce block count

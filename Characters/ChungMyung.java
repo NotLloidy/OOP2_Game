@@ -38,6 +38,7 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
 
                     // Bonus if target below 50% HP
                     if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
+                        System.out.println("\nBlossom Thrust hit a critical strike on the weakened target! +15% damage!");
                         damage += damage * 15 / 100;
                     }
 
@@ -62,6 +63,7 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
 
                     // Bonus if Blossom Thrust was used last turn
                     if (lastSkillWasBlossom) {
+                        System.out.println("\nPlum Petal Dance is empowered by the previous Blossom Thrust! +10 damage!");
                         damage += 10; // additional fixed 10 damage
                     }
 
@@ -107,9 +109,11 @@ public class ChungMyung extends GameCharacter implements _SkillsInterface {
 
         if (plumResolveStacks > 0 && plumResolveStacks < 3) {
             damage += damage * (plumResolveStacks * 5) / 100; // +5% per stack
+            System.out.println("\nPlum Resolve increased damage by 5%!");
         } else if (plumResolveStacks >= 3) {
             damage += damage * (plumResolveStacks * 10) / 100; // +30% bonus at 3 stacks
             regenMana(20); // restore 20 mana
+            System.out.println("\nPlum Resolve fully charged! +30% damage and restored 20 mana!");
             plumResolveStacks = 0; // reset stacks after boost
         }
 

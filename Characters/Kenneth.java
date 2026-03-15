@@ -7,31 +7,16 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
     private Skill aimedShot;
     private Skill overwatchStance;
     private Skill suppressiveVolley;
-
-    private int disciplineStacks = 0; // Passive stacks (max 2)
-    private int nextAttackBonus = 0;  // +30 damage from Overwatch
-    private boolean overwatchReady = false;
+    private boolean overwatchReady;
 
     public Kenneth() {
         super("Kenneth", "Human", "Marksman", 150, 30, 60);
 
         aimedShot = new Skill("Aimed Shot", 20, 10, 10, 0,0);
         overwatchStance = new Skill("Overwatch Stance", 0, 15, 0, 2,0);
-        suppressiveVolley = new Skill("Suppressive Volley", 140, 20, 0, 4,0);
-    }
+        suppressiveVolley = new Skill("Suppressive Volley", 40, 20, 0, 4,0);
 
-    private int applyMarksmanDisciplineBonus(int baseDamage) {
-        int bonusDamage = baseDamage + baseDamage * disciplineStacks * 30 / 100 + nextAttackBonus;
-        disciplineStacks = 0;   // Reset stacks after a damaging skill
-        nextAttackBonus = 0;     // Reset Overwatch bonus after use
-        return bonusDamage;
-    }
-
-    public void skipTurn() {
-        if (disciplineStacks < 2) {
-            disciplineStacks++;
-        }
-        System.out.println(getCharacterName() + " skipped their turn. Discipline stacks: " + disciplineStacks);
+        overwatchReady = false;
     }
 
     @Override
@@ -48,11 +33,22 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
                     return;
                 }
                 if (aimedShot.isSkillAvailable() && getCharacterCurrentMana() >= aimedShot.getSkillManaCost()) {
-                    int damage = applyMarksmanDisciplineBonus(aimedShot.getSkillDamage());
-                    if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
-                        damage += damage * 20 / 100; // bonus vs low HP
+                    double headshotChance = 0.15; // Base headshot chance
+                    if(overwatchReady) {
+                        System.out.println("\nOverwatch Stance is active! Aimed Shot will deal +15 damage.");
+                        target.takeDamage(15);// Bonus damage for overwatch
+                        overwatchReady = false; // Reset overwatch after use
                     }
-                    target.takeDamage(damage);
+                    if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
+                        headshotChance = 0.30; // Increased headshot chance on weakened targets
+                    }
+                    if(Math.random() < headshotChance) {
+                        System.out.println("\nAimed Shot hit a headshot! Damage is doubled!");
+                        target.takeDamage(aimedShot.getSkillDamage() * 2); // Double damage for headshot
+                        headshotChance = 0.15; // Reset headshot chance after hit
+                    } else {
+                        target.takeDamage(aimedShot.getSkillDamage());
+                    }
                     useMana(aimedShot.getSkillManaCost());
                     regenMana(aimedShot.getSkillManaRegen());
                     aimedShot.triggerSkillCooldown();
@@ -78,8 +74,26 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
                     return;
                 }
                 if (suppressiveVolley.isSkillAvailable() && getCharacterCurrentMana() >= suppressiveVolley.getSkillManaCost()) {
-                    int damage = applyMarksmanDisciplineBonus(suppressiveVolley.getSkillDamage());
-                    target.takeDamage(damage);
+                    double headshotChance = 0.15; // Base headshot chance
+                    if(overwatchReady) {
+                        System.out.println("\nOverwatch Stance is active! Aimed Shot will deal +15 damage.");
+                        target.takeDamage(15);// Bonus damage for overwatch
+                        overwatchReady = false; // Reset overwatch after use
+                    }
+                    if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
+                        headshotChance = 0.30; // Increased headshot chance on weakened targets
+                    }
+                    if(Math.random() < headshotChance) {
+                        System.out.println("\nSuppressive Volley hit a headshot! Damage is doubled!");
+                        target.takeDamage(suppressiveVolley.getSkillDamage() * 2); // Double damage for headshot
+                        headshotChance = 0.15; // Reset headshot chance after hit
+                    } else {
+                        target.takeDamage(suppressiveVolley.getSkillDamage());
+                    }
+                    if(Math.random() < 0.50) {
+                        System.out.println("\nSuppressive Volley suppressed the target! Target will be stunned for 1 turn.");
+                        target.setIsStunned(true); 
+                    }
                     useMana(suppressiveVolley.getSkillManaCost());
                     regenMana(suppressiveVolley.getSkillManaRegen());
                     suppressiveVolley.triggerSkillCooldown();
@@ -88,21 +102,6 @@ public class Kenneth extends GameCharacter implements _SkillsInterface {
         }
     }
 
-    @Override
-    public void takeDamage(int amount) {
-        if (!isCharacterAlive() || amount <= 0) return;
-
-        if (overwatchReady) {
-            // Nullify this damage and add 30 bonus to next attack
-            nextAttackBonus += 30;
-            overwatchReady = false;
-            System.out.println(getCharacterName() + " avoided damage and stored +30 damage for next attack!");
-            return;
-        }
-
-        // Apply damage normally
-        super.takeDamage(amount);
-    }
 
     @Override
     public Skill getSkill1() {

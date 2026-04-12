@@ -37,6 +37,10 @@ public class Skill {
         return this.skillCurrentCooldown;
     }
 
+    public void setSkillCurrentCooldown(int skillCurrentCooldown) {
+        this.skillCurrentCooldown = skillCurrentCooldown;
+    }
+
     public boolean isSkillAvailable() {
         return this.skillCurrentCooldown == 0;
     }

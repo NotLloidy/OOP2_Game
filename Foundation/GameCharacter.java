@@ -47,6 +47,10 @@ public abstract class GameCharacter {
         return this.characterMaxHealthPoints;
     }
 
+    public void setCharacterCurrentHealthPoints(int characterCurrentHealthPoints) {
+        this.characterCurrentHealthPoints = characterCurrentHealthPoints;
+    }
+
     public int getCharacterCurrentHealthPoints() {
         return this.characterCurrentHealthPoints;
     }
@@ -55,6 +59,10 @@ public abstract class GameCharacter {
         return this.characterMaxMana;
     }
 
+    public void setCharacterCurrentMana(int characterCurrentMana) {
+        this.characterCurrentMana = characterCurrentMana;
+    }   
+    
     public int getCharacterCurrentMana() {
         return this.characterCurrentMana;
     }

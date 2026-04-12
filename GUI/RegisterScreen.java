@@ -9,6 +9,7 @@ public class RegisterScreen extends JPanel {
 
     private Image bgImage;
     private JButton register;
+    private JButton back;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -17,7 +18,7 @@ public class RegisterScreen extends JPanel {
 
         this.setLayout(null);
 
-        ImageIcon icon = new ImageIcon("Assets/accountRegisterScreen.gif");
+        ImageIcon icon = new ImageIcon("Assets/gameRegisterScreenV2.gif");
         bgImage = icon.getImage();
 
         usernameField = new JTextField();
@@ -37,6 +38,10 @@ public class RegisterScreen extends JPanel {
         passwordField.setCaretColor(Color.WHITE);
 
         this.add(passwordField);
+
+        back = createButton();
+        back.addActionListener(e -> gui.showScreen("AccountScreen"));
+        this.add(back);
 
         register = createButton();
 
@@ -94,6 +99,10 @@ public class RegisterScreen extends JPanel {
 
         // Button
         register.setBounds((int)(w * 0.43), (int)(h * 0.64),
+                (int)(w * 0.15), (int)(h * 0.08));
+
+        // Back button
+        back.setBounds((int)(w * 0.44), (int)(h * 0.77),
                 (int)(w * 0.15), (int)(h * 0.08));
     }
 

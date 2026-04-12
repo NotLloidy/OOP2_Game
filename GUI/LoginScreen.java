@@ -9,6 +9,7 @@ public class LoginScreen extends JPanel {
 
     private Image bgImage;
     private JButton enterButton;
+    private JButton back;
 
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -17,7 +18,7 @@ public class LoginScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/accountLogInScreen.gif").getImage();
+        bgImage = new ImageIcon("Assets/gameLoginScreenV2.gif").getImage();
 
         usernameField = new JTextField();
         usernameField.setOpaque(false);
@@ -37,11 +38,11 @@ public class LoginScreen extends JPanel {
 
         this.add(passwordField);
 
+        back = createButton();
+        back.addActionListener(e -> gui.showScreen("AccountScreen"));
+        this.add(back);
+
         enterButton = createButton();
-        enterButton.setOpaque(false);
-        enterButton.setContentAreaFilled(false);
-        enterButton.setBorderPainted(false);
-        enterButton.setFocusPainted(false);
         this.add(enterButton);
 
         enterButton.addActionListener(e -> {
@@ -60,6 +61,8 @@ public class LoginScreen extends JPanel {
                 JOptionPane.showMessageDialog(this, "Invalid username or password!");
             }
         });
+
+        updatePositions();
 
         
         this.addComponentListener(new ComponentAdapter() {
@@ -96,6 +99,10 @@ public class LoginScreen extends JPanel {
 
         // Button
         enterButton.setBounds((int)(w * 0.44), (int)(h * 0.66),
+                (int)(w * 0.15), (int)(h * 0.08));
+        
+        // Back button
+        back.setBounds((int)(w * 0.44), (int)(h * 0.77),
                 (int)(w * 0.15), (int)(h * 0.08));
     }
 

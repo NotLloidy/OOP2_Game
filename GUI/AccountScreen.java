@@ -62,9 +62,10 @@ public class AccountScreen extends JPanel {
         int btnHeight = (int)(h * 0.06);
 
 
-        loginBtn.setBounds((int)(w * 0.39), (int)(h * 0.31), (int)(btnWidth * 1.5), (int)(btnHeight * 1.8));
-        registerBtn.setBounds((int)(w * 0.39), (int)(h * 0.4934), (int)(btnWidth * 1.5), (int)(btnHeight * 1.8));
-        backBtn.setBounds((int)(w * 0.39), (int)(h * 0.6799), (int)(btnWidth * 1.5), (int)(btnHeight * 1.8));
+        loginBtn.setBounds((int)(w * 0.4020), (int)(h * 0.3280), (int)(btnWidth * 1.366), (int)(btnHeight * 1.2));
+        registerBtn.setBounds((int)(w * 0.4020), (int)(h * 0.4489), (int)(btnWidth * 1.366), (int)(btnHeight * 1.2));
+        guestBtn.setBounds((int)(w * 0.4020), (int)(h * 0.5589), (int)(btnWidth * 1.366), (int)(btnHeight * 1.2));
+        backBtn.setBounds((int)(w * 0.4020), (int)(h * 0.6799), (int)(btnWidth * 1.366), (int)(btnHeight * 1.2));
     }
 
     @Override

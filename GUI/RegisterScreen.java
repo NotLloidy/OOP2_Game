@@ -17,7 +17,7 @@ public class RegisterScreen extends JPanel {
 
         // Create full-screen invisible button
         register = createButton();  
-        register.addActionListener(e -> gui.showScreen("AccountScreen"));  // go to main menu
+        register.addActionListener(e -> gui.showScreen("MainMenu"));  // go to main menu
         this.add(register);
     }
 

@@ -1,9 +1,8 @@
 package Characters;
 
-import Foundation.GameCharacter;
-import Foundation.Skill;
+import Foundation.*;
 
-public class BrivanJawmir extends GameCharacter implements _SkillsInterface {
+public class BrivanJawmir extends GameCharacter implements SkillsInterface {
 
     private Skill riftCleaverThrust;
     private Skill crescentReaver;

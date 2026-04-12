@@ -54,7 +54,7 @@ public class BattleSystem extends BattleSystemAbs {
 
     @Override
     public void attack(GameCharacter attacker, GameCharacter defender, int action, boolean isPlayer) {
-        _SkillsInterface charSkills = (_SkillsInterface) attacker;
+        SkillsInterface charSkills = (SkillsInterface) attacker;
 
         if(action == 1) {
             if(defender.getIsBlocking()) {
@@ -129,7 +129,7 @@ public class BattleSystem extends BattleSystemAbs {
 
     @Override
     public void inBattle(GameCharacter player1, GameCharacter ai) {
-        _SkillsInterface charSkills = (_SkillsInterface) player1;
+        SkillsInterface charSkills = (SkillsInterface) player1;
         
 
         while(player1.isCharacterAlive() && ai.isCharacterAlive()) {
@@ -209,7 +209,7 @@ public class BattleSystem extends BattleSystemAbs {
 
     @Override
     public void aiTurn(GameCharacter ai, GameCharacter player) {
-        _SkillsInterface charSkills = (_SkillsInterface) ai;
+        SkillsInterface charSkills = (SkillsInterface) ai;
         
 
         while(ai.isCharacterAlive() && player.isCharacterAlive()) {

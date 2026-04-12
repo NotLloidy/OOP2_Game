@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class Zakkarr extends GameCharacter implements _SkillsInterface {
+public class Zakkarr extends GameCharacter implements SkillsInterface {
 
     private Skill guardiansBlade;
     private Skill shieldOfValor;

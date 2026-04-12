@@ -1,5 +1,6 @@
 package GUI;
 
+import GUI.CharacterSelectScreens.*;
 import javax.swing.*;
 import java.awt.*;
 
@@ -21,6 +22,18 @@ public class GameGUI extends JFrame {
         container.add(new LoginScreen(this), "LoginScreen");
         container.add(new RegisterScreen(this), "RegisterScreen");
         container.add(new MainMenu(this), "MainMenu");
+
+        //Character Select Screens
+        container.add(new SelectAVinScreen(this), "SelectAVinScreen");
+        container.add(new SelectBrivanScreen(this), "SelectBrivanScreen");
+        container.add(new SelectChungMyungScreen(this), "SelectChungScreen");
+        container.add(new SelectKennethScreen(this), "SelectKennethScreen");
+        container.add(new SelectSoleilScreen(this), "SelectSoleilScreen");
+        container.add(new SelectSungJinWooScreen(this), "SelectSungJinWooScreen");
+        container.add(new SelectZakkarrScreen(this), "SelectZakkarScreen");
+        container.add(new SelectKijElScreen(this), "SelectKijElScreen");
+        
+        
 
         this.add(container);           // add container to the single JFrame
         this.setVisible(true);         // only once

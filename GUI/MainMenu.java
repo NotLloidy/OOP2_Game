@@ -20,22 +20,22 @@ public class MainMenu extends JPanel {
 
         pve = createButton();
         pve.setBounds(305, 155, 170, 50);
-        pve.addActionListener(e -> gui.showScreen("AccountScreen"));
+        pve.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
         this.add(pve);
 
         pvp = createButton();
         pvp.setBounds(305, 230, 170, 50);
-        pvp.addActionListener(e -> gui.showScreen("AccountScreen"));
+        pvp.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
         this.add(pvp);
 
         arcade = createButton();
         arcade.setBounds(305, 320, 170, 50);
-        arcade.addActionListener(e -> gui.showScreen("AccountScreen"));
+        arcade.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
         this.add(arcade);
 
         settings = createButton();
         settings.setBounds(305, 400, 170, 50);
-        settings.addActionListener(e -> gui.showScreen("AccountScreen"));
+        settings.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
         this.add(settings);
     }
 

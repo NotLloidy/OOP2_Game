@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class ChungMyung extends GameCharacter implements _SkillsInterface {
+public class ChungMyung extends GameCharacter implements SkillsInterface {
 
     private Skill blossomThrust;
     private Skill plumPetalDance;

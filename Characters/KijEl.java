@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class KijEl extends GameCharacter implements _SkillsInterface {
+public class KijEl extends GameCharacter implements SkillsInterface {
 
     private Skill arcaneBlast;
     private Skill cinderLance;

@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class Kenneth extends GameCharacter implements _SkillsInterface {
+public class Kenneth extends GameCharacter implements SkillsInterface {
 
     private Skill aimedShot;
     private Skill overwatchStance;

@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class SoleilMooncrest extends GameCharacter implements _SkillsInterface {
+public class SoleilMooncrest extends GameCharacter implements SkillsInterface {
 
     private Skill moonStrike;
     private Skill moonlightShine;

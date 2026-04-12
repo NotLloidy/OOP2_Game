@@ -1,9 +1,8 @@
 package Characters;
 
-import Foundation.GameCharacter;
-import Foundation.Skill;
+import Foundation.*;
 
-public class SungJinWoo extends GameCharacter implements _SkillsInterface {
+public class SungJinWoo extends GameCharacter implements SkillsInterface {
     
     private Skill shadowSlash;
     private Skill shadowExtraction;

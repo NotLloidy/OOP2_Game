@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class AVin extends GameCharacter implements _SkillsInterface {
+public class AVin extends GameCharacter implements SkillsInterface {
     private Skill codeJab;
     private Skill codeSurge;
     private Skill overClock;

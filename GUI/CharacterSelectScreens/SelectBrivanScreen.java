@@ -11,6 +11,8 @@ public class SelectBrivanScreen extends JPanel {
 
     private JButton next;
     private JButton prev;
+    private JButton info;
+    private JButton select;
 
     public SelectBrivanScreen(GameGUI gui) {
 
@@ -25,6 +27,15 @@ public class SelectBrivanScreen extends JPanel {
         prev = createButton();
         prev.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
         this.add(prev);
+
+        info = createButton();
+        info.addActionListener(e -> gui.showScreen("BrivanInfoScreen"));
+        this.add(info);
+
+        select = createButton();
+        select.addActionListener(e -> gui.showScreen("BrivanInfoScreen"));
+        this.add(select);
+
 
         updatePositions();
 
@@ -55,6 +66,8 @@ public class SelectBrivanScreen extends JPanel {
 
         next.setBounds((int)(w * 0.90), (int)(h * 0.41), 50, 80);
         prev.setBounds((int)(w * 0.50), (int)(h * 0.41), 50, 80);
+        info.setBounds((int)(w * 0.27), (int)(h * 0.68), 95, 50);
+        select.setBounds((int)(w * 0.11), (int)(h * 0.68), 95, 50);
     }
 
     @Override

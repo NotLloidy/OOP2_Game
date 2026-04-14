@@ -36,9 +36,6 @@ public class SelectChungMyungScreen extends JPanel {
         select.addActionListener(e -> gui.showScreen("ChungInfoScreen"));
         this.add(select);
 
-        updatePositions();
-
-
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -63,10 +60,13 @@ public class SelectChungMyungScreen extends JPanel {
         int w = getWidth();
         int h = getHeight();
 
-        next.setBounds((int)(w * 0.90), (int)(h * 0.41), 50, 80);
-        prev.setBounds((int)(w * 0.50), (int)(h * 0.41), 50, 80);
-        info.setBounds((int)(w * 0.27), (int)(h * 0.68), 95, 50);
-        select.setBounds((int)(w * 0.11), (int)(h * 0.68), 95, 50);
+        int btnWidth = (int)(w * 0.10);
+        int btnHeight = (int)(h * 0.10);
+
+        next.setBounds((int)(w * 0.90), (int)(h * 0.41), (int)(btnWidth * 0.5), (int)(btnHeight * 1.5));
+        prev.setBounds((int)(w * 0.52), (int)(h * 0.41), (int)(btnWidth * 0.5), (int)(btnHeight * 1.5));
+        info.setBounds((int)(w * 0.27), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
+        select.setBounds((int)(w * 0.11), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
     }
 
     @Override

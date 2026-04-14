@@ -26,9 +26,6 @@ public class ZakkarrInfoScreen extends JPanel {
         back.addActionListener(e -> gui.showScreen("SelectZakkarScreen"));
         this.add(back);
 
-        updatePositions();
-
-
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -53,8 +50,11 @@ public class ZakkarrInfoScreen extends JPanel {
         int w = getWidth();
         int h = getHeight();
 
-        play.setBounds((int)(w * 0.80), (int)(h * 0.39), 90, 50);
-        back.setBounds((int)(w * 0.80), (int)(h * 0.52), 90, 50);
+        int btnWidth = (int)(w * 0.10);
+        int btnHeight = (int)(h * 0.10);
+
+        play.setBounds((int)(w * 0.7950), (int)(h * 0.40), (int)(btnWidth * 1.160), (int)(btnHeight * 0.70));
+        back.setBounds((int)(w * 0.7960), (int)(h * 0.53), (int)(btnWidth * 1.160), (int)(btnHeight * 0.70));
     }
 
     @Override

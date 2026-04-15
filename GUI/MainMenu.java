@@ -2,16 +2,18 @@ package GUI;
 
 import javax.swing.*;
 import java.awt.*;
+import GameEngines.GameSession;
+import Foundation.BattleMode;
 
 public class MainMenu extends JPanel {
 
-    private Image bgImage;  // field to store the GIF
+    private Image bgImage;
     private JButton pve;
-    private JButton pvp;   
+    private JButton pvp;
     private JButton arcade;
     private JButton settings;
 
-    public MainMenu (GameGUI gui) {
+    public MainMenu(GameGUI gui) {
 
         this.setLayout(null);
 
@@ -19,19 +21,30 @@ public class MainMenu extends JPanel {
         bgImage = icon.getImage();
 
         pve = createButton();
-        pve.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
+        pve.addActionListener(e -> {
+            GameSession.getInstance().setMode(BattleMode.PVE);
+            gui.showScreen("SelectAVinScreen");
+        });
         this.add(pve);
 
         pvp = createButton();
-        pvp.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
+        pvp.addActionListener(e -> {
+            GameSession.getInstance().setMode(BattleMode.PVP);
+            gui.showScreen("SelectAVinScreen");
+        });
         this.add(pvp);
 
         arcade = createButton();
-        arcade.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
+        arcade.addActionListener(e -> {
+            GameSession.getInstance().setMode(BattleMode.ARCADE);
+            gui.showScreen("SelectAVinScreen");
+        });
         this.add(arcade);
 
         settings = createButton();
-        settings.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
+        settings.addActionListener(e -> {
+            gui.showScreen("SelectAVinScreen"); // keep or replace later
+        });
         this.add(settings);
 
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -56,19 +69,15 @@ public class MainMenu extends JPanel {
         int w = getWidth();
         int h = getHeight();
 
-        // PVE button
         pve.setBounds((int)(w * 0.39), (int)(h * 0.28),
                 (int)(w * 0.22), (int)(h * 0.08));
 
-        // PVP button
         pvp.setBounds((int)(w * 0.39), (int)(h * 0.42),
                 (int)(w * 0.22), (int)(h * 0.08));
 
-        // Arcade button
         arcade.setBounds((int)(w * 0.39), (int)(h * 0.57),
                 (int)(w * 0.22), (int)(h * 0.08));
 
-        // Settings button
         settings.setBounds((int)(w * 0.39), (int)(h * 0.71),
                 (int)(w * 0.22), (int)(h * 0.08));
     }

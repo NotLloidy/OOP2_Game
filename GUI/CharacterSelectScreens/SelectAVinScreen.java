@@ -33,7 +33,21 @@ public class SelectAVinScreen extends JPanel {
         this.add(info);
 
         select = createButton();
-        select.addActionListener(e -> gui.showScreen("AVinInfoScreen"));
+        select.addActionListener(e -> {
+            GameEngines.GameSession session = GameEngines.GameSession.getInstance();
+
+            // LOCK PLAYER 1
+            session.setPlayer1(new Characters.AVin());
+
+            // IMPORTANT: ensure mode is set
+            if (session.getMode() == null) {
+                System.out.println("Mode not set!");
+                return;
+            }
+
+            // GO DIRECTLY TO BATTLE
+            gui.showScreen("PVEBattleScreen");
+        });
         this.add(select);
 
         this.addComponentListener(new ComponentAdapter() {
@@ -52,8 +66,6 @@ public class SelectAVinScreen extends JPanel {
         btn.setFocusPainted(false);
         return btn;
     }
-
-    
 
     private void updatePositions() {
 

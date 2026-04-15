@@ -19,7 +19,17 @@ public class AVinInfoScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_info/infoAVin.png").getImage();
 
         play = createButton();
-        play.addActionListener(e -> gui.showScreen("MainMenu"));
+        play.addActionListener(e -> {
+            GameEngines.GameSession session = GameEngines.GameSession.getInstance();
+
+            if (session.getMode() == null) {
+                System.out.println("Mode not set!");
+                return;
+            }
+
+            // IMPORTANT: go to battle screen
+            gui.showScreen("PVEBattleScreen");
+        });
         this.add(play);
 
         back = createButton();
@@ -43,8 +53,6 @@ public class AVinInfoScreen extends JPanel {
         return btn;
     }
 
-    
-
     private void updatePositions() {
 
         int w = getWidth();
@@ -63,4 +71,3 @@ public class AVinInfoScreen extends JPanel {
         g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
     }
 }
-

@@ -1,6 +1,7 @@
 package GUI;
 
 import GUI.CharacterSelectScreens.*;
+import GUI.BattleScreens.PVE.PVEBattleScreen;
 import GUI.CharacterInfo.*;
 import javax.swing.*;
 import java.awt.*;
@@ -44,12 +45,23 @@ public class GameGUI extends JFrame {
         container.add(new ZakkarrInfoScreen(this), "ZakkarrInfoScreen");
         container.add(new KijElInfoScreen(this), "KijElInfoScreen");
 
+        // Battle Screns
+        container.add(new PVEBattleScreen(this), "PVEBattleScreen");
+
         this.add(container);           // add container to the single JFrame
         this.setVisible(true);         // only once
     }
 
     public void showScreen(String name) {
         cardLayout.show(container, name);
+
+        if (name.equals("PVEBattleScreen")) {
+            for (Component c : container.getComponents()) {
+                if (c instanceof GUI.BattleScreens.PVE.PVEBattleScreen screen) {
+                    screen.initBattle();
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {

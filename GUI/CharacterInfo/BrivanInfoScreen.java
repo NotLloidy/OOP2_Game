@@ -19,7 +19,21 @@ public class BrivanInfoScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_info/infoBrivanJawmir.png").getImage();
 
         play = createButton();
-        play.addActionListener(e -> gui.showScreen("MainMenu"));
+        play.addActionListener(e -> {
+            GameEngines.GameSession session = GameEngines.GameSession.getInstance();
+
+            // LOCK PLAYER 1
+            session.setPlayer1(new Characters.BrivanJawmir());
+
+            // IMPORTANT: ensure mode is set
+            if (session.getMode() == null) {
+                System.out.println("Mode not set!");
+                return;
+            }
+
+            // GO DIRECTLY TO BATTLE
+            gui.showScreen("PVEBattleScreen");
+        });
         this.add(play);
 
         back = createButton();

@@ -33,7 +33,21 @@ public class SelectKijElScreen extends JPanel {
         this.add(info);
 
         select = createButton();
-        select.addActionListener(e -> gui.showScreen("KijElInfoScreen"));
+        select.addActionListener(e -> {
+            GameEngines.GameSession session = GameEngines.GameSession.getInstance();
+
+            // LOCK PLAYER 1
+            session.setPlayer1(new Characters.KijEl());
+
+            // IMPORTANT: ensure mode is set
+            if (session.getMode() == null) {
+                System.out.println("Mode not set!");
+                return;
+            }
+
+            // GO DIRECTLY TO BATTLE
+            gui.showScreen("PVEBattleScreen");
+        });
         this.add(select);
 
         this.addComponentListener(new ComponentAdapter() {

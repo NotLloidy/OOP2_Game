@@ -22,12 +22,16 @@ public class AVinInfoScreen extends JPanel {
         play.addActionListener(e -> {
             GameEngines.GameSession session = GameEngines.GameSession.getInstance();
 
+            // LOCK PLAYER 1
+            session.setPlayer1(new Characters.AVin());
+
+            // IMPORTANT: ensure mode is set
             if (session.getMode() == null) {
                 System.out.println("Mode not set!");
                 return;
             }
 
-            // IMPORTANT: go to battle screen
+            // GO DIRECTLY TO BATTLE
             gui.showScreen("PVEBattleScreen");
         });
         this.add(play);

@@ -1,16 +1,15 @@
 package GUI.BattleScreens.PVE;
 
-import GUI.GameGUI;
-import GameEngines.*;
 import Foundation.*;
+import GameEngines.*;
 
 import javax.swing.*;
-import java.awt.event.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class PVEBattleScreen extends JPanel {
 
-    private Image bgImage;
+    private final Image bgImage;
     private Image playerSprite;
     private Image enemySprite;
 
@@ -21,8 +20,8 @@ public class PVEBattleScreen extends JPanel {
     private GameCharacter player;
     private GameCharacter enemy;
 
-    private BattleSystem system;
-    private GameSession session;
+    private final BattleSystem system;
+    private final GameSession session;
     private ActionState state = ActionState.MAIN;
 
     private int playerWins = 0;
@@ -31,7 +30,7 @@ public class PVEBattleScreen extends JPanel {
 
     private boolean initialized = false;
 
-    public PVEBattleScreen(GameGUI gui) {
+    public PVEBattleScreen() {
 
         setLayout(null);
 
@@ -40,7 +39,7 @@ public class PVEBattleScreen extends JPanel {
 
         bgImage = new ImageIcon("Assets/battleArenaScreen.gif").getImage();
 
-        createUI(gui);
+        createUI();
         setLayoutListeners();
     }
 
@@ -85,7 +84,7 @@ public class PVEBattleScreen extends JPanel {
     // =========================
     // UI SETUP
     // =========================
-    private void createUI(GameGUI gui) {
+    private void createUI() {
         btnFight = new JButton("FIGHT");
         btnDefend = new JButton("DEFEND");
         btnCheck = new JButton("CHECK");
@@ -248,11 +247,7 @@ public class PVEBattleScreen extends JPanel {
                 btnCheck.setEnabled(true);
                 btnBack.setEnabled(true);
 
-                if (defendDisabled) {
-                    btnDefend.setEnabled(false);
-                } else {
-                    btnDefend.setEnabled(true);
-                }
+                btnDefend.setEnabled(!defendDisabled);
 
                 btnFight.addActionListener(e -> switchState(ActionState.FIGHT));
                 btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
@@ -285,11 +280,7 @@ public class PVEBattleScreen extends JPanel {
                 btnCheck.setText("BACK");
 
                 // Enable / disable block based on charges OR flag
-                if (player.getRemainingBlocks() <= 0 || defendDisabled) {
-                    btnDefend.setEnabled(false);
-                } else {
-                    btnDefend.setEnabled(true);
-                }
+                btnDefend.setEnabled(player.getRemainingBlocks() > 0 && !defendDisabled);
 
                 btnCheck.setEnabled(true);
 

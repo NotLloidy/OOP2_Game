@@ -1,6 +1,7 @@
 package GUI.BattleScreens.ARCADE;
 
 import Foundation.*;
+import GUI.BattleScreens.VersusScreen;
 import GameEngines.*;
 
 import javax.swing.*;
@@ -69,6 +70,10 @@ public class ArcadeBattleScreen extends JPanel {
     private boolean initialized = false;
     private boolean arcadeOver  = false;
 
+    private VersusScreen versusScreen;
+    private CardLayout cardLayout;
+    private JPanel container;
+
     public ArcadeBattleScreen() {
         setLayout(null);
         session = GameSession.getInstance();
@@ -76,6 +81,13 @@ public class ArcadeBattleScreen extends JPanel {
         bgImage = new ImageIcon(BG_IMAGE_PATH).getImage();
         createUI();
         setLayoutListeners();
+    }
+
+    // Add a setter (call from GameGUI after construction):
+    public void setVersusScreen(VersusScreen vs, CardLayout cl, JPanel cont) {
+        this.versusScreen = vs;
+        this.cardLayout   = cl;
+        this.container    = cont;
     }
 
     // =========================
@@ -264,25 +276,29 @@ public class ArcadeBattleScreen extends JPanel {
 
         if (playerWins == 2) {
             // Won this fight
-            log("You defeated " + enemy.getCharacterName() + "!");
-            currentOpponentIndex++;
+            if (playerWins == 2) {
+                log("You defeated " + enemy.getCharacterName() + "!");
+                currentOpponentIndex++;
+                if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
+                disableButtons();
 
-            if (currentOpponentIndex >= opponentOrder.size()) {
-                arcadeClear();
-                return;
-            }
-
-            // Brief pause then load next
-            Timer t = new Timer(1800, e -> {
-                // Restore player HP/MP between fights
+                // Load next opponent name for VS screen, then animate
+                GameCharacter nextEnemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
                 player.setCharacterCurrentHealthPoints(player.getCharacterMaxHealthPoints());
                 player.setCharacterCurrentMana(player.getCharacterMaxMana());
-                loadNextOpponent();
-            });
-            t.setRepeats(false);
-            t.start();
-            disableButtons();
-            return;
+
+                if (versusScreen != null && cardLayout != null) {
+                    cardLayout.show(container, "VersusScreen");
+                    versusScreen.show(player.getCharacterName(), nextEnemy.getCharacterName(), () -> {
+                        cardLayout.show(container, "ArcadeBattleScreen");
+                        loadNextOpponent();
+                    });
+                } else {
+                    Timer t = new Timer(1800, e -> loadNextOpponent());
+                    t.setRepeats(false); t.start();
+                }
+                return;
+            }
         }
 
         if (enemyWins == 2) {
@@ -437,6 +453,21 @@ public class ArcadeBattleScreen extends JPanel {
             g.drawString("Opp. " + (currentOpponentIndex + 1) + "/" + opponentOrder.size(),
                     (int)(getWidth() * 0.64), (int)(getHeight() * 0.08));
         }
+    }
+
+    public void reset() {
+        initialized          = false;
+        arcadeOver           = false;
+        currentOpponentIndex = 0;
+        playerWins           = 0;
+        enemyWins            = 0;
+        round                = 1;
+        defendDisabled       = false;
+        state                = ActionState.MAIN;
+        opponentOrder.clear();
+        dialogue.setText("");
+        statusLabel.setText("ARCADE MODE");
+        repaint();
     }
 
     // =========================

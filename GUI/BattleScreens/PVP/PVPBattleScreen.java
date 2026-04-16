@@ -503,6 +503,28 @@ public class PVPBattleScreen extends JPanel {
                 (int)(getWidth() * 0.40), (int)(getHeight() * 0.62));
     }
 
+    public void reset() {
+        initialized      = false;
+        player1          = null;
+        player2          = null;
+        p1Wins           = 0;
+        p2Wins           = 0;
+        round            = 1;
+        p1DefendDisabled = false;
+        p2DefendDisabled = false;
+        p1TurnDone       = false;
+        p2TurnDone       = false;
+        awaitingP2       = false;
+        matchOver        = false;
+        p1State          = ActionState.MAIN;
+        p2State          = ActionState.MAIN;
+        dialogue.setText("");
+        turnLabel.setText("PLAYER 1's turn");
+        updateP1Buttons();
+        updateP2Buttons();
+        repaint();
+    }
+
     // =========================
     // HELPERS
     // =========================

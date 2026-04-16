@@ -47,30 +47,15 @@ public class PVEBattleScreen extends JPanel {
     // INITIALIZE BATTLE (CALL ON SCREEN SHOW)
     // =========================
     public void initBattle() {
-
         if (initialized) return;
-
         player = session.getPlayer1();
+        enemy  = session.getPlayer2();   // already set by GameGUI
 
-        if (player == null) {
-            System.out.println("Player not selected!");
-            return;
-        }
-
-        // Create AI
-        enemy = system.selectCharacter((int)(Math.random() * 8) + 1);
-
-        while (enemy.getCharacterName().equals(player.getCharacterName())) {
-            enemy = system.selectCharacter((int)(Math.random() * 8) + 1);
-        }
-
-        session.setPlayer2(enemy);
+        if (player == null || enemy == null) { dialogue.setText("Not initialized!"); return; }
 
         playerSprite = loadSprite(player.getCharacterName());
-        enemySprite = loadSprite(enemy.getCharacterName());
-
+        enemySprite  = loadSprite(enemy.getCharacterName());
         dialogue.setText("Battle Started!");
-
         initialized = true;
     }
 
@@ -177,6 +162,20 @@ public class PVEBattleScreen extends JPanel {
         dialogue.setText("Round " + round + " starting...");
     }
 
+    public void reset() {
+        initialized   = false;
+        player        = null;
+        enemy         = null;
+        playerWins    = 0;
+        enemyWins     = 0;
+        round         = 1;
+        defendDisabled = false;
+        state         = ActionState.MAIN;
+        dialogue.setText("");
+        updateButtons();
+        repaint();
+    }
+
     private void endRound(String message) {
         log(message);
 
@@ -245,7 +244,7 @@ public class PVEBattleScreen extends JPanel {
                 btnFight.setEnabled(true);
                 btnDefend.setEnabled(true);
                 btnCheck.setEnabled(true);
-                btnBack.setEnabled(true);
+                btnBack.setEnabled(false);
 
                 btnDefend.setEnabled(!defendDisabled);
 
@@ -264,6 +263,7 @@ public class PVEBattleScreen extends JPanel {
                 btnDefend.setEnabled(true);
                 btnCheck.setEnabled(true);
                 btnBack.setEnabled(true);
+                btnBack.setEnabled(false);
 
                 btnFight.addActionListener(e -> playerTurn(1));
                 btnDefend.addActionListener(e -> playerTurn(2));
@@ -306,6 +306,7 @@ public class PVEBattleScreen extends JPanel {
             }
 
             case CHECK -> {
+                btnBack.setEnabled(true);
                 SkillsInterface skills = (SkillsInterface) player;
 
                 dialogue.setText(skills.getSkill1().getSkillName() + "\nDMG: " + skills.getSkill1().getSkillDamage() + " | Mana: " + skills.getSkill1().getSkillManaCost()

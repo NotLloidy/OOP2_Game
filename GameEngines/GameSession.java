@@ -11,6 +11,11 @@ public class GameSession {
     private GameCharacter player1;
     private GameCharacter player2;
 
+    private int selectingPlayer = 1;  // 1 = P1 picking, 2 = P2 picking
+
+    public int getSelectingPlayer() { return selectingPlayer; }
+    public void setSelectingPlayer(int p) { selectingPlayer = p; }
+
     // PRIVATE CONSTRUCTOR (Singleton)
     private GameSession() {}
 
@@ -56,11 +61,12 @@ public class GameSession {
     }
 
     // =========================
-    // RESET SESSION (IMPORTANT)
+    // RESET SESSION
     // =========================
     public void reset() {
         player1 = null;
         player2 = null;
         mode = null;
+        selectingPlayer = 1;   // <-- reset selecting turn too
     }
 }

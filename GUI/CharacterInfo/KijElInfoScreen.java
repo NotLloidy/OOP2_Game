@@ -1,7 +1,15 @@
 package GUI.CharacterInfo;
 
 import GUI.GameGUI;
+import GameEngines.GameSession;
+
 import javax.swing.*;
+
+import Characters.AVin;
+import Characters.Kenneth;
+import Characters.KijEl;
+import Foundation.BattleMode;
+
 import java.awt.*;
 import java.awt.event.*;
 
@@ -20,19 +28,52 @@ public class KijElInfoScreen extends JPanel {
 
         play = createButton();
         play.addActionListener(e -> {
-            GameEngines.GameSession session = GameEngines.GameSession.getInstance();
 
-            // LOCK PLAYER 1
-            session.setPlayer1(new Characters.KijEl());
+            GameSession session = GameSession.getInstance();
 
-            // IMPORTANT: ensure mode is set
             if (session.getMode() == null) {
                 System.out.println("Mode not set!");
                 return;
             }
 
-            // GO DIRECTLY TO BATTLE
-            gui.showScreen("PVEBattleScreen");
+            BattleMode mode    = session.getMode();
+            int        picking = session.getSelectingPlayer();
+
+            if (mode == BattleMode.PVP) {
+
+                if (picking == 1) {
+                    // P1 picks KijEl
+                    session.setPlayer1(new KijEl());
+                    session.setSelectingPlayer(2);
+                    gui.showScreen("SelectKijElScreen");   // send P2 to character select
+
+                } else {
+                    // P2 picks KijEl — check not same as P1
+                    if (session.getPlayer1().getCharacterName().equals(new KijEl().getCharacterName())) {
+                        JOptionPane.showMessageDialog(
+                                KijElInfoScreen.this,
+                                "Player 2 cannot pick the same character as Player 1!",
+                                "Invalid Selection",
+                                JOptionPane.WARNING_MESSAGE
+                        );
+                        return;
+                    }
+                    session.setPlayer2(new KijEl());
+                    session.setSelectingPlayer(1);        // reset for next match
+                    gui.showScreen("PVPBattleScreen");
+                }
+
+            } else {
+                // PVE or ARCADE — only P1 picks
+                session.setPlayer1(new KijEl());
+                session.setSelectingPlayer(1);
+
+                if (mode == BattleMode.PVE) {
+                    gui.showScreen("PVEBattleScreen");
+                } else {
+                    gui.showScreen("ArcadeBattleScreen");
+                }
+            }
         });
         this.add(play);
 

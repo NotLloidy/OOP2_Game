@@ -74,6 +74,8 @@ public class ArcadeBattleScreen extends JPanel {
     private CardLayout cardLayout;
     private JPanel container;
 
+    private GUI.GameGUI gameGUI;
+
     public ArcadeBattleScreen() {
         setLayout(null);
         session = GameSession.getInstance();
@@ -82,6 +84,10 @@ public class ArcadeBattleScreen extends JPanel {
         createUI();
         setLayoutListeners();
     }
+
+    public void setGameGUI(GUI.GameGUI gui) {
+    this.gameGUI = gui;
+}
 
     // Add a setter (call from GameGUI after construction):
     public void setVersusScreen(VersusScreen vs, CardLayout cl, JPanel cont) {
@@ -311,16 +317,38 @@ public class ArcadeBattleScreen extends JPanel {
 
     private void arcadeClear() {
         arcadeOver = true;
-        dialogue.setText("★  ARCADE CLEAR  ★\nYou defeated all opponents!");
-        statusLabel.setText("ARCADE CLEAR");
-        disableButtons();
+    dialogue.setText("ARCADE CLEAR! You defeated all opponents!");
+    statusLabel.setText("ARCADE CLEAR");
+    disableButtons();
+
+    if (gameGUI != null) {
+        Timer delay = new Timer(900, e ->
+                gameGUI.showGameOver(
+                        player.getCharacterName(),
+                        "",
+                        true,
+                        "MainMenu"));
+        delay.setRepeats(false);
+        delay.start();
+    }
     }
 
     private void gameOver() {
         arcadeOver = true;
-        dialogue.setText("GAME OVER\nDefeated by " + (enemy != null ? enemy.getCharacterName() : "the enemy") + ".");
-        statusLabel.setText("GAME OVER");
-        disableButtons();
+    dialogue.setText("GAME OVER");
+    statusLabel.setText("GAME OVER");
+    disableButtons();
+
+    if (gameGUI != null) {
+        Timer delay = new Timer(900, e ->
+                gameGUI.showGameOver(
+                        enemy.getCharacterName(),
+                        player.getCharacterName(),
+                        false,
+                        "MainMenu"));
+        delay.setRepeats(false);
+        delay.start();
+    }
     }
 
     private void enableButtons() {
@@ -337,7 +365,7 @@ public class ArcadeBattleScreen extends JPanel {
         btnBack.setEnabled(false);
     }
 
-    // =========================
+    // =================a========
     // LAYOUT
     // =========================
     private void setLayoutListeners() {

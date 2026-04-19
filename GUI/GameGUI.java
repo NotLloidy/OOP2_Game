@@ -98,6 +98,7 @@ public class GameGUI extends JFrame {
         ArcadeBattleScreen arcadeScreen = new ArcadeBattleScreen();
         container.add(arcadeScreen, "ArcadeBattleScreen");
         arcadeScreen.setVersusScreen(versusScreen, cardLayout, container);
+        arcadeScreen.setGameGUI(this);
              
 
         this.setVisible(true);

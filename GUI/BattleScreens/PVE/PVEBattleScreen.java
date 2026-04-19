@@ -1,6 +1,7 @@
 package GUI.BattleScreens.PVE;
 
 import Foundation.*;
+import GUI.GameGUI;
 import GameEngines.*;
 
 import javax.swing.*;
@@ -29,6 +30,7 @@ public class PVEBattleScreen extends JPanel {
     private int round = 1;
 
     private boolean initialized = false;
+    private GameGUI gameGUI;
 
     public PVEBattleScreen() {
 
@@ -104,6 +106,10 @@ public class PVEBattleScreen extends JPanel {
         dialogue.append("\n" + text);
     }
 
+    public void setGameGUI(GameGUI gui) {
+    this.gameGUI = gui;
+}
+
     // =========================
     // PLAYER TURN
     // =========================
@@ -177,22 +183,38 @@ public class PVEBattleScreen extends JPanel {
     }
 
     private void endRound(String message) {
-        log(message);
+    log(message);
 
-        if (playerWins == 2) {
-            log("YOU WON THE MATCH!");
-            disableButtons();
-            return;
-        }
-
-        if (enemyWins == 2) {
-            log("YOU LOST THE MATCH!");
-            disableButtons();
-            return;
-        }
-
-        resetRound();
+    if (playerWins == 2) {
+        log("YOU WON THE MATCH!");
+        disableButtons();
+        Timer delay = new Timer(900, e ->
+                gameGUI.showGameOver(
+                        player.getCharacterName(),
+                        enemy.getCharacterName(),
+                        true,
+                        "MainMenu"));
+        delay.setRepeats(false);
+        delay.start();
+        return;
     }
+
+    if (enemyWins == 2) {
+        log("YOU LOST THE MATCH!");
+        disableButtons();
+        Timer delay = new Timer(900, e ->
+            gameGUI.showGameOver(
+                    enemy.getCharacterName(),   // winner = enemy
+                    player.getCharacterName(),  // loser  = player
+                    false,
+                    "MainMenu"));
+        delay.setRepeats(false);
+        delay.start();
+        return;
+    }
+
+    resetRound();
+}
 
     private void disableButtons() {
         btnFight.setEnabled(false);

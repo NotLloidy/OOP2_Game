@@ -3,6 +3,7 @@ package GUI;
 import GUI.BattleScreens.ARCADE.ArcadeBattleScreen;
 import GUI.BattleScreens.PVP.PVPBattleScreen;
 import GUI.BattleScreens.VersusScreen;
+import GUI.BattleScreens.GameOverScreen;          //  NEW
 import GUI.CharacterSelectScreens.*;
 import GUI.BattleScreens.PVE.PVEBattleScreen;
 import GUI.CharacterInfo.*;
@@ -15,9 +16,10 @@ import java.awt.*;
 
 public class GameGUI extends JFrame {
 
-    private final CardLayout cardLayout;
-    private final JPanel     container;
-    private final VersusScreen versusScreen;
+    private final CardLayout    cardLayout;
+    private final JPanel        container;
+    private final VersusScreen  versusScreen;
+    private final GameOverScreen gameOverScreen; //  NEW
 
     // Floating banner shown during character select
     private final JLabel selectionBanner = new JLabel("", SwingConstants.CENTER);
@@ -37,14 +39,13 @@ public class GameGUI extends JFrame {
         cardLayout = new CardLayout();
         container  = new JPanel(cardLayout);
 
-        // ── Layered pane so banner floats on top of all screens ───────────────
+        // ── Layered pane so banner floats on top ──────────────────────────────
         JLayeredPane layered = new JLayeredPane();
         container.setBounds(0, 0, 800, 600);
         layered.add(container,       JLayeredPane.DEFAULT_LAYER);
         layered.add(selectionBanner, JLayeredPane.PALETTE_LAYER);
-        this.setContentPane(layered);   // replace default content pane
+        this.setContentPane(layered);
 
-        // Resize both layers whenever the window resizes
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
@@ -86,12 +87,18 @@ public class GameGUI extends JFrame {
         versusScreen = new VersusScreen();
         container.add(versusScreen, "VersusScreen");
 
-        container.add(new PVEBattleScreen(), "PVEBattleScreen");
+        gameOverScreen = new GameOverScreen();              //  NEW
+        container.add(gameOverScreen, "GameOverScreen");   //  NEW
+
+        PVEBattleScreen pveScreen = new PVEBattleScreen();
+        container.add(pveScreen, "PVEBattleScreen");
+        pveScreen.setGameGUI(this);
         container.add(new PVPBattleScreen(), "PVPBattleScreen");
 
         ArcadeBattleScreen arcadeScreen = new ArcadeBattleScreen();
         container.add(arcadeScreen, "ArcadeBattleScreen");
         arcadeScreen.setVersusScreen(versusScreen, cardLayout, container);
+             
 
         this.setVisible(true);
     }
@@ -105,7 +112,7 @@ public class GameGUI extends JFrame {
 
         switch (name) {
 
-            // ── PVE: pick AI opponent, show VS screen, then start battle ─────
+            // ── PVE ──────────────────────────────────────────────────────────
             case "PVEBattleScreen" -> {
                 GameSession   session = GameSession.getInstance();
                 GameCharacter p1      = session.getPlayer1();
@@ -124,7 +131,7 @@ public class GameGUI extends JFrame {
                 });
             }
 
-            // ── PVP: both players already chosen, show VS screen ─────────────
+            // ── PVP ──────────────────────────────────────────────────────────
             case "PVPBattleScreen" -> {
                 GameSession session = GameSession.getInstance();
                 cardLayout.show(container, "VersusScreen");
@@ -139,16 +146,33 @@ public class GameGUI extends JFrame {
                 );
             }
 
-            // ── ARCADE: VS screen handled per-opponent inside ArcadeBattleScreen
+            // ── ARCADE ───────────────────────────────────────────────────────
             case "ArcadeBattleScreen" -> {
                 cardLayout.show(container, "ArcadeBattleScreen");
                 for (Component c : container.getComponents())
                     if (c instanceof ArcadeBattleScreen s) { s.reset(); s.initBattle(); }
             }
 
-            // ── All other screens (menus, character select, info screens) ─────
             default -> cardLayout.show(container, name);
         }
+    }
+
+    // =========================================================================
+    // GAME OVER   NEW
+    // =========================================================================
+    /**
+     * Show the Game Over screen then navigate to a follow-up screen.
+     *
+     * @param winnerName   character name of the winner (sprite loaded from Assets/characters_idle/)
+     * @param loserName    character name of the loser (shown in sub-text)
+     * @param playerWon    true  → "YOU WIN!" yellow  |  false → "YOU LOSE" red
+     * @param nextScreen   screen key to show after the animation finishes (e.g. "MainMenu")
+     */
+    public void showGameOver(String winnerName, String loserName,
+                             boolean playerWon, String nextScreen) {
+        cardLayout.show(container, "GameOverScreen");
+        gameOverScreen.show(winnerName, loserName, playerWon, () ->
+                showScreen(nextScreen));
     }
 
     // =========================================================================

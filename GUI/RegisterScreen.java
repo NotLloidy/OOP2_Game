@@ -50,6 +50,13 @@ public class RegisterScreen extends JPanel {
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword()).trim();
 
+            if (username.length() < 3 || username.length() > 20 ||
+                password.length() < 3 || password.length() > 20) {
+
+                JOptionPane.showMessageDialog(this, "Username and password must be 3 to 20 characters!");
+                 return;
+            }
+
             if (username.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Fill all fields!");
                 return;

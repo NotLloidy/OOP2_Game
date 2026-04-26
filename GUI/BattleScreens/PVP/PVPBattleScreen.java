@@ -7,7 +7,6 @@ import GUI.GameGUI;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 
 public class PVPBattleScreen extends BaseBattleScreen {
 
@@ -18,8 +17,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private Image p1Sprite;
     private Image p2Sprite;
 
-    private JButton p1BtnFight, p1BtnDefend, p1BtnCheck, p1BtnBack;
-    private JButton p2BtnFight, p2BtnDefend, p2BtnCheck, p2BtnBack;
+    // ── Single shared button set (same as PVE) ────────────────────────────
+    private JButton btnFight, btnDefend, btnCheck, btnBack;
 
     private JTextArea dialogue;
     private JLabel    turnLabel;
@@ -33,12 +32,10 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private final BattleSystem system;
     private final GameSession  session;
 
-    private ActionState p1State = ActionState.MAIN;
-    private ActionState p2State = ActionState.MAIN;
+    // Whose turn it is — 1 = P1, 2 = P2
+    private int currentTurn = 1;
 
-    private boolean p1TurnDone = false;
-    private boolean p2TurnDone = false;
-    private boolean awaitingP2 = false;
+    private ActionState state = ActionState.MAIN;
 
     private int p1Wins = 0;
     private int p2Wins = 0;
@@ -57,8 +54,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
-                updateP1Buttons();
-                updateP2Buttons();
+                updateButtons();
                 layoutUI();
             }
         });
@@ -82,42 +78,35 @@ public class PVPBattleScreen extends BaseBattleScreen {
         p1Sprite = new ImageIcon(IDLE_LEFT_DIR  + player1.getSpriteKey() + IDLE_L_SFX).getImage();
         p2Sprite = new ImageIcon(IDLE_RIGHT_DIR + player2.getSpriteKey() + IDLE_R_SFX).getImage();
 
+        currentTurn = 1;
         dialogue.setText("Round 1 — P1: " + player1.getCharacterName()
                        + "  vs  P2: " + player2.getCharacterName());
         turnLabel.setText("PLAYER 1's turn");
 
-        lockP2Buttons(true);
-        lockP1Buttons(false);
-
         initialized = true;
+        updateButtons();
         repaint();
     }
 
     // ── UI construction ───────────────────────────────────────────────────
 
     private void createUI() {
-        p1BtnFight  = makeButton("FIGHT",  BTN_FIGHT_PATH);
-        p1BtnDefend = makeButton("DEFEND", BTN_DEFEND_PATH);
-        p1BtnCheck  = makeButton("CHECK",  BTN_CHECK_PATH);
-        p1BtnBack   = makeButton("BACK",   BTN_BACK_PATH);
-        p1BtnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
+        btnFight  = makeButton("FIGHT",  BTN_FIGHT_PATH);
+        btnDefend = makeButton("DEFEND", BTN_DEFEND_PATH);
+        btnCheck  = makeButton("CHECK",  BTN_CHECK_PATH);
+        btnBack   = makeButton("BACK",   BTN_BACK_PATH);
+        btnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
 
-        p2BtnFight  = makeButton("FIGHT",  BTN_FIGHT_PATH);
-        p2BtnDefend = makeButton("DEFEND", BTN_DEFEND_PATH);
-        p2BtnCheck  = makeButton("CHECK",  BTN_CHECK_PATH);
-        p2BtnBack   = makeButton("BACK",   BTN_BACK_PATH);
-        p2BtnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
-
-        add(p1BtnFight); add(p1BtnDefend); add(p1BtnCheck); add(p1BtnBack);
-        add(p2BtnFight); add(p2BtnDefend); add(p2BtnCheck); add(p2BtnBack);
+        add(btnFight); add(btnDefend); add(btnCheck); add(btnBack);
 
         dialogue = new JTextArea();
         dialogue.setEditable(false);
         dialogue.setLineWrap(true);
         dialogue.setWrapStyleWord(true);
         dialogue.setOpaque(false);
+        dialogue.setBackground(Color.BLACK);
         dialogue.setForeground(Color.WHITE);
-        dialogue.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        dialogue.setFont(new Font("SansSerif", Font.PLAIN, 13));
         add(dialogue);
 
         turnLabel = new JLabel("PLAYER 1's turn", SwingConstants.CENTER);
@@ -133,8 +122,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         enemyAnimLabel.setVisible(false);
         add(enemyAnimLabel);
 
-        updateP1Buttons();
-        updateP2Buttons();
+        updateButtons();
     }
 
     // ── Layout ────────────────────────────────────────────────────────────
@@ -154,73 +142,57 @@ public class PVPBattleScreen extends BaseBattleScreen {
         turnLabel.setBounds((int)(w * 0.30), (int)(h * 0.62), (int)(w * 0.40), 30);
         dialogue .setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));
 
-        int p1Row1 = (int)(h * 0.80);
-        int p1Row2 = (int)(h * 0.88);
-        sizeToIcon(p1BtnFight,  (int)(w * 0.05), p1Row1);
-        sizeToIcon(p1BtnDefend, (int)(w * 0.20), p1Row1);
-        sizeToIcon(p1BtnCheck,  (int)(w * 0.05), p1Row2);
-        sizeToIcon(p1BtnBack,   (int)(w * 0.20), p1Row2);
-
-        sizeToIcon(p2BtnFight,  (int)(w * 0.62), p1Row1);
-        sizeToIcon(p2BtnDefend, (int)(w * 0.77), p1Row1);
-        sizeToIcon(p2BtnCheck,  (int)(w * 0.62), p1Row2);
-        sizeToIcon(p2BtnBack,   (int)(w * 0.77), p1Row2);
+        // Shared buttons — same positions as PVE
+        int btnY = (int)(h * 0.83);
+        sizeToIcon(btnFight,  (int)(w * 0.10), btnY);
+        sizeToIcon(btnDefend, (int)(w * 0.30), btnY);
+        sizeToIcon(btnCheck,  (int)(w * 0.55), btnY);
+        sizeToIcon(btnBack,   (int)(w * 0.76), btnY);
     }
+
+    // ── Helpers: active player / defend flag ──────────────────────────────
+
+    private GameCharacter attacker() { return currentTurn == 1 ? player1 : player2; }
+    private GameCharacter defender() { return currentTurn == 1 ? player2 : player1; }
+    private boolean defendDisabled() { return currentTurn == 1 ? p1DefendDisabled : p2DefendDisabled; }
 
     // ── Turn execution ────────────────────────────────────────────────────
 
-    private void p1Turn(int action) {
-        if (matchOver || player1 == null) return;
+    private void doTurn(int action) {
+        if (matchOver || attacker() == null) return;
 
-        if (action >= 1 && action <= 3) showPlayerSkillAnim(player1.getSpriteKey(), action);
+        GameCharacter atk = attacker();
+        GameCharacter def = defender();
+        boolean isP1      = currentTurn == 1;
 
-        String result = system.performAction(player1, player2, action, true);
-        log("[P1] " + result);
+        if (action >= 1 && action <= 3) {
+            if (isP1) showPlayerSkillAnim(atk.getSpriteKey(), action);
+            else      showEnemySkillAnim(atk.getSpriteKey(), action);
+        }
 
-        player1.getSkill1().reduceSkillCooldown();
-        player1.getSkill2().reduceSkillCooldown();
-        player1.getSkill3().reduceSkillCooldown();
+        String result = system.performAction(atk, def, action, isP1);
+        dialogue.setText((isP1 ? "[P1] " : "[P2] ") + result);
+
+        atk.getSkill1().reduceSkillCooldown();
+        atk.getSkill2().reduceSkillCooldown();
+        atk.getSkill3().reduceSkillCooldown();
         repaint();
 
-        if (!player2.isCharacterAlive()) {
-            p1Wins++;
-            endRound("P1 wins round " + round + "!");
+        // Check if defender just died
+        if (!def.isCharacterAlive()) {
+            if (isP1) p1Wins++; else p2Wins++;
+            endRound((isP1 ? "P1" : "P2") + " wins round " + round + "!");
             return;
         }
 
-        p1TurnDone = true; awaitingP2 = true;
-        lockP1Buttons(true); lockP2Buttons(false);
-        turnLabel.setText("PLAYER 2's turn");
-        if (action != 4) p1State = ActionState.MAIN;
-        p2State = ActionState.MAIN;
-        updateP2Buttons();
-    }
-
-    private void p2Turn(int action) {
-        if (matchOver || player2 == null) return;
-
-        if (action >= 1 && action <= 3) showEnemySkillAnim(player2.getSpriteKey(), action);
-
-        String result = system.performAction(player2, player1, action, false);
-        log("[P2] " + result);
-
-        player2.getSkill1().reduceSkillCooldown();
-        player2.getSkill2().reduceSkillCooldown();
-        player2.getSkill3().reduceSkillCooldown();
-        repaint();
-
-        if (!player1.isCharacterAlive()) {
-            p2Wins++;
-            endRound("P2 wins round " + round + "!");
-            return;
-        }
-
-        p1TurnDone = false; p2TurnDone = false; awaitingP2 = false;
-        lockP2Buttons(true); lockP1Buttons(false);
-        turnLabel.setText("PLAYER 1's turn");
-        if (action != 4) p2State = ActionState.MAIN;
-        p1State = ActionState.MAIN;
-        updateP1Buttons();
+        // Hand off to other player — only non-block actions switch state to MAIN
+        if (action != 4) state = ActionState.MAIN;
+        currentTurn = isP1 ? 2 : 1;
+        turnLabel.setText("PLAYER " + currentTurn + "'s turn");
+        turnLabel.setForeground(currentTurn == 1
+                ? new Color(80, 180, 255)
+                : new Color(255, 100, 100));
+        updateButtons();
     }
 
     // ── Round / match management ──────────────────────────────────────────
@@ -228,12 +200,9 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private void resetRound() {
         round++;
 
-        // resetForNewRound() restores HP, mana, isCharacterAlive, blocks,
-        // and status flags — fixes the "instant death in round 2" bug
         player1.resetForNewRound();
         player2.resetForNewRound();
 
-        // Reset skill cooldowns
         player1.getSkill1().resetCooldown();
         player1.getSkill2().resetCooldown();
         player1.getSkill3().resetCooldown();
@@ -241,13 +210,15 @@ public class PVPBattleScreen extends BaseBattleScreen {
         player2.getSkill2().resetCooldown();
         player2.getSkill3().resetCooldown();
 
-        p1DefendDisabled = false; p2DefendDisabled = false;
-        p1TurnDone = false; p2TurnDone = false; awaitingP2 = false;
-        p1State = ActionState.MAIN; p2State = ActionState.MAIN;
-        lockP1Buttons(false); lockP2Buttons(true);
+        p1DefendDisabled = false;
+        p2DefendDisabled = false;
+        currentTurn = 1;
+        state = ActionState.MAIN;
+
         turnLabel.setText("PLAYER 1's turn — Round " + round);
+        turnLabel.setForeground(new Color(80, 180, 255));
         log("-- Round " + round + " --");
-        updateP1Buttons(); updateP2Buttons();
+        updateButtons();
     }
 
     private void endRound(String message) {
@@ -265,7 +236,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         log(winner + " wins the match!");
         turnLabel.setText(winner + " wins!");
-        disableAll();
+        turnLabel.setForeground(new Color(255, 220, 30));
+        disableButtons();
 
         if (gameGUI != null) {
             Timer delay = new Timer(900, e ->
@@ -276,241 +248,164 @@ public class PVPBattleScreen extends BaseBattleScreen {
         }
     }
 
-    private void disableAll() {
-        for (JButton b : new JButton[]{p1BtnFight, p1BtnDefend, p1BtnCheck, p1BtnBack,
-                                       p2BtnFight, p2BtnDefend, p2BtnCheck, p2BtnBack})
-            b.setEnabled(false);
-    }
-
-    private void lockP1Buttons(boolean locked) {
-        p1BtnFight.setEnabled(!locked); p1BtnDefend.setEnabled(!locked);
-        p1BtnCheck.setEnabled(!locked); p1BtnBack.setEnabled(!locked);
-    }
-
-    private void lockP2Buttons(boolean locked) {
-        p2BtnFight.setEnabled(!locked); p2BtnDefend.setEnabled(!locked);
-        p2BtnCheck.setEnabled(!locked); p2BtnBack.setEnabled(!locked);
+    private void disableButtons() {
+        btnFight.setEnabled(false); btnDefend.setEnabled(false);
+        btnCheck.setEnabled(false); btnBack.setEnabled(false);
     }
 
     private void log(String text) { dialogue.append("\n" + text); }
 
-    // ── P1 button state machine ───────────────────────────────────────────
+    // ── State machine (mirrors PVE exactly) ───────────────────────────────
 
-    private void updateP1Buttons() {
-        clearListeners(p1BtnFight); clearListeners(p1BtnDefend);
-        clearListeners(p1BtnCheck); clearListeners(p1BtnBack);
+    private void switchState(ActionState next) {
+        state = next;
+        updateButtons();
+    }
 
-        p1BtnFight.setVisible(true); p1BtnBack.setVisible(true);
-        p1BtnDefend.setVisible(true); p1BtnCheck.setVisible(true);
+    private void updateButtons() {
+        resetAllButtons();
 
-        switch (p1State) {
+        btnFight .setVisible(true);
+        btnDefend.setVisible(true);
+        btnCheck .setVisible(true);
+        btnBack  .setVisible(true);
+
+        GameCharacter active = attacker();
+
+        switch (state) {
             case MAIN -> {
-                setButtonLabel(p1BtnFight,  "FIGHT",  BTN_FIGHT_PATH);
-                setButtonLabel(p1BtnDefend, "DEFEND", BTN_DEFEND_PATH);
-                setButtonLabel(p1BtnCheck,  "CHECK",  BTN_CHECK_PATH);
-                setButtonLabel(p1BtnBack,   "BACK",   BTN_BACK_PATH);
-                p1BtnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
+                setButtonLabel(btnFight,  "FIGHT",  BTN_FIGHT_PATH);
+                setButtonLabel(btnDefend, "DEFEND", BTN_DEFEND_PATH);
+                setButtonLabel(btnCheck,  "CHECK",  BTN_CHECK_PATH);
+                setButtonLabel(btnBack,   "BACK",   BTN_BACK_PATH);
+                btnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
 
-                p1BtnFight.setEnabled(true); p1BtnDefend.setEnabled(!p1DefendDisabled);
-                p1BtnCheck.setEnabled(true); p1BtnBack.setEnabled(false);
+                btnFight .setEnabled(true);
+                btnDefend.setEnabled(!defendDisabled());
+                btnCheck .setEnabled(true);
+                btnBack  .setEnabled(false);
 
-                p1BtnFight .addActionListener(e -> { p1State = ActionState.FIGHT;  updateP1Buttons(); });
-                p1BtnDefend.addActionListener(e -> { p1State = ActionState.DEFEND; updateP1Buttons(); });
-                p1BtnCheck .addActionListener(e -> { p1State = ActionState.CHECK;  updateP1Buttons(); });
+                btnFight .addActionListener(e -> switchState(ActionState.FIGHT));
+                btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
+                btnCheck .addActionListener(e -> switchState(ActionState.CHECK));
             }
+
             case FIGHT -> {
-                setButtonLabel(p1BtnFight,  "Skill 1", BTN_SKILL1_ON);
-                setButtonLabel(p1BtnDefend, "Skill 2", BTN_SKILL2_ON);
-                setButtonLabel(p1BtnCheck,  "Skill 3", BTN_SKILL3_ON);
-                setButtonLabel(p1BtnBack,   "BACK",    BTN_BACK_PATH);
+                setButtonLabel(btnFight,  "Skill 1", BTN_SKILL1_ON);
+                setButtonLabel(btnDefend, "Skill 2", BTN_SKILL2_ON);
+                setButtonLabel(btnCheck,  "Skill 3", BTN_SKILL3_ON);
+                setButtonLabel(btnBack,   "BACK",    BTN_BACK_PATH);
 
-                p1BtnFight .setDisabledIcon(makeScaledIcon(BTN_SKILL1_OFF));
-                p1BtnDefend.setDisabledIcon(makeScaledIcon(BTN_SKILL2_OFF));
-                p1BtnCheck .setDisabledIcon(makeScaledIcon(BTN_SKILL3_OFF));
-                p1BtnBack  .setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
+                btnFight .setDisabledIcon(makeScaledIcon(BTN_SKILL1_OFF));
+                btnDefend.setDisabledIcon(makeScaledIcon(BTN_SKILL2_OFF));
+                btnCheck .setDisabledIcon(makeScaledIcon(BTN_SKILL3_OFF));
+                btnBack  .setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
 
-                boolean s1 = player1 != null && player1.getSkill1().getSkillCurrentCooldown() == 0
-                          && player1.getCharacterCurrentMana() >= player1.getSkill1().getSkillManaCost();
-                boolean s2 = player1 != null && player1.getSkill2().getSkillCurrentCooldown() == 0
-                          && player1.getCharacterCurrentMana() >= player1.getSkill2().getSkillManaCost();
-                boolean s3 = player1 != null && player1.getSkill3().getSkillCurrentCooldown() == 0
-                          && player1.getCharacterCurrentMana() >= player1.getSkill3().getSkillManaCost();
+                btnFight .setEnabled(skillReady(active, 1));
+                btnDefend.setEnabled(skillReady(active, 2));
+                btnCheck .setEnabled(skillReady(active, 3));
+                btnBack  .setEnabled(true);
 
-                p1BtnFight.setEnabled(s1); p1BtnDefend.setEnabled(s2);
-                p1BtnCheck.setEnabled(s3); p1BtnBack.setEnabled(true);
-
-                p1BtnFight .addActionListener(e -> p1Turn(1));
-                p1BtnDefend.addActionListener(e -> p1Turn(2));
-                p1BtnCheck .addActionListener(e -> p1Turn(3));
-                p1BtnBack  .addActionListener(e -> { p1State = ActionState.MAIN; updateP1Buttons(); });
+                btnFight .addActionListener(e -> doTurn(1));
+                btnDefend.addActionListener(e -> doTurn(2));
+                btnCheck .addActionListener(e -> doTurn(3));
+                btnBack  .addActionListener(e -> switchState(ActionState.MAIN));
             }
+
             case DEFEND -> {
-                p1BtnFight.setVisible(false); p1BtnBack.setVisible(false);
+                btnFight.setVisible(false);
+                btnBack .setVisible(false);
 
-                int blocks = player1 != null ? player1.getRemainingBlocks() : 0;
-                setButtonLabel(p1BtnDefend, "Block (" + blocks + ")", blockPath(blocks));
-                p1BtnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
-                p1BtnDefend.setEnabled(blocks > 0 && !p1DefendDisabled);
+                int blocks = active != null ? active.getRemainingBlocks() : 0;
+                setButtonLabel(btnDefend, "Block (" + blocks + ")", blockPath(blocks));
+                btnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
+                btnDefend.setEnabled(blocks > 0 && !defendDisabled());
 
-                setButtonLabel(p1BtnCheck, "BACK", BTN_BACK_PATH);
-                p1BtnCheck.setEnabled(true);
+                setButtonLabel(btnCheck, "BACK", BTN_BACK_PATH);
+                btnCheck.setEnabled(true);
 
-                p1BtnDefend.addActionListener(e -> {
-                    int nb = player1 != null ? player1.getRemainingBlocks() : 0;
+                btnDefend.addActionListener(e -> {
+                    int nb = active != null ? active.getRemainingBlocks() : 0;
                     if (nb <= 0) return;
-                    p1Turn(4);
-                    int remaining = player1 != null ? player1.getRemainingBlocks() : 0;
-                    if (remaining <= 0) p1DefendDisabled = true;
-                    updateP1Buttons();
+                    doTurn(4);
+                    // Update defend-disabled flag for the player who just blocked
+                    int remaining = active != null ? active.getRemainingBlocks() : 0;
+                    if (remaining <= 0) {
+                        if (currentTurn == 1) p1DefendDisabled = true;
+                        else                  p2DefendDisabled = true;
+                    }
+                    switchState(ActionState.DEFEND);
                 });
-                p1BtnCheck.addActionListener(e -> {
-                    p1State = ActionState.MAIN;
-                    updateP1Buttons();
-                });
+
+                btnCheck.addActionListener(e -> switchState(ActionState.MAIN));
             }
+
             case CHECK -> {
-                p1BtnFight .setVisible(false);
-                p1BtnDefend.setVisible(false);
-                p1BtnCheck .setVisible(false);
-                p1BtnBack  .setVisible(true);
+                btnFight .setVisible(false);
+                btnDefend.setVisible(false);
+                btnCheck .setVisible(false);
+                btnBack  .setVisible(true);
 
-                setButtonLabel(p1BtnBack, "BACK", BTN_BACK_PATH);
-                p1BtnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
-                p1BtnBack.setEnabled(true);
+                setButtonLabel(btnBack, "BACK", BTN_BACK_PATH);
+                btnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
+                btnBack.setEnabled(true);
 
-                if (player1 != null)
-                    dialogue.setText("[P1 Skills]\n"
-                        + fmtSkill(player1.getSkill1()) + "\n"
-                        + fmtSkill(player1.getSkill2()) + "\n"
-                        + fmtSkill(player1.getSkill3()));
+                if (active != null) {
+                    dialogue.setText(
+                        "[P" + currentTurn + " Skills]\n" +
+                        fmtSkill(active.getSkill1()) + "\n" +
+                        fmtSkill(active.getSkill2()) + "\n" +
+                        fmtSkill(active.getSkill3())
+                    );
+                }
 
-                p1BtnBack.addActionListener(e -> {
-                    dialogue.setText("What will " + (player1 != null ? player1.getCharacterName() : "?") + " do?");
-                    p1State = ActionState.MAIN; updateP1Buttons();
+                btnBack.addActionListener(e -> {
+                    dialogue.setText("What will P" + currentTurn + " ("
+                            + (active != null ? active.getCharacterName() : "?") + ") do?");
+                    switchState(ActionState.MAIN);
                 });
             }
         }
+
         if (getWidth() > 0) layoutUI();
     }
 
-    // ── P2 button state machine ───────────────────────────────────────────
-
-    private void updateP2Buttons() {
-        clearListeners(p2BtnFight); clearListeners(p2BtnDefend);
-        clearListeners(p2BtnCheck); clearListeners(p2BtnBack);
-
-        p2BtnFight.setVisible(true); p2BtnBack.setVisible(true);
-        p2BtnDefend.setVisible(true); p2BtnCheck.setVisible(true);
-
-        switch (p2State) {
-            case MAIN -> {
-                setButtonLabel(p2BtnFight,  "FIGHT",  BTN_FIGHT_PATH);
-                setButtonLabel(p2BtnDefend, "DEFEND", BTN_DEFEND_PATH);
-                setButtonLabel(p2BtnCheck,  "CHECK",  BTN_CHECK_PATH);
-                setButtonLabel(p2BtnBack,   "BACK",   BTN_BACK_PATH);
-                p2BtnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
-
-                p2BtnFight.setEnabled(true); p2BtnDefend.setEnabled(!p2DefendDisabled);
-                p2BtnCheck.setEnabled(true); p2BtnBack.setEnabled(false);
-
-                p2BtnFight .addActionListener(e -> { p2State = ActionState.FIGHT;  updateP2Buttons(); });
-                p2BtnDefend.addActionListener(e -> { p2State = ActionState.DEFEND; updateP2Buttons(); });
-                p2BtnCheck .addActionListener(e -> { p2State = ActionState.CHECK;  updateP2Buttons(); });
-            }
-            case FIGHT -> {
-                setButtonLabel(p2BtnFight,  "Skill 1", BTN_SKILL1_ON);
-                setButtonLabel(p2BtnDefend, "Skill 2", BTN_SKILL2_ON);
-                setButtonLabel(p2BtnCheck,  "Skill 3", BTN_SKILL3_ON);
-                setButtonLabel(p2BtnBack,   "BACK",    BTN_BACK_PATH);
-
-                p2BtnFight .setDisabledIcon(makeScaledIcon(BTN_SKILL1_OFF));
-                p2BtnDefend.setDisabledIcon(makeScaledIcon(BTN_SKILL2_OFF));
-                p2BtnCheck .setDisabledIcon(makeScaledIcon(BTN_SKILL3_OFF));
-                p2BtnBack  .setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
-
-                boolean s1 = player2 != null && player2.getSkill1().getSkillCurrentCooldown() == 0
-                          && player2.getCharacterCurrentMana() >= player2.getSkill1().getSkillManaCost();
-                boolean s2 = player2 != null && player2.getSkill2().getSkillCurrentCooldown() == 0
-                          && player2.getCharacterCurrentMana() >= player2.getSkill2().getSkillManaCost();
-                boolean s3 = player2 != null && player2.getSkill3().getSkillCurrentCooldown() == 0
-                          && player2.getCharacterCurrentMana() >= player2.getSkill3().getSkillManaCost();
-
-                p2BtnFight.setEnabled(s1); p2BtnDefend.setEnabled(s2);
-                p2BtnCheck.setEnabled(s3); p2BtnBack.setEnabled(true);
-
-                p2BtnFight .addActionListener(e -> p2Turn(1));
-                p2BtnDefend.addActionListener(e -> p2Turn(2));
-                p2BtnCheck .addActionListener(e -> p2Turn(3));
-                p2BtnBack  .addActionListener(e -> { p2State = ActionState.MAIN; updateP2Buttons(); });
-            }
-            case DEFEND -> {
-                p2BtnFight.setVisible(false); p2BtnBack.setVisible(false);
-
-                int blocks = player2 != null ? player2.getRemainingBlocks() : 0;
-                setButtonLabel(p2BtnDefend, "Block (" + blocks + ")", blockPath(blocks));
-                p2BtnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
-                p2BtnDefend.setEnabled(blocks > 0 && !p2DefendDisabled);
-
-                setButtonLabel(p2BtnCheck, "BACK", BTN_CHECK_PATH);
-                p2BtnCheck.setEnabled(true);
-
-                p2BtnDefend.addActionListener(e -> {
-                    int nb = player2 != null ? player2.getRemainingBlocks() : 0;
-                    if (nb <= 0) return;
-                    p2Turn(4);
-                    int remaining = player2 != null ? player2.getRemainingBlocks() : 0;
-                    if (remaining <= 0) p2DefendDisabled = true;
-                    updateP2Buttons();
-                });
-                p2BtnCheck.addActionListener(e -> {
-                    p2State = ActionState.MAIN;
-                    updateP2Buttons();
-                });
-            }
-            case CHECK -> {
-                p2BtnFight .setVisible(false);
-                p2BtnDefend.setVisible(false);
-                p2BtnCheck .setVisible(false);
-                p2BtnBack  .setVisible(true);
-
-                setButtonLabel(p2BtnBack, "BACK", BTN_BACK_PATH);
-                p2BtnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
-                p2BtnBack.setEnabled(true);
-
-                if (player2 != null)
-                    dialogue.setText("[P2 Skills]\n"
-                        + fmtSkill(player2.getSkill1()) + "\n"
-                        + fmtSkill(player2.getSkill2()) + "\n"
-                        + fmtSkill(player2.getSkill3()));
-
-                p2BtnBack.addActionListener(e -> {
-                    dialogue.setText("What will " + (player2 != null ? player2.getCharacterName() : "?") + " do?");
-                    p2State = ActionState.MAIN; updateP2Buttons();
-                });
-            }
-        }
-        if (getWidth() > 0) layoutUI();
+    private static boolean skillReady(GameCharacter c, int slot) {
+        if (c == null) return false;
+        Skill sk = switch (slot) {
+            case 1 -> c.getSkill1(); case 2 -> c.getSkill2(); default -> c.getSkill3();
+        };
+        return sk.getSkillCurrentCooldown() == 0 && c.getCharacterCurrentMana() >= sk.getSkillManaCost();
     }
 
-    private static String fmtSkill(Foundation.Skill sk) {
+    private static String fmtSkill(Skill sk) {
         return sk.getSkillName()
              + " | DMG: "  + sk.getSkillDamage()
              + "  MP: "    + sk.getSkillManaCost()
              + "  CD: "    + sk.getSkillCurrentCooldown() + "/" + sk.getSkillMaxCooldown();
     }
 
+    private enum ActionState { MAIN, FIGHT, DEFEND, CHECK }
+
+    private void resetAllButtons() {
+        clearListeners(btnFight); clearListeners(btnDefend);
+        clearListeners(btnCheck); clearListeners(btnBack);
+    }
+
     // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
-        initialized = false; player1 = null; player2 = null;
-        p1Wins = 0; p2Wins = 0; round = 1;
+        initialized      = false; player1 = null; player2 = null;
+        p1Wins           = 0;     p2Wins  = 0;    round = 1;
         p1DefendDisabled = false; p2DefendDisabled = false;
-        p1TurnDone = false; p2TurnDone = false; awaitingP2 = false; matchOver = false;
-        p1State = ActionState.MAIN; p2State = ActionState.MAIN;
-        playerAnimating = false; enemyAnimating = false;
+        currentTurn      = 1;     matchOver = false;
+        state            = ActionState.MAIN;
+        playerAnimating  = false; enemyAnimating = false;
         playerAnimLabel.setVisible(false); enemyAnimLabel.setVisible(false);
-        dialogue.setText(""); turnLabel.setText("PLAYER 1's turn");
-        updateP1Buttons(); updateP2Buttons(); repaint();
+        dialogue.setText("");
+        turnLabel.setText("PLAYER 1's turn");
+        turnLabel.setForeground(new Color(255, 220, 30));
+        updateButtons(); repaint();
     }
 
     // ── Paint ─────────────────────────────────────────────────────────────
@@ -531,13 +426,22 @@ public class PVPBattleScreen extends BaseBattleScreen {
         drawBars(g, player1, p1X, (int)(h * 0.02), barW);
         drawBars(g, player2, p2X, (int)(h * 0.02), barW);
 
+        // Win counter
         int cx = w / 2;
         g.setFont(new Font("Impact", Font.PLAIN, 18));
         g.setColor(Color.WHITE);
         FontMetrics fm = g.getFontMetrics();
         String score = "P1  " + p1Wins + " - " + p2Wins + "  P2";
         g.drawString(score, cx - fm.stringWidth(score) / 2, (int)(h * 0.64));
-    }
 
-    private enum ActionState { MAIN, FIGHT, DEFEND, CHECK }
+        // Highlight whose side is active
+        if (!matchOver) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f));
+            g2.setColor(currentTurn == 1 ? new Color(80, 180, 255) : new Color(255, 100, 100));
+            int highlightX = currentTurn == 1 ? p1X - 8 : p2X - 8;
+            g2.fillRoundRect(highlightX, p1Y - 8, p1W + 16, p1H + 16, 20, 20);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
+        }
+    }
 }

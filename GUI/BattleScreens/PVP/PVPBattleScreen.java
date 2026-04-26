@@ -188,6 +188,9 @@ public class PVPBattleScreen extends BaseBattleScreen {
         p1TurnDone = true; awaitingP2 = true;
         lockP1Buttons(true); lockP2Buttons(false);
         turnLabel.setText("PLAYER 2's turn");
+        // Only reset P1's state to MAIN for non-block actions;
+        // block keeps DEFEND so re-entering shows the updated charge count.
+        if (action != 4) p1State = ActionState.MAIN;
         p2State = ActionState.MAIN; updateP2Buttons();
     }
 
@@ -213,6 +216,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
         p1TurnDone = false; p2TurnDone = false; awaitingP2 = false;
         lockP2Buttons(true); lockP1Buttons(false);
         turnLabel.setText("PLAYER 1's turn");
+        // Only reset P2's state to MAIN for non-block actions.
+        if (action != 4) p2State = ActionState.MAIN;
         p1State = ActionState.MAIN; updateP1Buttons();
     }
 
@@ -322,20 +327,20 @@ public class PVPBattleScreen extends BaseBattleScreen {
                 p1BtnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
                 p1BtnDefend.setEnabled(blocks > 0 && !p1DefendDisabled);
 
-                setButtonLabel(p1BtnCheck, "BACK", BTN_CHECK_PATH);
+                setButtonLabel(p1BtnCheck, "BACK", BTN_BACK_PATH);
                 p1BtnCheck.setEnabled(true);
 
                 p1BtnDefend.addActionListener(e -> {
-                    p1Turn(4);
                     int nb = player1 != null ? player1.getRemainingBlocks() : 0;
-                    setButtonLabel(p1BtnDefend, "Block (" + nb + ")", blockPath(nb));
-                    p1BtnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
-                    if (nb <= 0) p1DefendDisabled = true;
-                    layoutUI();
+                    if (nb <= 0) return;
+                    p1Turn(4);                          // hands off to P2; p1State stays DEFEND
+                    int remaining = player1 != null ? player1.getRemainingBlocks() : 0;
+                    if (remaining <= 0) p1DefendDisabled = true;
+                    // p1 buttons are locked now (it's P2's turn) — update for when they re-enable
+                    updateP1Buttons();
                 });
                 p1BtnCheck.addActionListener(e -> {
                     p1State = ActionState.MAIN;
-                    p1BtnFight.setVisible(true); p1BtnBack.setVisible(true);
                     updateP1Buttons();
                 });
             }
@@ -428,16 +433,15 @@ public class PVPBattleScreen extends BaseBattleScreen {
                 p2BtnCheck.setEnabled(true);
 
                 p2BtnDefend.addActionListener(e -> {
-                    p2Turn(4);
                     int nb = player2 != null ? player2.getRemainingBlocks() : 0;
-                    setButtonLabel(p2BtnDefend, "Block (" + nb + ")", blockPath(nb));
-                    p2BtnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
-                    if (nb <= 0) p2DefendDisabled = true;
-                    layoutUI();
+                    if (nb <= 0) return;
+                    p2Turn(4);                          // hands back to P1; p2State stays DEFEND
+                    int remaining = player2 != null ? player2.getRemainingBlocks() : 0;
+                    if (remaining <= 0) p2DefendDisabled = true;
+                    updateP2Buttons();
                 });
                 p2BtnCheck.addActionListener(e -> {
                     p2State = ActionState.MAIN;
-                    p2BtnFight.setVisible(true); p2BtnBack.setVisible(true);
                     updateP2Buttons();
                 });
             }

@@ -166,7 +166,10 @@ public class PVEBattleScreen extends BaseBattleScreen {
             return;
         }
 
-        switchState(ActionState.MAIN);
+        // Block (action 4) stays in DEFEND so the player sees the updated
+        // charge count and can choose to block again or press Back themselves.
+        // All other actions return to MAIN.
+        if (action != 4) switchState(ActionState.MAIN);
         aiTurn();
     }
 
@@ -324,15 +327,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
                 btnCheck.setEnabled(true);
 
                 btnDefend.addActionListener(e -> {
-                    playerTurn(4);
                     int nb = player != null ? player.getRemainingBlocks() : 0;
-                    setButtonLabel(btnDefend, "Block (" + nb + ")", blockPath(nb));
-                    btnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
-                    if (nb <= 0) {
-                        defendDisabled = true;
-                        btnDefend.setEnabled(false);
-                    }
-                    layoutUI();
+                    if (nb <= 0) return;                    // safety guard
+                    playerTurn(4);                          // block + AI turn; state stays DEFEND
+                    int remaining = player != null ? player.getRemainingBlocks() : 0;
+                    if (remaining <= 0) defendDisabled = true;
+                    switchState(ActionState.DEFEND);        // refresh count/graphic/enabled
                 });
 
                 btnCheck.addActionListener(e -> switchState(ActionState.MAIN));

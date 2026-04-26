@@ -113,29 +113,41 @@ public class VersusScreen extends JPanel {
         animTimer = new Timer(16, e -> {
             int w = getWidth(), h = getHeight();
 
-            // Sprite display sizes (height-fixed, width preserves aspect ratio)
-            int dispH = (int)(h * 0.72);
-            int leftDispW  = dispH * leftNatW  / leftNatH;
+            int dispH = (int)(h * 0.72); 
+            int leftDispW = dispH * leftNatW / leftNatH; 
             int rightDispW = dispH * rightNatW / rightNatH;
 
-            // Each character centres in its half of the screen
-            float leftTarget  = (float)(w / 2 - leftDispW)  * 0.10f + w * 0.02f;
-            float rightTarget = (float)(w / 2 - rightDispW) * 0.14f + w * 0.02f;
+            // Left half center = 30% of screen width
+            float leftCenterX = w * 0.30f;
+
+            // Right half center = 70% of screen width
+            float rightCenterX = w * 0.70f;
+
+            // Convert center → top-left draw position
+            float leftTarget  = (leftCenterX + 150)  - leftDispW  * 0.5f;
+            float rightTarget = rightCenterX - rightDispW * 0.5f;
+
+            // Prevent going off-screen (right side)
+            rightTarget = Math.min(rightTarget, w - rightDispW);
 
             leftX  += (leftTarget  - leftX)  * 0.12f;
             rightX += (rightTarget - rightX) * 0.12f;
 
-            boolean charsSettled = Math.abs(leftX  - leftTarget)  < 2f
-                                && Math.abs(rightX - rightTarget) < 2f;
+            boolean leftSettled  = Math.abs(leftX  - leftTarget)  < 2f;
+            boolean rightSettled = Math.abs(rightX - rightTarget) < 2f;
 
-            if (charsSettled) {
+            if (leftSettled && rightSettled) {
                 vsAlpha   = Math.min(1f, vsAlpha   + 0.06f);
                 nameAlpha = Math.min(1f, nameAlpha + 0.04f);
             }
 
+            if (Math.abs(rightX - rightTarget) >= 2f) {
+                rightX += (rightTarget - rightX) * 0.12f;
+            }
+
             repaint();
 
-            if (charsSettled && vsAlpha >= 1f && nameAlpha >= 1f && !animDone) {
+            if (leftSettled && rightSettled && vsAlpha >= 1f && nameAlpha >= 1f && !animDone) {
                 animDone = true;
                 animTimer.stop();
                 Timer hold = new Timer(1500, ev -> { if (onComplete != null) onComplete.run(); });

@@ -18,44 +18,43 @@ import java.awt.event.ComponentEvent;
 
 public class GameGUI extends JFrame {
 
-    private final CardLayout    cardLayout;
-    private final JPanel        container;
-    private final VersusScreen  versusScreen;
+    private final CardLayout     cardLayout;
+    private final JPanel         container;
+    private final VersusScreen   versusScreen;
     private final GameOverScreen gameOverScreen;
 
     // Floating banner shown during character select
     private final JLabel selectionBanner = new JLabel("", SwingConstants.CENTER);
 
+    // Direct reference needed for the two-phase arcade init
+    private final ArcadeBattleScreen arcadeScreen;
+
+    private boolean isFullScreen = false;
+
     public GameGUI() {
         this.setSize(800, 600);
         this.setMinimumSize(new Dimension(640, 480));
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // ── Allow the window to be resized or toggled to full-screen ──────────
-        // Users can maximise with the OS window button or press F11 for
-        // borderless full-screen.
         this.setResizable(true);
         installFullScreenToggle();
 
-        // ── Banner setup ──────────────────────────────────────────────────────
+        // ── Banner ────────────────────────────────────────────────────────────
         selectionBanner.setFont(new Font("Impact", Font.PLAIN, 24));
         selectionBanner.setForeground(new Color(255, 220, 30));
         selectionBanner.setBackground(new Color(0, 0, 0, 180));
         selectionBanner.setOpaque(true);
         selectionBanner.setVisible(false);
 
-        // ── Container (CardLayout) ────────────────────────────────────────────
+        // ── Container ─────────────────────────────────────────────────────────
         cardLayout = new CardLayout();
         container  = new JPanel(cardLayout);
 
-        // ── Layered pane so banner floats on top ──────────────────────────────
         JLayeredPane layered = new JLayeredPane();
         container.setBounds(0, 0, 800, 600);
         layered.add(container,       JLayeredPane.DEFAULT_LAYER);
         layered.add(selectionBanner, JLayeredPane.PALETTE_LAYER);
         this.setContentPane(layered);
 
-        // Resize listener — keeps container and banner filling the window
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -90,7 +89,7 @@ public class GameGUI extends JFrame {
         container.add(new ZakkarrInfoScreen(this),    "ZakkarrInfoScreen");
         container.add(new KijElInfoScreen(this),      "KijElInfoScreen");
 
-        // Battle Screens
+        // ── Battle Screens ────────────────────────────────────────────────────
         versusScreen = new VersusScreen();
         container.add(versusScreen, "VersusScreen");
 
@@ -101,9 +100,11 @@ public class GameGUI extends JFrame {
         container.add(pveScreen, "PVEBattleScreen");
         pveScreen.setGameGUI(this);
 
-        container.add(new PVPBattleScreen(), "PVPBattleScreen");
+        PVPBattleScreen pvpScreen = new PVPBattleScreen();
+        container.add(pvpScreen, "PVPBattleScreen");
+        pvpScreen.setGameGUI(this);
 
-        ArcadeBattleScreen arcadeScreen = new ArcadeBattleScreen();
+        arcadeScreen = new ArcadeBattleScreen();
         container.add(arcadeScreen, "ArcadeBattleScreen");
         arcadeScreen.setVersusScreen(versusScreen, cardLayout, container);
         arcadeScreen.setGameGUI(this);
@@ -115,8 +116,6 @@ public class GameGUI extends JFrame {
     // =========================================================================
     // LAYOUT HELPERS
     // =========================================================================
-
-    /** Resize the container and banner to fill whatever the content-pane is. */
     private void relayoutAll() {
         int w = getContentPane().getWidth();
         int h = getContentPane().getHeight();
@@ -124,10 +123,6 @@ public class GameGUI extends JFrame {
         selectionBanner.setBounds(0, 0, w, 40);
     }
 
-    /**
-     * Installs an F11 key binding that toggles borderless full-screen mode.
-     * Works on macOS, Windows, and Linux.
-     */
     private void installFullScreenToggle() {
         getRootPane().registerKeyboardAction(
             e -> toggleFullScreen(),
@@ -136,21 +131,17 @@ public class GameGUI extends JFrame {
         );
     }
 
-    private boolean isFullScreen = false;
-
     public void toggleFullScreen() {
         GraphicsDevice gd = GraphicsEnvironment
                 .getLocalGraphicsEnvironment()
                 .getDefaultScreenDevice();
 
         if (!isFullScreen && gd.isFullScreenSupported()) {
-            // Enter full-screen exclusive mode
             dispose();
             setUndecorated(true);
             gd.setFullScreenWindow(this);
             isFullScreen = true;
         } else {
-            // Exit full-screen
             gd.setFullScreenWindow(null);
             dispose();
             setUndecorated(false);
@@ -205,10 +196,29 @@ public class GameGUI extends JFrame {
             }
 
             // ── ARCADE ───────────────────────────────────────────────────────
+            // Step 1: reset and build opponent list via prepareAndGetFirstOpponent()
+            // Step 2: show VersusScreen for opponent #1
+            // Step 3: after animation -> show battle and call initBattle()
             case "ArcadeBattleScreen" -> {
-                cardLayout.show(container, "ArcadeBattleScreen");
-                for (Component c : container.getComponents())
-                    if (c instanceof ArcadeBattleScreen s) { s.reset(); s.initBattle(); }
+                GameSession   session = GameSession.getInstance();
+                GameCharacter player  = session.getPlayer1();
+
+                arcadeScreen.reset();
+
+                String firstOpponent = arcadeScreen.prepareAndGetFirstOpponent();
+
+                if (firstOpponent == null) {
+                    // Fallback: no opponents found
+                    cardLayout.show(container, "ArcadeBattleScreen");
+                    arcadeScreen.initBattle();
+                    return;
+                }
+
+                cardLayout.show(container, "VersusScreen");
+                versusScreen.show(player.getCharacterName(), firstOpponent, () -> {
+                    cardLayout.show(container, "ArcadeBattleScreen");
+                    arcadeScreen.initBattle();
+                });
             }
 
             default -> cardLayout.show(container, name);
@@ -216,12 +226,22 @@ public class GameGUI extends JFrame {
     }
 
     // =========================================================================
-    // GAME OVER
+    // GAME OVER — PVE / ARCADE  ("YOU WIN!" / "GAME OVER")
     // =========================================================================
     public void showGameOver(String winnerName, String loserName,
                              boolean playerWon, String nextScreen) {
         cardLayout.show(container, "GameOverScreen");
         gameOverScreen.show(winnerName, loserName, playerWon, () ->
+                showScreen(nextScreen));
+    }
+
+    // =========================================================================
+    // GAME OVER — PVP  (custom title e.g. "A-Vin Won!")
+    // =========================================================================
+    public void showGameOver(String winnerName, String loserName,
+                             boolean playerWon, String customTitle, String nextScreen) {
+        cardLayout.show(container, "GameOverScreen");
+        gameOverScreen.show(winnerName, loserName, playerWon, customTitle, () ->
                 showScreen(nextScreen));
     }
 

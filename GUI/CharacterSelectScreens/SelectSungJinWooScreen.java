@@ -19,6 +19,7 @@ public class SelectSungJinWooScreen extends JPanel {
     private JButton prev;
     private JButton info;
     private JButton select;
+    private JButton exit;
 
     public SelectSungJinWooScreen(GameGUI gui) {
 
@@ -29,6 +30,10 @@ public class SelectSungJinWooScreen extends JPanel {
         next = createButton();
         next.addActionListener(e -> gui.showScreen("SelectZakkarScreen"));
         this.add(next);
+
+        exit = createButton();
+        exit.addActionListener(e -> gui.showScreen("MainMenu"));
+        this.add(exit);
 
         prev = createButton();
         prev.addActionListener(e -> gui.showScreen("SelectSoleilScreen"));
@@ -120,6 +125,7 @@ public class SelectSungJinWooScreen extends JPanel {
         prev.setBounds((int)(w * 0.52), (int)(h * 0.41), (int)(btnWidth * 0.5), (int)(btnHeight * 1.5));
         info.setBounds((int)(w * 0.27), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
         select.setBounds((int)(w * 0.11), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
+        exit.setBounds((int)(w * 0.19), (int)(h * 0.79), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
     }
 
     @Override

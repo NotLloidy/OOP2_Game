@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class AVin extends GameCharacter implements SkillsInterface {
+public class AVin extends GameCharacter {
     private Skill codeJab;
     private Skill codeSurge;
     private Skill overClock;
@@ -27,81 +27,88 @@ public class AVin extends GameCharacter implements SkillsInterface {
     }
 
     @Override
-    public void useSkill(int skillNumber, GameCharacter target) {
+    public String useSkill(int skillNumber, GameCharacter target) {
         if(getIsStunned()) {
-            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
-            setIsStunned(false); // Remove stun after skipping turn
-            return;
+            setIsStunned(false);
+            return getCharacterName() + " is stunned and cannot act this turn!";
         }
+
         switch(skillNumber) {
             case 1:
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
+                
                 if(usedUlt || isOverclocked) {
-                    System.out.println("\n" + getCharacterName() + " used Code Surge with Overclock bonus! +10 bonus damage!");
-                    target.takeDamage(codeSurge.getSkillDamage() + 10);
+                    int damage = codeSurge.getSkillDamage() + 10;
+                    target.takeDamage(damage);
                     useMana(codeSurge.getSkillManaCost());
                     regenMana(codeSurge.getSkillManaRegen());
                     lastSkillUsed = codeSurge;
-                    if(usedUlt) {
-                        usedUlt = false;
-                    }
-                    if(!usedUlt && isOverclocked) {
-                        isOverclocked = false;
-                    }
-                    break;
+                    
+                    if(usedUlt) usedUlt = false;
+                    if(!usedUlt && isOverclocked) isOverclocked = false;
+                    
+                    return getCharacterName() + " used Code Surge with Overclock! Dealt " + damage + " damage!";
                 } else if(codeJab.isSkillAvailable() && (getCharacterCurrentMana() >= codeJab.getSkillManaCost())) {
                     codeJabCounter++;
+                    int damage = codeJab.getSkillDamage();
+                    String comboMsg = "";
+                    
                     if(codeJabCounter == 2) {
                         codeJabCounter = 0;
-                        System.out.println("\n" + getCharacterName() + " executed a perfect Code Jab combo! +10 bonus damage!");
-                        target.takeDamage(codeJab.getSkillDamage() + 10);
-                    } else {
-                        target.takeDamage(codeJab.getSkillDamage());
+                        damage += 10;
+                        comboMsg = " Perfect Combo! ";
                     }
-                    target.takeDamage(codeJab.getSkillDamage());
+                    
+                    target.takeDamage(damage);
                     useMana(codeJab.getSkillManaCost());
                     regenMana(codeJab.getSkillManaRegen());
                     codeJab.triggerSkillCooldown();
                     lastSkillUsed = codeJab;
+                    
+                    return getCharacterName() + " used Code Jab!" + comboMsg + " Dealt " + damage + " damage!";
                 }
-                break;
+                return "Not enough mana!";
+                
             case 2:
                 if(target.getIsBlocking()){
-                    target.block(target);
+                    return target.block(target);
                 }
                 if(overClock.isSkillAvailable() && (getCharacterCurrentMana() >= overClock.getSkillManaCost())) {
                     useMana(overClock.getSkillManaCost());
                     regenMana(overClock.getSkillManaRegen());
                     overClock.triggerSkillCooldown();
                     isOverclocked = true;
+                    return getCharacterName() + " used Overclock! Next attack is boosted.";
                 }
-                break;
+                return "Skill is on cooldown or insufficient mana!";
+                
             case 3:
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if(logicCrash.isSkillAvailable() && (getCharacterCurrentMana() >= logicCrash.getSkillManaCost())) {
-                    int bonusDamage = 0;
-                    if(isOverclocked) {
-                        bonusDamage = 10;
-                        System.out.println("\n" + getCharacterName() + " unleashed an Overclocked Logic Crash! +10 bonus damage!");
-                    }
-                    target.takeDamage(logicCrash.getSkillDamage() + bonusDamage);
-                    bonusDamage = 0; // reset bonus after use
+                    int bonusDamage = isOverclocked ? 10 : 0;
+                    int totalDamage = logicCrash.getSkillDamage() + bonusDamage;
+                    
+                    target.takeDamage(totalDamage);
                     useMana(logicCrash.getSkillManaCost());
                     regenMana(logicCrash.getSkillManaRegen());
                     logicCrash.triggerSkillCooldown();
-                    isOverclocked = true;
+                    
                     usedUlt = true;
+                    isOverclocked = false; 
+                    
+                    if (bonusDamage > 0) {
+                        return getCharacterName() + " unleashed an OVERCLOCKED Logic Crash! Dealt " + totalDamage + " damage!";
+                    }
+                    return getCharacterName() + " used Logic Crash! Dealt " + totalDamage + " damage!";
                 }
-                break;
+                return "Skill not available or not enough mana!";
         }
+        return "Invalid move.";
     }
-
 
     @Override
     public Skill getSkill1() {
@@ -113,12 +120,8 @@ public class AVin extends GameCharacter implements SkillsInterface {
     }
 
     @Override
-    public Skill getSkill2() { 
-        return this.overClock; 
-    }
+    public Skill getSkill2() { return this.overClock; }
 
     @Override
-    public Skill getSkill3() { 
-        return this.logicCrash;
-    }
+    public Skill getSkill3() { return this.logicCrash; }
 }

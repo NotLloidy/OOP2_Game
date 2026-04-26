@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class SungJinWoo extends GameCharacter implements SkillsInterface {
+public class SungJinWoo extends GameCharacter {
     
     private Skill shadowSlash;
     private Skill shadowExtraction;
@@ -24,110 +24,115 @@ public class SungJinWoo extends GameCharacter implements SkillsInterface {
     }
 
     @Override
-    public void useSkill(int skillNumber, GameCharacter target) {
+    public String useSkill(int skillNumber, GameCharacter target) {
         if(getIsStunned()) {
-            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
-            setIsStunned(false); // Remove stun after skipping turn
-            return;
+            setIsStunned(false); 
+            return getCharacterName() + " is stunned and cannot act this turn!";
         }
+        
         switch(skillNumber) {
             case 1:
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if(shadowSlash.isSkillAvailable() && (getCharacterCurrentMana() >= shadowSlash.getSkillManaCost())) {
                     int totalDamage = shadowSlash.getSkillDamage();
+                    String msg = getCharacterName() + " used Shadow Slash. ";
+                    
                     if(isShadowSummoned) {
-                        System.out.println("\nShadow Slash is empowered by the summoned shadow! +4 damage!");
+                        msg += "Shadow Empowered (+4 DMG)! ";
                         totalDamage += 4;
-                        isShadowSummoned = false; // reset shadow summon after use
+                        isShadowSummoned = false; 
                     }
                     if(target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
-                        System.out.println("\nShadow Slash hit a critical strike on the weakened target! +2 damage!");
+                        msg += "Critical on weakened target (+2 DMG)! ";
                         totalDamage += 2;
                     }
+                    
                     shadowMasteryStacks++;
                     if(shadowMasteryStacks >= 3) {
-                        System.out.println("\nShadow Mastery activated! Sung Jin-Woo will deal +3 more damage!");
+                        msg += "Shadow Mastery Triggered (+3 DMG)! ";
                         totalDamage += 3;
-                        shadowMasteryStacks = 0; // reset stacks after activation
+                        shadowMasteryStacks = 0; 
                     }
+                    
                     target.takeDamage(totalDamage);
                     useMana(shadowSlash.getSkillManaCost());
                     regenMana(shadowSlash.getSkillManaRegen());
+                    
                     if(isIgrisSummoned) {
-                        System.out.println("\nIgris attacked with 30 damage.");
+                        msg += " Igris attacks as well for 30 DMG!";
                         target.takeDamage(30);
                         isIgrisSummoned = false;
                     }
-                    
+                    return msg + " Dealt " + totalDamage + " damage total.";
                 }
-                break;
+                return "Not enough mana!";
+                
             case 2:
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if(shadowExtraction.isSkillAvailable() && (getCharacterCurrentMana() >= shadowExtraction.getSkillManaCost())) {
+                    String msg = getCharacterName() + " used Shadow Extraction. ";
                     if(Math.random() < 0.10) {
                         isShadowSummoned = true;
-                        System.out.println("\nA shadow has been summoned! Boosting Sung Jin-Woo's next attack by 25% damage!");
+                        msg += "A Shadow was extracted! Next attack boosted. ";
                     }
+                    
                     shadowMasteryStacks++;
                     if(shadowMasteryStacks == 3) {
-                        System.out.println("\nShadow Mastery activated! Sung Jin-Woo will deal +5 more damage!");
+                        msg += "Shadow Mastery Triggered! (+5 DMG) ";
                         target.takeDamage(shadowExtraction.getSkillDamage() + 5);
-                        shadowMasteryStacks = 0; // reset stacks after activation
+                        shadowMasteryStacks = 0; 
                     } else {
                         target.takeDamage(shadowExtraction.getSkillDamage());
                     }
+                    
                     useMana(shadowExtraction.getSkillManaCost());
                     regenMana(shadowExtraction.getSkillManaRegen());
                     shadowExtraction.triggerSkillCooldown();
+                    
                     if(isIgrisSummoned) {
-                        System.out.println("\nIgris attacked with 30 damage.");
+                        msg += " Igris also attacks!";
                         target.takeDamage(summonIgris.getSkillDamage());
                         isIgrisSummoned = false;
                     }
+                    return msg + "Dealt damage.";
                 }
-                break;
+                return "Skill on cooldown or insufficient mana.";
+                
             case 3:
                 if(target.getIsBlocking()){
                     isIgrisSummoned = true;
                     target.block(target);
-                    return;
+                    return "Summoned Igris, but the attack was blocked!";
                 }
                 if(summonIgris.isSkillAvailable() && (getCharacterCurrentMana() >= summonIgris.getSkillManaCost())) {
+                    String msg = getCharacterName() + " summoned the mighty Igris! ";
                     if(isShadowSummoned) {
-                        System.out.println("\nShadow Slash is empowered by the summoned shadow! +4 damage!");
+                        msg += "Shadow Empowered (+4 DMG)! ";
                         target.takeDamage(shadowSlash.getSkillDamage() + 4);
-                        isShadowSummoned = false; // reset  shadow summon after use
+                        isShadowSummoned = false; 
                     } else {
                         target.takeDamage(summonIgris.getSkillDamage());
                     }
+                    
                     useMana(summonIgris.getSkillManaCost());
                     regenMana(summonIgris.getSkillManaRegen());
                     summonIgris.triggerSkillCooldown();
                     isIgrisSummoned = true;
+                    return msg;
                 }
-                break;
+                return "Skill on cooldown or insufficient mana.";
         }
+        return "Invalid Action.";
     }
 
     @Override
-    public Skill getSkill1() {
-        return this.shadowSlash;
-    }
-
+    public Skill getSkill1() { return this.shadowSlash; }
     @Override
-    public Skill getSkill2() {
-        return this.shadowExtraction;
-    }
-
+    public Skill getSkill2() { return this.shadowExtraction; }
     @Override
-    public Skill getSkill3() {
-        return this.summonIgris;
-    }
-    
+    public Skill getSkill3() { return this.summonIgris; }
 }

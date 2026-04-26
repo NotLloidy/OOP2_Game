@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class Zakkarr extends GameCharacter implements SkillsInterface {
+public class Zakkarr extends GameCharacter {
 
     private Skill guardiansBlade;
     private Skill shieldOfValor;
@@ -21,65 +21,63 @@ public class Zakkarr extends GameCharacter implements SkillsInterface {
         deathsReturn = new Skill("Death's Return", 0, 50, 0, 999,0);
     }
 
-    // Passive trigger when taking damage
     @Override
     public void takeDamage(int amount) {
         if (!isCharacterAlive()) return;
-
         super.takeDamage(amount);
 
+        // This would ideally return a String in a full event-driven engine,
+        // but since takeDamage is void, the GUI will handle the health bar update 
+        // to show the revival silently.
         if (!hasRevived && getCharacterCurrentHealthPoints() <= 0 && getCharacterCurrentMana() >= deathsReturn.getSkillManaCost()) {
-            revive(150, 100); // revive HP and mana
+            revive(150, 100); 
             hasRevived = true;
             deathsReturn.triggerSkillCooldown();
-
-            System.out.println(getCharacterName() + " activated Death's Return and revived!");
         }
 
-        // Guardian Warrior passive
         if (isCharacterAlive()) {
             guardianBoost = true; 
         }
     }
 
     @Override
-    public void useSkill(int skillNumber, GameCharacter target) {
-
+    public String useSkill(int skillNumber, GameCharacter target) {
         Skill skillToUse = null;
         int damage = 0;
+        String msg = "";
 
         if(getIsStunned()) {
-            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
-            setIsStunned(false); // Remove stun after skipping turn
-            return;
+            setIsStunned(false);
+            return getCharacterName() + " is stunned and cannot act this turn!";
         }
 
         switch(skillNumber) {
-            case 1: // Guardian's Blade
+            case 1: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 skillToUse = guardiansBlade;
                 if(skillToUse.isSkillAvailable()) {
                     damage = skillToUse.getSkillDamage() + (bladeStacks * 5);
                     if(guardianBoost) {
-                        damage += damage * 10 / 100; // +10% boost
-                        guardianBoost = false;       // reset boost
+                        damage += damage * 10 / 100; 
+                        guardianBoost = false;      
+                        msg += "(Guardian Boost Active!) ";
                     }
                     target.takeDamage(damage);
                     useMana(skillToUse.getSkillManaCost());
                     regenMana(skillToUse.getSkillManaRegen());
 
-                    // Blade stacking mechanic
                     if(bladeStacks < 2) bladeStacks++;
                     skillToUse.triggerSkillCooldown();
+                    
+                    return getCharacterName() + " used Guardian's Blade! " + msg + "Dealt " + damage + " damage.";
                 }
-                break;
-            case 2: // Shield of Valor
+                return "Not enough mana!";
+                
+            case 2: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 skillToUse = shieldOfValor;
                 if(skillToUse.isSkillAvailable()) {
@@ -87,35 +85,34 @@ public class Zakkarr extends GameCharacter implements SkillsInterface {
                     if(guardianBoost) {
                         damage += damage * 10 / 100;
                         guardianBoost = false;
+                        msg += "(Guardian Boost Active!) ";
                     }
                     target.takeDamage(damage);
                     heal(20);
                     skillToUse.triggerSkillCooldown();
+                    
+                    return getCharacterName() + " used Shield of Valor! " + msg + "Dealt " + damage + " damage and healed 20 HP.";
                 }
-                break;
+                return "Skill on cooldown.";
+                
+            case 3:
+                 return "Death's Return is a passive ultimate that activates upon death.";
         }
 
         if (hasRevived && reviveTurnsRemaining > 0) {
             reviveTurnsRemaining--;
             if (reviveTurnsRemaining == 0) {
                 takeDamage(getCharacterCurrentHealthPoints());
-                System.out.println(getCharacterName() + "'s Death's Return effect ended. She has fallen!");
+                return getCharacterName() + "'s Death's Return effect ended. She has fallen!";
             }
         }
-}
-
-    @Override
-    public Skill getSkill1() {
-        return guardiansBlade;
+        return "Invalid action.";
     }
 
     @Override
-    public Skill getSkill2() {
-        return shieldOfValor;
-    }
-
+    public Skill getSkill1() { return guardiansBlade; }
     @Override
-    public Skill getSkill3() {
-        return deathsReturn;
-    }
+    public Skill getSkill2() { return shieldOfValor; }
+    @Override
+    public Skill getSkill3() { return deathsReturn; }
 }

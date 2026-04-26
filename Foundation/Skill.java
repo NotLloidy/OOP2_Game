@@ -41,6 +41,10 @@ public class Skill {
         this.skillCurrentCooldown = skillCurrentCooldown;
     }
 
+    public int getSkillMaxCooldown() {
+        return this.skillCooldown;
+    }
+
     public boolean isSkillAvailable() {
         return this.skillCurrentCooldown == 0;
     }

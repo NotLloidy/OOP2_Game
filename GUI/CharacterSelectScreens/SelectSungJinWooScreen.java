@@ -5,7 +5,6 @@ import GameEngines.GameSession;
 
 import javax.swing.*;
 
-import Characters.ChungMyung;
 import Characters.SungJinWoo;
 import Foundation.BattleMode;
 
@@ -25,7 +24,7 @@ public class SelectSungJinWooScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_select/characterSungJinWoo.gif").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_select/sungjinwooSelect.gif").getImage();
 
         next = createButton();
         next.addActionListener(e -> gui.showScreen("SelectZakkarScreen"));

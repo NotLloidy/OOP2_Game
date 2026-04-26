@@ -17,7 +17,7 @@ public class MainMenu extends JPanel {
 
         this.setLayout(null);
 
-        ImageIcon icon = new ImageIcon("Assets/mainMenuScreen.gif");
+        ImageIcon icon = new ImageIcon("Assets/navigation/mainMenu.gif");
         bgImage = icon.getImage();
 
         pve = createButton();

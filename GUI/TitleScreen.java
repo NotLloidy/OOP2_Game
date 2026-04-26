@@ -11,7 +11,7 @@ public class TitleScreen extends JPanel {
         this.setLayout(null);
 
         // Load the GIF image
-        ImageIcon icon = new ImageIcon("Assets/gameTitleScreenV2.gif");
+        ImageIcon icon = new ImageIcon("Assets/navigation/titleScreen.gif");
         bgImage = icon.getImage();
 
         // Create full-screen invisible button

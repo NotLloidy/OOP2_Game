@@ -22,7 +22,7 @@ public class SelectAVinScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_select/characterAVin.gif").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_select/avinSelect.gif").getImage();
 
         // ── NEXT button ───────────────────────────────────────────────────────
         next = createButton();

@@ -18,7 +18,7 @@ public class LoginScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/gameLoginScreenV2.gif").getImage();
+        bgImage = new ImageIcon("Assets/navigation/accountLogin.gif").getImage();
 
         usernameField = new JTextField();
         usernameField.setOpaque(false);

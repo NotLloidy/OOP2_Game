@@ -24,7 +24,7 @@ public class SelectKennethScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_select/characterKenneth.gif").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_select/kennethSelect.gif").getImage();
 
         next = createButton();
         next.addActionListener(e -> gui.showScreen("SelectKijElScreen"));

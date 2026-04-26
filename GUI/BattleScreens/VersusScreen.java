@@ -15,8 +15,8 @@ import java.awt.geom.*;
  * SPRITE ASSET PATHS — change these constants to point to your files:
  *   LEFT_SPRITE_PATH  = "Assets/characters_left/"  + name + "-left.gif"
  *   RIGHT_SPRITE_PATH = "Assets/characters_right/" + name + "-right.gif"
- *   BG_IMAGE_PATH     = "Assets/versusScreen.gif"
- *   VS_OVERLAY_PATH   = "Assets/vsOverlay.png"      (optional, drawn if found)
+ *   BG_IMAGE_PATH     = "Assets/battle_sprites/versusBackGround.gif"
+ *   VS_OVERLAY_PATH   = "Assets/battle_sprites/versusLogo.png"      (optional, drawn if found)
  *
  * Usage:
  *   Call show(playerName, enemyName, onDone) — animates in, then calls onDone.
@@ -24,12 +24,12 @@ import java.awt.geom.*;
 public class VersusScreen extends JPanel {
 
     // ── ASSET PATHS ─────────────────────────────────────────────────────────
-    private static final String LEFT_SPRITE_PATH  = "Assets/characters_left/";
-    private static final String RIGHT_SPRITE_PATH = "Assets/characters_right/";
+    private static final String LEFT_SPRITE_PATH  = "Assets/character_related/idleAnimation/left/";
+    private static final String RIGHT_SPRITE_PATH = "Assets/character_related/idleAnimation/right/";
     private static final String LEFT_SPRITE_SUFFIX  = "-left.gif";
     private static final String RIGHT_SPRITE_SUFFIX = "-right.gif";
-    private static final String BG_IMAGE_PATH     = "Assets/battleArenaScreen.gif";
-    private static final String VS_OVERLAY_PATH   = null;
+    private static final String BG_IMAGE_PATH     = "Assets/battle_sprites/versusBackGround.gif";
+    private static final String VS_OVERLAY_PATH   = "Assets/battle_sprites/versusLogo.png";
     // ────────────────────────────────────────────────────────────────────────
 
     private Image bgImage;
@@ -71,15 +71,19 @@ public class VersusScreen extends JPanel {
         }
     }
 
+    private String toFileKey(String name) {
+        return name.toLowerCase().replaceAll("[^a-z0-9]", "");
+    }
+
     /** Call this every time you want to show the screen. */
     public void show(String player1Name, String player2Name, Runnable afterAnimation) {
-        this.leftName    = player1Name.toUpperCase();
-        this.rightName   = player2Name.toUpperCase();
+        this.leftName    = toFileKey(player1Name);
+        this.rightName   = toFileKey(player2Name);
         this.onComplete  = afterAnimation;
         this.animDone    = false;
 
-        leftSprite  = new ImageIcon(LEFT_SPRITE_PATH  + player1Name + LEFT_SPRITE_SUFFIX).getImage();
-        rightSprite = new ImageIcon(RIGHT_SPRITE_PATH + player2Name + RIGHT_SPRITE_SUFFIX).getImage();
+        leftSprite  = new ImageIcon(LEFT_SPRITE_PATH  + leftName + LEFT_SPRITE_SUFFIX).getImage();
+        rightSprite = new ImageIcon(RIGHT_SPRITE_PATH + rightName + RIGHT_SPRITE_SUFFIX).getImage();
 
         leftX   = -400f;
         rightX  = getWidth() + 400f;

@@ -30,15 +30,15 @@ import java.util.List;
 public class ArcadeBattleScreen extends JPanel {
 
     // ── ASSET PATHS ──────────────────────────────────────────────────────────
-    private static final String BTN_FIGHT_PATH   = null; // e.g. "Assets/buttons/btn_fight.png"
-    private static final String BTN_DEFEND_PATH  = null;
-    private static final String BTN_CHECK_PATH   = null;
-    private static final String BTN_BACK_PATH    = null;
-    private static final String P1_SPRITE_PATH   = "Assets/characters_left/";
+    private static final String BTN_FIGHT_PATH   = "Assets/battle_sprites/battle_buttons/actions/fight_btn.gif";
+    private static final String BTN_DEFEND_PATH  = "Assets/battle_sprites/battle_buttons/actions/defend_btn.gif";
+    private static final String BTN_CHECK_PATH   = "Assets/battle_sprites/battle_buttons/actions/check_btn.gif";
+    private static final String BTN_BACK_PATH    = "Assets/battle_sprites/battle_buttons/actions/back_btn.gif";
+    private static final String P1_SPRITE_PATH   = "Assets/character_related/idleAnimation/left/";
     private static final String P1_SPRITE_SUFFIX = "-left.gif";
-    private static final String ENEMY_SPRITE_PATH   = "Assets/characters_right/";
+    private static final String ENEMY_SPRITE_PATH   = "Assets/character_related/idleAnimation/right/";
     private static final String ENEMY_SPRITE_SUFFIX = "-right.gif";
-    private static final String BG_IMAGE_PATH    = "Assets/battleArenaScreen.gif";
+    private static final String BG_IMAGE_PATH    = "Assets/battle_sprites/battleArena.gif";
     // ─────────────────────────────────────────────────────────────────────────
 
     private final Image bgImage;
@@ -53,6 +53,8 @@ public class ArcadeBattleScreen extends JPanel {
 
     private GameCharacter player;
     private GameCharacter enemy;
+    private String leftName;
+    private String rightName;
 
     private final BattleSystem system;
     private final GameSession session;
@@ -130,7 +132,14 @@ public class ArcadeBattleScreen extends JPanel {
         // If shuffle left player in, already filtered above.
     }
 
+    private String toFileKey(String name) {
+        return name.toLowerCase().replaceAll("[^a-z0-9]", "");
+    }
+
     private void loadNextOpponent() {
+        this.leftName    = toFileKey(enemy.getCharacterName());
+        this.rightName   = toFileKey(player.getCharacterName());
+
         if (currentOpponentIndex >= opponentOrder.size()) {
             arcadeClear();
             return;
@@ -139,8 +148,8 @@ public class ArcadeBattleScreen extends JPanel {
         enemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
         session.setPlayer2(enemy);
 
-        enemySprite  = new ImageIcon(ENEMY_SPRITE_PATH + enemy.getCharacterName() + ENEMY_SPRITE_SUFFIX).getImage();
-        playerSprite = new ImageIcon(P1_SPRITE_PATH    + player.getCharacterName() + P1_SPRITE_SUFFIX).getImage();
+        playerSprite = new ImageIcon(P1_SPRITE_PATH    + leftName + P1_SPRITE_SUFFIX).getImage();
+        enemySprite  = new ImageIcon(ENEMY_SPRITE_PATH + rightName + ENEMY_SPRITE_SUFFIX).getImage();
 
         playerWins = 0;
         enemyWins  = 0;
@@ -171,7 +180,10 @@ public class ArcadeBattleScreen extends JPanel {
         btnCheck  = makeButton("CHECK",  BTN_CHECK_PATH);
         btnBack   = makeButton("BACK",   BTN_BACK_PATH);
 
-        add(btnFight); add(btnDefend); add(btnCheck); add(btnBack);
+        add(btnFight); 
+        add(btnDefend); 
+        add(btnCheck); 
+        add(btnBack);
 
         dialogue = new JTextArea();
         dialogue.setEditable(false);

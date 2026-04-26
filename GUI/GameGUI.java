@@ -100,7 +100,7 @@ public class GameGUI extends JFrame {
         arcadeScreen.setVersusScreen(versusScreen, cardLayout, container);
         arcadeScreen.setGameGUI(this);
              
-
+        this.setIconImage(new ImageIcon("Assets/others/gameLogo.gif").getImage());
         this.setVisible(true);
     }
 

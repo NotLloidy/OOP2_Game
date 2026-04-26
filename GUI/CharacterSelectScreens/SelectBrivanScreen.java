@@ -1,12 +1,10 @@
 package GUI.CharacterSelectScreens;
 
 import GUI.GameGUI;
-import GUI.CharacterInfo.BrivanInfoScreen;
 import GameEngines.GameSession;
 
 import javax.swing.*;
 
-import Characters.AVin;
 import Characters.BrivanJawmir;
 import Foundation.BattleMode;
 
@@ -26,7 +24,7 @@ public class SelectBrivanScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_select/characterBrivanJawmir.gif").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_select/brivanjawmirSelect.gif").getImage();
 
         next = createButton();
         next.addActionListener(e -> gui.showScreen("SelectChungScreen"));

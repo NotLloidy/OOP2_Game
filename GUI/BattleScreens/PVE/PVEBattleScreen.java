@@ -10,6 +10,18 @@ import java.awt.event.ActionListener;
 
 public class PVEBattleScreen extends JPanel {
 
+    // ── ASSET PATHS ──────────────────────────────────────────────────────────
+    private static final String BTN_FIGHT_PATH   = "Assets/battle_sprites/battle_buttons/actions/fight_btn.gif";
+    private static final String BTN_DEFEND_PATH  = "Assets/battle_sprites/battle_buttons/actions/defend_btn.gif";
+    private static final String BTN_CHECK_PATH   = "Assets/battle_sprites/battle_buttons/actions/check_btn.gif";
+    private static final String BTN_BACK_PATH    = "Assets/battle_sprites/battle_buttons/actions/back_btn.gif";
+    private static final String P1_SPRITE_PATH   = "Assets/character_related/idleAnimation/left/";
+    private static final String P1_SPRITE_SUFFIX = "-left.gif";
+    private static final String ENEMY_SPRITE_PATH   = "Assets/character_related/idleAnimation/right/";
+    private static final String ENEMY_SPRITE_SUFFIX = "-right.gif";
+    private static final String BG_IMAGE_PATH    = "Assets/battle_sprites/battleArena.gif";
+    // ─────────────────────────────────────────────────────────────────────────
+
     private final Image bgImage;
     private Image playerSprite;
     private Image enemySprite;
@@ -20,6 +32,8 @@ public class PVEBattleScreen extends JPanel {
 
     private GameCharacter player;
     private GameCharacter enemy;
+    private String leftName;
+    private String rightName;
 
     private final BattleSystem system;
     private final GameSession session;
@@ -39,7 +53,7 @@ public class PVEBattleScreen extends JPanel {
         session = GameSession.getInstance();
         system = new BattleSystem();
 
-        bgImage = new ImageIcon("Assets/battleArenaScreen.gif").getImage();
+        bgImage = new ImageIcon(BG_IMAGE_PATH).getImage();
 
         createUI();
         setLayoutListeners();
@@ -55,27 +69,42 @@ public class PVEBattleScreen extends JPanel {
 
         if (player == null || enemy == null) { dialogue.setText("Not initialized!"); return; }
 
-        playerSprite = loadSprite(player.getCharacterName());
-        enemySprite  = loadSprite(enemy.getCharacterName());
+        leftName  = toFileKey(player.getCharacterName());
+        rightName = toFileKey(enemy.getCharacterName());
+
+        playerSprite = new ImageIcon(P1_SPRITE_PATH    + leftName + P1_SPRITE_SUFFIX).getImage();
+        enemySprite  = new ImageIcon(ENEMY_SPRITE_PATH + rightName + ENEMY_SPRITE_SUFFIX).getImage();
+
         dialogue.setText("Battle Started!");
         initialized = true;
     }
 
-    // =========================
-    // LOAD SPRITES
-    // =========================
-    private Image loadSprite(String name) {
-        return new ImageIcon("Assets/characters_idle/" + name + "-idle.gif").getImage();
+    private String toFileKey(String name) {
+        return name.toLowerCase().replaceAll("[^a-z0-9]", "");
     }
 
     // =========================
     // UI SETUP
     // =========================
+    private JButton makeButton(String text, String imagePath) {
+        JButton btn = new JButton();
+        if (imagePath != null) {
+            btn.setIcon(new ImageIcon(imagePath));
+            btn.setBorderPainted(false);
+            btn.setContentAreaFilled(false);
+            btn.setFocusPainted(false);
+            btn.setToolTipText(text);
+        } else {
+            btn.setText(text);
+        }
+        return btn;
+    }
+
     private void createUI() {
-        btnFight = new JButton("FIGHT");
-        btnDefend = new JButton("DEFEND");
-        btnCheck = new JButton("CHECK");
-        btnBack = new JButton("BACK");
+        btnFight  = makeButton("FIGHT",  BTN_FIGHT_PATH);
+        btnDefend = makeButton("DEFEND", BTN_DEFEND_PATH);
+        btnCheck  = makeButton("CHECK",  BTN_CHECK_PATH);
+        btnBack   = makeButton("BACK",   BTN_BACK_PATH);
 
         add(btnFight);
         add(btnDefend);

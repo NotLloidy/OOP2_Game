@@ -3,7 +3,7 @@ package GUI;
 import GUI.BattleScreens.ARCADE.ArcadeBattleScreen;
 import GUI.BattleScreens.PVP.PVPBattleScreen;
 import GUI.BattleScreens.VersusScreen;
-import GUI.BattleScreens.GameOverScreen;          //  NEW
+import GUI.BattleScreens.GameOverScreen;
 import GUI.CharacterSelectScreens.*;
 import GUI.BattleScreens.PVE.PVEBattleScreen;
 import GUI.CharacterInfo.*;
@@ -13,20 +13,29 @@ import Foundation.GameCharacter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class GameGUI extends JFrame {
 
     private final CardLayout    cardLayout;
     private final JPanel        container;
     private final VersusScreen  versusScreen;
-    private final GameOverScreen gameOverScreen; //  NEW
+    private final GameOverScreen gameOverScreen;
 
     // Floating banner shown during character select
     private final JLabel selectionBanner = new JLabel("", SwingConstants.CENTER);
 
     public GameGUI() {
         this.setSize(800, 600);
+        this.setMinimumSize(new Dimension(640, 480));
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // ── Allow the window to be resized or toggled to full-screen ──────────
+        // Users can maximise with the OS window button or press F11 for
+        // borderless full-screen.
+        this.setResizable(true);
+        installFullScreenToggle();
 
         // ── Banner setup ──────────────────────────────────────────────────────
         selectionBanner.setFont(new Font("Impact", Font.PLAIN, 24));
@@ -46,13 +55,11 @@ public class GameGUI extends JFrame {
         layered.add(selectionBanner, JLayeredPane.PALETTE_LAYER);
         this.setContentPane(layered);
 
-        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+        // Resize listener — keeps container and banner filling the window
+        this.addComponentListener(new ComponentAdapter() {
             @Override
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                int w = getContentPane().getWidth();
-                int h = getContentPane().getHeight();
-                container.setBounds(0, 0, w, h);
-                selectionBanner.setBounds(0, 0, w, 40);
+            public void componentResized(ComponentEvent e) {
+                relayoutAll();
             }
         });
 
@@ -87,21 +94,71 @@ public class GameGUI extends JFrame {
         versusScreen = new VersusScreen();
         container.add(versusScreen, "VersusScreen");
 
-        gameOverScreen = new GameOverScreen();              //  NEW
-        container.add(gameOverScreen, "GameOverScreen");   //  NEW
+        gameOverScreen = new GameOverScreen();
+        container.add(gameOverScreen, "GameOverScreen");
 
         PVEBattleScreen pveScreen = new PVEBattleScreen();
         container.add(pveScreen, "PVEBattleScreen");
         pveScreen.setGameGUI(this);
+
         container.add(new PVPBattleScreen(), "PVPBattleScreen");
 
         ArcadeBattleScreen arcadeScreen = new ArcadeBattleScreen();
         container.add(arcadeScreen, "ArcadeBattleScreen");
         arcadeScreen.setVersusScreen(versusScreen, cardLayout, container);
         arcadeScreen.setGameGUI(this);
-             
+
         this.setIconImage(new ImageIcon("Assets/others/gameLogo.gif").getImage());
         this.setVisible(true);
+    }
+
+    // =========================================================================
+    // LAYOUT HELPERS
+    // =========================================================================
+
+    /** Resize the container and banner to fill whatever the content-pane is. */
+    private void relayoutAll() {
+        int w = getContentPane().getWidth();
+        int h = getContentPane().getHeight();
+        container.setBounds(0, 0, w, h);
+        selectionBanner.setBounds(0, 0, w, 40);
+    }
+
+    /**
+     * Installs an F11 key binding that toggles borderless full-screen mode.
+     * Works on macOS, Windows, and Linux.
+     */
+    private void installFullScreenToggle() {
+        getRootPane().registerKeyboardAction(
+            e -> toggleFullScreen(),
+            KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F11, 0),
+            JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+    }
+
+    private boolean isFullScreen = false;
+
+    public void toggleFullScreen() {
+        GraphicsDevice gd = GraphicsEnvironment
+                .getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice();
+
+        if (!isFullScreen && gd.isFullScreenSupported()) {
+            // Enter full-screen exclusive mode
+            dispose();
+            setUndecorated(true);
+            gd.setFullScreenWindow(this);
+            isFullScreen = true;
+        } else {
+            // Exit full-screen
+            gd.setFullScreenWindow(null);
+            dispose();
+            setUndecorated(false);
+            setSize(800, 600);
+            setVisible(true);
+            isFullScreen = false;
+        }
+        relayoutAll();
     }
 
     // =========================================================================
@@ -159,16 +216,8 @@ public class GameGUI extends JFrame {
     }
 
     // =========================================================================
-    // GAME OVER   NEW
+    // GAME OVER
     // =========================================================================
-    /**
-     * Show the Game Over screen then navigate to a follow-up screen.
-     *
-     * @param winnerName   character name of the winner (sprite loaded from Assets/characters_idle/)
-     * @param loserName    character name of the loser (shown in sub-text)
-     * @param playerWon    true  → "YOU WIN!" yellow  |  false → "YOU LOSE" red
-     * @param nextScreen   screen key to show after the animation finishes (e.g. "MainMenu")
-     */
     public void showGameOver(String winnerName, String loserName,
                              boolean playerWon, String nextScreen) {
         cardLayout.show(container, "GameOverScreen");
@@ -212,6 +261,6 @@ public class GameGUI extends JFrame {
     // MAIN
     // =========================================================================
     public static void main(String[] args) {
-        new GameGUI();
+        SwingUtilities.invokeLater(GameGUI::new);
     }
 }

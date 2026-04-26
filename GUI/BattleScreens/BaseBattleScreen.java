@@ -5,6 +5,8 @@ import Foundation.GameCharacter;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 /**
  * Abstract base for all three battle screens.
@@ -41,6 +43,13 @@ public abstract class BaseBattleScreen extends JPanel {
     public static final String BG_PATH        = "Assets/battle_sprites/battleArena.gif";
     public static final String ANIM_BASE      = "Assets/character_related/skillsAnimation/";
 
+    // ── Button row layout constants ───────────────────────────────────────
+    /** Target button height as fraction of panel height. */
+    protected static final float BTN_H_FRAC = 0.065f;
+    /** Minimum / maximum clamped button height in pixels. */
+    protected static final int   BTN_H_MIN  = 32;
+    protected static final int   BTN_H_MAX  = 60;
+
     // ── Overlay labels for skill animations ───────────────────────────────
     protected JLabel playerAnimLabel;
     protected JLabel enemyAnimLabel;
@@ -57,50 +66,93 @@ public abstract class BaseBattleScreen extends JPanel {
     // ── Button helpers ────────────────────────────────────────────────────
 
     /**
-     * Creates a borderless image button whose bounds exactly match the image's
-     * natural pixel dimensions (no stretching or clipping).
+     * Creates a borderless image button. The icon is scaled to a consistent
+     * height ({@link #computeButtonHeight()} px) while preserving aspect ratio.
      */
     protected JButton makeButton(String tooltip, String imagePath) {
         JButton btn = new JButton();
         if (imagePath != null) {
-            ImageIcon icon = new ImageIcon(imagePath);
-            btn.setIcon(icon);
-            btn.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+            applyScaledIcon(btn, imagePath);
             btn.setBorderPainted(false);
             btn.setContentAreaFilled(false);
             btn.setFocusPainted(false);
             btn.setToolTipText(tooltip);
         } else {
             btn.setText(tooltip);
+            btn.setPreferredSize(new Dimension(100, computeButtonHeight()));
         }
         return btn;
     }
 
     /**
-     * Swaps the icon on an existing button and refreshes its preferred size
-     * so the next layoutUI() call sizes it correctly.
+     * Swaps the icon on an existing button, scaling it to the consistent
+     * button height so all buttons in a row share the same height.
      */
     protected void setButtonLabel(JButton btn, String tooltip, String imagePath) {
         if (imagePath != null) {
-            ImageIcon icon = new ImageIcon(imagePath);
-            btn.setIcon(icon);
-            btn.setPreferredSize(new Dimension(icon.getIconWidth(), icon.getIconHeight()));
+            applyScaledIcon(btn, imagePath);
             btn.setToolTipText(tooltip);
         } else {
             btn.setIcon(null);
             btn.setText(tooltip);
-            btn.setPreferredSize(new Dimension(100, 35));
+            btn.setPreferredSize(new Dimension(100, computeButtonHeight()));
         }
     }
 
     /**
-     * Positions a button at (x, y) using its icon's natural pixel size.
-     * Always call this from layoutUI() instead of setBounds(w, 100, 40).
+     * Scales an icon to the target button height (preserving aspect ratio)
+     * and applies it to the button.
+     */
+    protected void applyScaledIcon(JButton btn, String imagePath) {
+        ImageIcon raw  = new ImageIcon(imagePath);
+        int       natW = raw.getIconWidth();
+        int       natH = raw.getIconHeight();
+        if (natW <= 0 || natH <= 0) {
+            btn.setIcon(raw);
+            btn.setPreferredSize(new Dimension(100, computeButtonHeight()));
+            return;
+        }
+        int targetH = computeButtonHeight();
+        int targetW = targetH * natW / natH;
+        Image scaled = raw.getImage().getScaledInstance(targetW, targetH, Image.SCALE_SMOOTH);
+        ImageIcon icon = new ImageIcon(scaled);
+        btn.setIcon(icon);
+        btn.setPreferredSize(new Dimension(targetW, targetH));
+    }
+
+    /**
+     * Same as {@link #applyScaledIcon} but returns the icon for use as a
+     * disabled icon (same scale, just stored separately).
+     */
+    protected ImageIcon makeScaledIcon(String imagePath) {
+        ImageIcon raw  = new ImageIcon(imagePath);
+        int       natW = raw.getIconWidth();
+        int       natH = raw.getIconHeight();
+        if (natW <= 0 || natH <= 0) return raw;
+        int targetH = computeButtonHeight();
+        int targetW = targetH * natW / natH;
+        Image scaled = raw.getImage().getScaledInstance(targetW, targetH, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
+    }
+
+    /**
+     * Computes the current target button height from the panel size.
+     * Falls back to BTN_H_MIN when the panel has not been laid out yet.
+     */
+    protected int computeButtonHeight() {
+        int h = getHeight();
+        if (h <= 0) return BTN_H_MIN;
+        return Math.min(BTN_H_MAX, Math.max(BTN_H_MIN, (int)(h * BTN_H_FRAC)));
+    }
+
+    /**
+     * Positions a button at (x, y) using its preferred size (which has already
+     * been set to the scaled icon dimensions by {@link #applyScaledIcon}).
      */
     protected void sizeToIcon(JButton btn, int x, int y) {
         Dimension d = btn.getPreferredSize();
         int bw = (d != null && d.width  > 0) ? d.width  : 100;
-        int bh = (d != null && d.height > 0) ? d.height : 35;
+        int bh = (d != null && d.height > 0) ? d.height : computeButtonHeight();
         btn.setBounds(x, y, bw, bh);
     }
 
@@ -116,10 +168,6 @@ public abstract class BaseBattleScreen extends JPanel {
 
     // ── Stat bar renderer ─────────────────────────────────────────────────
 
-    /**
-     * Draws name + HP bar + MP bar for one character.
-     * Total vertical footprint ≈ 50 px (name + 2 bars + gaps).
-     */
     protected void drawBars(Graphics g, GameCharacter c, int x, int y, int barW) {
         if (c == null) return;
         Graphics2D g2 = (Graphics2D) g;
@@ -128,13 +176,11 @@ public abstract class BaseBattleScreen extends JPanel {
         final int BAR_H = 14;
         final int GAP   = 3;
 
-        // Character name
         g2.setFont(BAR_NAME_FONT);
         g2.setColor(new Color(255, 220, 30));
         g2.drawString(c.getCharacterName(), x, y);
         y += 5;
 
-        // HP bar
         int   hp    = c.getCharacterCurrentHealthPoints();
         int   maxHp = c.getCharacterMaxHealthPoints();
         float hpPct = Math.max(0, (float) hp / maxHp);
@@ -151,7 +197,6 @@ public abstract class BaseBattleScreen extends JPanel {
         g2.drawString("HP " + hp + "/" + maxHp, x + 3, y + BAR_H - 2);
         y += BAR_H + GAP;
 
-        // MP bar
         int   mp    = c.getCharacterCurrentMana();
         int   maxMp = c.getCharacterMaxMana();
         float mpPct = Math.max(0, (float) mp / maxMp);
@@ -165,7 +210,6 @@ public abstract class BaseBattleScreen extends JPanel {
         g2.drawString("MP " + mp + "/" + maxMp, x + 3, y + BAR_H - 2);
     }
 
-    /** Draws a "P  2 - 1  CPU" win counter centred at (cx, cy). */
     protected void drawWinCounter(Graphics g, String left, int lWins, int rWins,
                                   String right, int cx, int cy) {
         Graphics2D g2 = (Graphics2D) g;
@@ -184,18 +228,10 @@ public abstract class BaseBattleScreen extends JPanel {
 
     protected String getSkillAnimPath(String spriteKey, int skillNum, boolean isLeft) {
         String dir = isLeft ? "left" : "right";
-
-        String pfx = switch (spriteKey) {
-            default                -> spriteKey;
-        };
         String sfx = isLeft ? "L" : "R";
-        return ANIM_BASE + dir + "/" + pfx + "Skill" + skillNum + sfx + ".gif";
+        return ANIM_BASE + dir + "/" + spriteKey + "Skill" + skillNum + sfx + ".gif";
     }
 
-    /**
-     * Plays the player (left) skill animation for 1 500 ms.
-     * {@code playerAnimating} is true for the duration so the idle sprite is hidden.
-     */
     protected void showPlayerSkillAnim(String spriteKey, int skillNum) {
         if (playerAnimLabel == null) return;
         playerAnimating = true;
@@ -211,10 +247,6 @@ public abstract class BaseBattleScreen extends JPanel {
         t.start();
     }
 
-    /**
-     * Plays the enemy (right) skill animation for 1 500 ms.
-     * {@code enemyAnimating} is true for the duration so the idle sprite is hidden.
-     */
     protected void showEnemySkillAnim(String spriteKey, int skillNum) {
         if (enemyAnimLabel == null) return;
         enemyAnimating = true;

@@ -1,41 +1,17 @@
 package GUI.BattleScreens.ARCADE;
 
 import Foundation.*;
+import GUI.BattleScreens.BaseBattleScreen;
 import GUI.BattleScreens.VersusScreen;
 import GameEngines.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ArcadeBattleScreen extends JPanel {
-
-    private static final String BTN_FIGHT_PATH   = "Assets/battle_sprites/battle_buttons/actions/fight_btn.gif";
-    private static final String BTN_DEFEND_PATH  = "Assets/battle_sprites/battle_buttons/actions/defend_btn.gif";
-    private static final String BTN_CHECK_PATH   = "Assets/battle_sprites/battle_buttons/actions/check_btn.gif";
-    private static final String BTN_BACK_PATH    = "Assets/battle_sprites/battle_buttons/actions/back_btn.gif";
-    private static final String BTN_BACK_DISABLED_PATH = "Assets/battle_sprites/battle_buttons/actions/back_btn_disabled.png";
-
-    private static final String P1_SPRITE_PATH   = "Assets/character_related/idleAnimation/left/";
-    private static final String P1_SPRITE_SUFFIX = "-left.gif";
-    private static final String ENEMY_SPRITE_PATH   = "Assets/character_related/idleAnimation/right/";
-    private static final String ENEMY_SPRITE_SUFFIX = "-right.gif";
-    private static final String BG_IMAGE_PATH    = "Assets/battle_sprites/battleArena.gif";
-    
-    private static final String BTN_SKILL1_PATH  = "Assets/battle_sprites/battle_buttons/skills/active/skill1.png";
-    private static final String BTN_SKILL2_PATH  = "Assets/battle_sprites/battle_buttons/skills/active/skill2.png";
-    private static final String BTN_SKILL3_PATH  = "Assets/battle_sprites/battle_buttons/skills/active/skill3.png";
-
-    private static final String BTN_SKILL1_DISABLED_PATH  = "Assets/battle_sprites/battle_buttons/skills/inactive/skill1.png";
-    private static final String BTN_SKILL2_DISABLED_PATH  = "Assets/battle_sprites/battle_buttons/skills/inactive/skill2.png";
-    private static final String BTN_SKILL3_DISABLED_PATH  = "Assets/battle_sprites/battle_buttons/skills/inactive/skill3.png";
-
-    private static final String BTN_BLOCK2_PATH  = "Assets/battle_sprites/battle_buttons/block/block_btn2.png";
-    private static final String BTN_BLOCK1_PATH  = "Assets/battle_sprites/battle_buttons/skills/block_btn1.png";
-    private static final String BTN_BLOCK0_PATH  = "Assets/battle_sprites/battle_buttons/skills/block_btn0.png";
+public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private final Image bgImage;
     private Image playerSprite;
@@ -43,17 +19,19 @@ public class ArcadeBattleScreen extends JPanel {
 
     private JButton btnFight, btnDefend, btnCheck, btnBack;
     private JTextArea dialogue;
-    private JLabel statusLabel; 
+    private JLabel statusLabel;
+
+    // ── Sprite positions ──────────────────────────────────────────────────
+    private int spX, spY, spW, spH;
+    private int enX, enY, enW, enH;
 
     private boolean defendDisabled = false;
 
     private GameCharacter player;
     private GameCharacter enemy;
-    private String leftName;
-    private String rightName;
 
     private final BattleSystem system;
-    private final GameSession session;
+    private final GameSession  session;
     private ActionState state = ActionState.MAIN;
 
     private int playerWins  = 0;
@@ -76,16 +54,23 @@ public class ArcadeBattleScreen extends JPanel {
         setLayout(null);
         session = GameSession.getInstance();
         system  = new BattleSystem();
-        bgImage = new ImageIcon(BG_IMAGE_PATH).getImage();
+        bgImage = new ImageIcon(BG_PATH).getImage();
         createUI();
-        setLayoutListeners();
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                updateButtons();   // rescales icons
+                layoutUI();
+            }
+        });
     }
 
     public void setGameGUI(GUI.GameGUI gui) { this.gameGUI = gui; }
 
     public void setVersusScreen(VersusScreen vs, CardLayout cl, JPanel cont) {
-        this.versusScreen = vs; this.cardLayout   = cl; this.container    = cont;
+        this.versusScreen = vs; this.cardLayout = cl; this.container = cont;
     }
+
+    // ── Init ──────────────────────────────────────────────────────────────
 
     public void initBattle() {
         if (initialized) return;
@@ -124,31 +109,35 @@ public class ArcadeBattleScreen extends JPanel {
         enemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
         session.setPlayer2(enemy);
 
-        this.leftName    = toFileKey(player.getCharacterName());
-        this.rightName   = toFileKey(enemy.getCharacterName());
+        String leftKey  = toFileKey(player.getCharacterName());
+        String rightKey = toFileKey(enemy.getCharacterName());
 
-        playerSprite = new ImageIcon(P1_SPRITE_PATH    + leftName + P1_SPRITE_SUFFIX).getImage();
-        enemySprite  = new ImageIcon(ENEMY_SPRITE_PATH + rightName + ENEMY_SPRITE_SUFFIX).getImage();
+        playerSprite = new ImageIcon(IDLE_LEFT_DIR  + leftKey  + IDLE_L_SFX).getImage();
+        enemySprite  = new ImageIcon(IDLE_RIGHT_DIR + rightKey + IDLE_R_SFX).getImage();
 
-        playerWins = 0; enemyWins  = 0; round      = 1;
-        defendDisabled = false; state      = ActionState.MAIN;
+        playerWins     = 0; enemyWins = 0; round = 1;
+        defendDisabled = false; state  = ActionState.MAIN;
 
         updateStatusLabel();
-        dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/" + opponentOrder.size() + ": " + enemy.getCharacterName());
+        dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/" + opponentOrder.size()
+                       + ": " + enemy.getCharacterName());
 
         enableButtons(); updateButtons(); repaint();
     }
 
     private void updateStatusLabel() {
-        statusLabel.setText("Opponent  " + (currentOpponentIndex + 1) + " / " + opponentOrder.size() + "   [ " + playerWins + " - " + enemyWins + " ]");
+        statusLabel.setText("Opponent  " + (currentOpponentIndex + 1) + " / " + opponentOrder.size()
+                          + "   [ " + playerWins + " - " + enemyWins + " ]");
     }
+
+    // ── UI construction ───────────────────────────────────────────────────
 
     private void createUI() {
         btnFight  = makeButton("FIGHT",  BTN_FIGHT_PATH);
         btnDefend = makeButton("DEFEND", BTN_DEFEND_PATH);
         btnCheck  = makeButton("CHECK",  BTN_CHECK_PATH);
         btnBack   = makeButton("BACK",   BTN_BACK_PATH);
-        btnBack.setDisabledIcon(new ImageIcon(BTN_BACK_DISABLED_PATH));
+        btnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
 
         add(btnFight); add(btnDefend); add(btnCheck); add(btnBack);
 
@@ -163,34 +152,48 @@ public class ArcadeBattleScreen extends JPanel {
         statusLabel.setFont(new Font("Impact", Font.PLAIN, 20));
         add(statusLabel);
 
-        btnFight.addActionListener(e -> switchState(ActionState.FIGHT));
-        btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
-        btnCheck.addActionListener(e -> switchState(ActionState.CHECK));
-        btnBack.addActionListener(e -> switchState(ActionState.MAIN));
+        // Skill animation overlays
+        playerAnimLabel = new JLabel();
+        playerAnimLabel.setVisible(false);
+        add(playerAnimLabel);
+
+        enemyAnimLabel = new JLabel();
+        enemyAnimLabel.setVisible(false);
+        add(enemyAnimLabel);
 
         updateButtons();
     }
 
-    private JButton makeButton(String text, String imagePath) {
-        JButton btn = new JButton();
-        if (imagePath != null) {
-            btn.setIcon(new ImageIcon(imagePath)); btn.setBorderPainted(false);
-            btn.setContentAreaFilled(false); btn.setFocusPainted(false); btn.setToolTipText(text);
-        } else { btn.setText(text); }
-        return btn;
+    // ── Layout ────────────────────────────────────────────────────────────
+
+    private void layoutUI() {
+        int w = getWidth(), h = getHeight();
+        if (w == 0 || h == 0) return;
+
+        spW = (int)(w * 0.28); spH = (int)(h * 0.48);
+        spX = (int)(w * 0.08); spY = (int)(h * 0.10);
+        enW = spW; enH = spH;
+        enX = (int)(w * 0.64); enY = spY;
+
+        playerAnimLabel.setBounds(spX, spY, spW, spH);
+        enemyAnimLabel .setBounds(enX, enY, enW, enH);
+
+        statusLabel.setBounds((int)(w * 0.25), (int)(h * 0.60), (int)(w * 0.50), 28);
+        dialogue   .setBounds((int)(w * 0.10), (int)(h * 0.65), (int)(w * 0.80), (int)(h * 0.15));
+
+        int btnY = (int)(h * 0.85);
+        sizeToIcon(btnFight,  (int)(w * 0.10), btnY);
+        sizeToIcon(btnDefend, (int)(w * 0.30), btnY);
+        sizeToIcon(btnCheck,  (int)(w * 0.55), btnY);
+        sizeToIcon(btnBack,   (int)(w * 0.76), btnY);
     }
 
-    private void setButtonLabel(JButton btn, String text, String imagePath) {
-        if (imagePath != null) { btn.setIcon(new ImageIcon(imagePath)); btn.setToolTipText(text); } 
-        else { btn.setText(text); }
-    }
-
-    private void switchState(ActionState newState) { state = newState; updateButtons(); }
-
-    private void log(String text) { dialogue.append("\n" + text); }
+    // ── Turn logic ────────────────────────────────────────────────────────
 
     private void playerTurn(int action) {
         if (arcadeOver || player == null || enemy == null) return;
+
+        if (action >= 1 && action <= 3) showPlayerSkillAnim(player.getSpriteKey(), action);
 
         String result = system.performAction(player, enemy, action, true);
         dialogue.setText(result);
@@ -203,19 +206,21 @@ public class ArcadeBattleScreen extends JPanel {
             playerWins++; updateStatusLabel(); endRound("You win round " + round + "!"); return;
         }
 
+        switchState(ActionState.MAIN);
         aiTurn();
     }
 
     private void aiTurn() {
         int aiAction = system.getAIAction(enemy);
         String result = system.performAction(enemy, player, aiAction, false);
-        log(result);
+        dialogue.append("\n" + result);
         enemy.getSkill1().reduceSkillCooldown();
         enemy.getSkill2().reduceSkillCooldown();
         enemy.getSkill3().reduceSkillCooldown();
 
         if (!player.isCharacterAlive()) {
-            enemyWins++; updateStatusLabel(); endRound(enemy.getCharacterName() + " wins round " + round + "!");
+            enemyWins++; updateStatusLabel();
+            endRound(enemy.getCharacterName() + " wins round " + round + "!");
         }
         repaint();
     }
@@ -223,19 +228,19 @@ public class ArcadeBattleScreen extends JPanel {
     private void resetRound() {
         round++;
         player.setCharacterCurrentHealthPoints(player.getCharacterMaxHealthPoints());
-        enemy.setCharacterCurrentHealthPoints(enemy.getCharacterMaxHealthPoints());
+        enemy .setCharacterCurrentHealthPoints(enemy .getCharacterMaxHealthPoints());
         player.setCharacterCurrentMana(player.getCharacterMaxMana());
-        enemy.setCharacterCurrentMana(enemy.getCharacterMaxMana());
+        enemy .setCharacterCurrentMana(enemy .getCharacterMaxMana());
         defendDisabled = false; state = ActionState.MAIN;
-        log("── Round " + round + " ──");
+        dialogue.append("\n── Round " + round + " ──");
         updateStatusLabel(); updateButtons();
     }
 
     private void endRound(String message) {
-        log(message);
+        dialogue.append("\n" + message);
 
         if (playerWins == 2) {
-            log("You defeated " + enemy.getCharacterName() + "!");
+            dialogue.append("\nYou defeated " + enemy.getCharacterName() + "!");
             currentOpponentIndex++;
             if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
             disableButtons();
@@ -269,7 +274,8 @@ public class ArcadeBattleScreen extends JPanel {
         disableButtons();
 
         if (gameGUI != null) {
-            Timer delay = new Timer(900, e -> gameGUI.showGameOver(player.getCharacterName(), "", true, "MainMenu"));
+            Timer delay = new Timer(900, e ->
+                gameGUI.showGameOver(player.getCharacterName(), "", true, "MainMenu"));
             delay.setRepeats(false); delay.start();
         }
     }
@@ -281,7 +287,8 @@ public class ArcadeBattleScreen extends JPanel {
         disableButtons();
 
         if (gameGUI != null) {
-            Timer delay = new Timer(900, e -> gameGUI.showGameOver(enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
+            Timer delay = new Timer(900, e ->
+                gameGUI.showGameOver(enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
             delay.setRepeats(false); delay.start();
         }
     }
@@ -296,153 +303,188 @@ public class ArcadeBattleScreen extends JPanel {
         btnCheck.setEnabled(false); btnBack.setEnabled(false);
     }
 
-    private void setLayoutListeners() {
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent e) { layoutUI(); }
-        });
-    }
+    // ── State machine ─────────────────────────────────────────────────────
 
-    private void layoutUI() {
-        int w = getWidth(), h = getHeight();
-        statusLabel.setBounds((int)(w * 0.25), (int)(h * 0.60), (int)(w * 0.50), 28);
-        dialogue.setBounds((int)(w * 0.10), (int)(h * 0.65), (int)(w * 0.80), (int)(h * 0.15));
-        btnFight.setBounds((int)(w * 0.15), (int)(h * 0.85), 100, 40);
-        btnDefend.setBounds((int)(w * 0.35), (int)(h * 0.85), 100, 40);
-        btnCheck.setBounds((int)(w * 0.55), (int)(h * 0.85), 100, 40);
-        btnBack.setBounds((int)(w * 0.75), (int)(h * 0.85), 100, 40);
-    }
+    private void switchState(ActionState newState) { state = newState; updateButtons(); }
 
+    /**
+     * Central button state machine — mirrors PVEBattleScreen exactly.
+     *
+     * MAIN   → Fight / Defend / Check; Back DISABLED (shows disabled graphic).
+     * FIGHT  → Skill 1/2/3; Back ENABLED → returns to MAIN.
+     * DEFEND → Fight & Back hidden; Defend = block count; Check = "BACK".
+     * CHECK  → Only Back visible/enabled; dialogue shows skill stats.
+     */
     private void updateButtons() {
         resetAllButtons();
 
+        btnFight .setVisible(true);
+        btnDefend.setVisible(true);
+        btnCheck .setVisible(true);
+        btnBack  .setVisible(true);
+
         switch (state) {
+            // ── MAIN ──────────────────────────────────────────────────────
             case MAIN -> {
                 setButtonLabel(btnFight,  "FIGHT",  BTN_FIGHT_PATH);
                 setButtonLabel(btnDefend, "DEFEND", BTN_DEFEND_PATH);
                 setButtonLabel(btnCheck,  "CHECK",  BTN_CHECK_PATH);
-                setButtonLabel(btnBack,   "BACK",   BTN_BACK_PATH); 
-                
-                btnFight.setEnabled(true); 
-                btnDefend.setEnabled(!defendDisabled);
-                btnCheck.setEnabled(true); 
-                
-                // This automatically triggers the BTN_BACK_DISABLED_PATH graphic!
-                btnBack.setEnabled(false); 
-                
-                btnFight.setVisible(true); btnBack.setVisible(true);
-                btnDefend.setVisible(true); btnCheck.setVisible(true);
+                setButtonLabel(btnBack,   "BACK",   BTN_BACK_PATH);
+                btnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
 
-                btnFight.addActionListener(e -> switchState(ActionState.FIGHT));
+                btnFight .setEnabled(true);
+                btnDefend.setEnabled(true);
+                btnCheck .setEnabled(true);
+                btnBack  .setEnabled(false);   // disabled → shows disabled graphic
+
+                btnFight .addActionListener(e -> switchState(ActionState.FIGHT));
                 btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
-                btnCheck.addActionListener(e -> switchState(ActionState.CHECK));
+                btnCheck .addActionListener(e -> switchState(ActionState.CHECK));
             }
+
+            // ── FIGHT ─────────────────────────────────────────────────────
             case FIGHT -> {
-                setButtonLabel(btnFight,  "Skill 1", BTN_SKILL1_PATH);
-                setButtonLabel(btnDefend, "Skill 2", BTN_SKILL2_PATH);
-                setButtonLabel(btnCheck,  "Skill 3", BTN_SKILL3_PATH);
+                setButtonLabel(btnFight,  "Skill 1", BTN_SKILL1_ON);
+                setButtonLabel(btnDefend, "Skill 2", BTN_SKILL2_ON);
+                setButtonLabel(btnCheck,  "Skill 3", BTN_SKILL3_ON);
                 setButtonLabel(btnBack,   "BACK",    BTN_BACK_PATH);
 
-                btnFight.setDisabledIcon(new ImageIcon(BTN_SKILL1_DISABLED_PATH));
-                btnDefend.setDisabledIcon(new ImageIcon(BTN_SKILL2_DISABLED_PATH));
-                btnCheck.setDisabledIcon(new ImageIcon(BTN_SKILL3_DISABLED_PATH));
-                btnBack.setDisabledIcon(new ImageIcon(BTN_BACK_DISABLED_PATH));
+                btnFight .setDisabledIcon(makeScaledIcon(BTN_SKILL1_OFF));
+                btnDefend.setDisabledIcon(makeScaledIcon(BTN_SKILL2_OFF));
+                btnCheck .setDisabledIcon(makeScaledIcon(BTN_SKILL3_OFF));
+                btnBack  .setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
 
-                boolean s1Ready = player != null && player.getSkill1().getSkillCurrentCooldown() == 0 &&player.getCharacterCurrentMana() >= player.getSkill1().getSkillManaCost();
-                boolean s2Ready = player != null && player.getSkill2().getSkillCurrentCooldown() == 0 &&player.getCharacterCurrentMana() >= player.getSkill2().getSkillManaCost();               
-                boolean s3Ready = player != null && player.getSkill3().getSkillCurrentCooldown() == 0 &&player.getCharacterCurrentMana() >= player.getSkill3().getSkillManaCost();
+                boolean s1 = player != null && player.getSkill1().getSkillCurrentCooldown() == 0
+                          && player.getCharacterCurrentMana() >= player.getSkill1().getSkillManaCost();
+                boolean s2 = player != null && player.getSkill2().getSkillCurrentCooldown() == 0
+                          && player.getCharacterCurrentMana() >= player.getSkill2().getSkillManaCost();
+                boolean s3 = player != null && player.getSkill3().getSkillCurrentCooldown() == 0
+                          && player.getCharacterCurrentMana() >= player.getSkill3().getSkillManaCost();
 
-                btnFight.setEnabled(s1Ready); 
-                btnDefend.setEnabled(s2Ready);
-                btnCheck.setEnabled(s3Ready); 
-                btnBack.setEnabled(true);
+                btnFight .setEnabled(s1);
+                btnDefend.setEnabled(s2);
+                btnCheck .setEnabled(s3);
+                btnBack  .setEnabled(true);   // re-enabled in FIGHT
 
-                btnFight.addActionListener(e -> playerTurn(1));
+                btnFight .addActionListener(e -> playerTurn(1));
                 btnDefend.addActionListener(e -> playerTurn(2));
-                btnCheck.addActionListener(e -> playerTurn(3));
-                btnBack.addActionListener(e -> switchState(ActionState.MAIN));
+                btnCheck .addActionListener(e -> playerTurn(3));
+                btnBack  .addActionListener(e -> switchState(ActionState.MAIN));
             }
-            case DEFEND -> {
-                btnFight.setVisible(false); btnBack.setVisible(false);
-                setButtonLabel(btnCheck,  "BACK", BTN_CHECK_PATH);
-                
-                // Dynamic Block Graphic Logic
-                int blocks = player != null ? player.getRemainingBlocks() : 0;
-                String blockGraphic = BTN_BLOCK0_PATH;
-                
-                if (blocks >= 2) blockGraphic = BTN_BLOCK2_PATH;
-                else if (blocks == 1) blockGraphic = BTN_BLOCK1_PATH;
-                
-                setButtonLabel(btnDefend, "Block (" + blocks + ")", blockGraphic);
 
-                // Enable only if they have blocks left and haven't hit 0 this turn
+            // ── DEFEND ────────────────────────────────────────────────────
+            case DEFEND -> {
+                btnFight.setVisible(false);
+                btnBack .setVisible(false);
+
+                int blocks = player != null ? player.getRemainingBlocks() : 0;
+                setButtonLabel(btnDefend, "Block (" + blocks + ")", blockPath(blocks));
+                btnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
                 btnDefend.setEnabled(blocks > 0 && !defendDisabled);
+
+                setButtonLabel(btnCheck, "BACK", BTN_CHECK_PATH);
                 btnCheck.setEnabled(true);
 
                 btnDefend.addActionListener(e -> {
                     playerTurn(4);
-                    
-                    // Re-check blocks after taking the turn to immediately update graphic
-                    int newBlocks = player != null ? player.getRemainingBlocks() : 0;
-                    String newBlockGraphic = (newBlocks == 1) ? BTN_BLOCK1_PATH : BTN_BLOCK0_PATH;
-                    setButtonLabel(btnDefend, "Block (" + newBlocks + ")", newBlockGraphic);
-                    
-                    if (newBlocks <= 0) {
-                        defendDisabled = true; 
+                    int nb = player != null ? player.getRemainingBlocks() : 0;
+                    setButtonLabel(btnDefend, "Block (" + nb + ")", blockPath(nb));
+                    btnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
+                    if (nb <= 0) {
+                        defendDisabled = true;
                         btnDefend.setEnabled(false);
                     }
+                    layoutUI();
                 });
 
-                btnCheck.addActionListener(e -> {
+                btnCheck.addActionListener(e -> switchState(ActionState.MAIN));
+            }
+
+            // ── CHECK ─────────────────────────────────────────────────────
+            case CHECK -> {
+                btnFight .setVisible(false);
+                btnDefend.setVisible(false);
+                btnCheck .setVisible(false);
+                btnBack  .setVisible(true);
+
+                setButtonLabel(btnBack, "BACK", BTN_BACK_PATH);
+                btnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
+                btnBack.setEnabled(true);
+
+                if (player != null) {
+                    dialogue.setText(
+                        "[Skill Stats]\n" +
+                        fmtSkill(player.getSkill1()) + "\n" +
+                        fmtSkill(player.getSkill2()) + "\n" +
+                        fmtSkill(player.getSkill3())
+                    );
+                }
+
+                btnBack.addActionListener(e -> {
+                    dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/"
+                                   + opponentOrder.size() + ": " + (enemy != null ? enemy.getCharacterName() : "?"));
                     switchState(ActionState.MAIN);
                 });
             }
-            case CHECK -> {
-                btnBack.setEnabled(true);
-                dialogue.setText(
-                    player.getSkill1().getSkillName() + " | DMG: " + player.getSkill1().getSkillDamage() + " | MP: " + player.getSkill1().getSkillManaCost() + " | CD: " + player.getSkill1().getSkillCurrentCooldown()
-                    + "\n\n" + player.getSkill2().getSkillName() + " | DMG: " + player.getSkill2().getSkillDamage() + " | MP: " + player.getSkill2().getSkillManaCost() + " | CD: " + player.getSkill2().getSkillCurrentCooldown()
-                    + "\n\n" + player.getSkill3().getSkillName() + " | DMG: " + player.getSkill3().getSkillDamage() + " | MP: " + player.getSkill3().getSkillManaCost() + " | CD: " + player.getSkill3().getSkillCurrentCooldown()
-                );
-                
-                btnFight.setEnabled(false); btnDefend.setEnabled(false); btnCheck.setEnabled(false);
-                btnBack.addActionListener(e -> switchState(ActionState.MAIN));
-            }
         }
+
+        if (getWidth() > 0) layoutUI();
     }
+
+    private static String fmtSkill(Foundation.Skill sk) {
+        return sk.getSkillName()
+             + " | DMG: "  + sk.getSkillDamage()
+             + "  MP: "    + sk.getSkillManaCost()
+             + "  CD: "    + sk.getSkillCurrentCooldown() + "/" + sk.getSkillMaxCooldown();
+    }
+
+    private void resetAllButtons() {
+        clearListeners(btnFight); clearListeners(btnDefend);
+        clearListeners(btnCheck); clearListeners(btnBack);
+    }
+
+    // ── Paint ─────────────────────────────────────────────────────────────
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
 
-        int sw = (int)(getWidth()  * 0.28); int sh = (int)(getHeight() * 0.48); int sy = (int)(getHeight() * 0.10);
-        if (playerSprite != null) g.drawImage(playerSprite, (int)(getWidth() * 0.08), sy, sw, sh, this);
-        if (enemySprite != null) g.drawImage(enemySprite, (int)(getWidth() * 0.64), sy, sw, sh, this);
+        if (playerSprite != null && !playerAnimating)
+            g.drawImage(playerSprite, spX, spY, spW, spH, this);
+        if (enemySprite != null && !enemyAnimating)
+            g.drawImage(enemySprite, enX, enY, enW, enH, this);
+
+        int w = getWidth(), h = getHeight();
+        int barW = (int)(w * 0.22);
+        drawBars(g, player, spX, (int)(h * 0.02), barW);
+        drawBars(g, enemy,  enX, (int)(h * 0.02), barW);
 
         if (enemy != null) {
             g.setFont(new Font("Impact", Font.PLAIN, 15)); g.setColor(new Color(255, 200, 20));
-            g.drawString("Opp. " + (currentOpponentIndex + 1) + "/" + opponentOrder.size(), (int)(getWidth() * 0.64), (int)(getHeight() * 0.08));
+            g.drawString("Opp. " + (currentOpponentIndex + 1) + "/" + opponentOrder.size(),
+                         enX, (int)(h * 0.08));
         }
+
+        // Semi-transparent tray behind dialogue
+        g.setColor(new Color(0, 0, 0, 140));
+        g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.17), 12, 12);
     }
+
+    // ── Reset ─────────────────────────────────────────────────────────────
 
     public void reset() {
         initialized          = false; arcadeOver           = false;
-        currentOpponentIndex = 0; playerWins           = 0; enemyWins            = 0; round                = 1;
+        currentOpponentIndex = 0;     playerWins           = 0;
+        enemyWins            = 0;     round                = 1;
         defendDisabled       = false; state                = ActionState.MAIN;
-        opponentOrder.clear(); dialogue.setText(""); statusLabel.setText("ARCADE MODE"); repaint();
-    }
-
-    private void clearListeners(JButton btn) {
-        for (java.awt.event.ActionListener al : btn.getActionListeners()) {
-            btn.removeActionListener(al);
-        }
-    }
-
-    private void resetAllButtons() {
-        clearListeners(btnFight);
-        clearListeners(btnDefend);
-        clearListeners(btnCheck);
-        clearListeners(btnBack);
+        playerAnimating      = false; enemyAnimating       = false;
+        opponentOrder.clear();
+        if (playerAnimLabel != null) playerAnimLabel.setVisible(false);
+        if (enemyAnimLabel  != null) enemyAnimLabel .setVisible(false);
+        dialogue.setText("");
+        statusLabel.setText("ARCADE MODE");
+        repaint();
     }
 
     private enum ActionState { MAIN, FIGHT, DEFEND, CHECK }

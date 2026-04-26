@@ -120,7 +120,7 @@ public class VersusScreen extends JPanel {
 
             // Each character centres in its half of the screen
             float leftTarget  = (float)(w / 2 - leftDispW)  * 0.10f + w * 0.02f;
-            float rightTarget = (float)(w / 2 - rightDispW) * 0.10f + w * 0.03f;
+            float rightTarget = (float)(w / 2 - rightDispW) * 0.14f + w * 0.02f;
 
             leftX  += (leftTarget  - leftX)  * 0.12f;
             rightX += (rightTarget - rightX) * 0.12f;

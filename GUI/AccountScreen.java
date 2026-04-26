@@ -16,7 +16,7 @@ public class AccountScreen extends JPanel {
 
         this.setLayout(null);
 
-        ImageIcon icon = new ImageIcon("Assets/gameAccountScreen.gif");
+        ImageIcon icon = new ImageIcon("Assets/navigation/loginScreen.gif");
         bgImage = icon.getImage();
 
         loginBtn = createButton();

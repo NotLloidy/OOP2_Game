@@ -24,8 +24,7 @@ public class SelectSoleilScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_select/characterSoleilMooncrest.gif").getImage();
-
+        bgImage = new ImageIcon("Assets/character_related/character_select/soleilmooncrestSelect.gif").getImage();
         next = createButton();
         next.addActionListener(e -> gui.showScreen("SelectSungJinWooScreen"));
         this.add(next);

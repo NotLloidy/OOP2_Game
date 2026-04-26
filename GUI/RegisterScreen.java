@@ -18,7 +18,7 @@ public class RegisterScreen extends JPanel {
 
         this.setLayout(null);
 
-        ImageIcon icon = new ImageIcon("Assets/gameRegisterScreenV2.gif");
+        ImageIcon icon = new ImageIcon("Assets/navigation/accountRegistration.gif");
         bgImage = icon.getImage();
 
         usernameField = new JTextField();

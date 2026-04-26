@@ -12,7 +12,7 @@ public class SungJinWoo extends GameCharacter implements SkillsInterface {
     private int shadowMasteryStacks;
 
     public SungJinWoo() {
-        super("Sung Jun-Woo", "Primordial", "Shadow Monarch", 180, 40, 80);
+        super("Sung Jin-Woo", "Primordial", "Shadow Monarch", 180, 40, 80);
 
         shadowSlash = new Skill("Shadow Slash", 15, 5, 0, 0,0);
         shadowExtraction = new Skill("Shadow Extraction", 25, 20, 8, 2,0);

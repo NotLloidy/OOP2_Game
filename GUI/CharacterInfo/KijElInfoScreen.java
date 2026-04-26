@@ -5,8 +5,6 @@ import GameEngines.GameSession;
 
 import javax.swing.*;
 
-import Characters.AVin;
-import Characters.Kenneth;
 import Characters.KijEl;
 import Foundation.BattleMode;
 

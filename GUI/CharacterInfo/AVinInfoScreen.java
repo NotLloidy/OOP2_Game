@@ -1,7 +1,6 @@
 package GUI.CharacterInfo;
 
 import GUI.GameGUI;
-import GUI.CharacterSelectScreens.SelectAVinScreen;
 import GameEngines.GameSession;
 
 import javax.swing.*;

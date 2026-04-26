@@ -24,7 +24,7 @@ public class SelectKijElScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_select/characterKijEl.gif").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_select/kijelSelect.gif").getImage();
 
         next = createButton();
         next.addActionListener(e -> gui.showScreen("SelectSoleilScreen"));

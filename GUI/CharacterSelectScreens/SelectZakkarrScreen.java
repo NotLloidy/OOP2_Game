@@ -24,7 +24,7 @@ public class SelectZakkarrScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_select/characterZakkarr.gif").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_select/zakkarrSelect.gif").getImage();
 
         next = createButton();
         next.addActionListener(e -> gui.showScreen("SelectAVinScreen"));

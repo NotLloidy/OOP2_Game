@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class SoleilMooncrest extends GameCharacter implements SkillsInterface {
+public class SoleilMooncrest extends GameCharacter {
 
     private Skill moonStrike;
     private Skill moonlightShine;
@@ -23,114 +23,98 @@ public class SoleilMooncrest extends GameCharacter implements SkillsInterface {
     @Override
     public void takeDamage(int amount) {
         if (!isCharacterAlive()) return;
-
-        // Check Reverse Power reflection, GUI Should implement the reflect
+        
+        // This reflection needs special handling in a real turn-based engine, 
+        // but for now, we just negate the damage if reflected.
         if (reflectNextAttack) {
-            System.out.println("Reverse Power reflects " + amount + " damage back!");
             reflectNextAttack = false;
             return;
         }
-
-        // Apply normal damage
         super.takeDamage(amount);
     }   
 
     @Override
-    public void useSkill(int skillNumber, GameCharacter target) {
+    public String useSkill(int skillNumber, GameCharacter target) {
         if(getIsStunned()) {
-            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
-            setIsStunned(false); // Remove stun after skipping turn
-            return;
+            setIsStunned(false);
+            return getCharacterName() + " is stunned and cannot act this turn!";
         }
 
-        // Decrement Moon's Blessing cooldown at start of each skill use
         if (moonsBlessingCooldown > 0) {
             moonsBlessingCooldown--;
         }
 
         switch(skillNumber) {
-            case 1: // Moon Strike
+            case 1: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (moonStrike.isSkillAvailable()) {
                     if (target == this && moonsBlessingCooldown == 0) {
-                        // Lunar's Gift: Moon's Blessing (self-heal/mana regen)
                         heal(10);
                         useMana(moonStrike.getSkillManaCost());
                         regenMana(20);
-                        moonsBlessingCooldown = 2; // set passive cooldown
-                        System.out.println(getCharacterName() + " activated Moon's Blessing!");
+                        moonsBlessingCooldown = 2; 
+                        return getCharacterName() + " activated Moon's Blessing! Healed 10 HP and restored Mana.";
                     } else if (target != this) {
-                        // Normal attack
                         target.takeDamage(moonStrike.getSkillDamage());
                         regenMana(moonStrike.getSkillManaRegen());
+                        return getCharacterName() + " used Moon Strike! Dealt " + moonStrike.getSkillDamage() + " damage.";
                     }
-                    moonStrike.triggerSkillCooldown(); // skill cooldown is 0, still triggers internally
+                    moonStrike.triggerSkillCooldown(); 
                 }
-                break;
+                return "Not enough mana!";
 
-            case 2: // Moonlight Shine
+            case 2: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (moonlightShine.isSkillAvailable() && getCharacterCurrentMana() >= moonlightShine.getSkillManaCost()) {
                     if (target == this && !eclipseEmpowermentUsed) {
-                        // Lunar's Gift: Eclipse Empowerment (one-time self-boost)
                         int boostedDamage = (int)(moonlightShine.getSkillDamage() * 1.25);
                         useMana(moonlightShine.getSkillManaCost());
                         regenMana(moonlightShine.getSkillManaRegen());
                         target.takeDamage(boostedDamage);
                         eclipseEmpowermentUsed = true;
-                        System.out.println(getCharacterName() + " activated Eclipse Empowerment!");
+                        moonlightShine.triggerSkillCooldown();
+                        return getCharacterName() + " activated Eclipse Empowerment! Dealt " + boostedDamage + " massive damage!";
                     } else {
-                        // Normal attack
                         target.takeDamage(moonlightShine.getSkillDamage());
                         useMana(moonlightShine.getSkillManaCost());
+                        moonlightShine.triggerSkillCooldown();
+                        return getCharacterName() + " used Moonlight Shine! Dealt " + moonlightShine.getSkillDamage() + " damage.";
                     }
-                    moonlightShine.triggerSkillCooldown();
                 }
-                break;
+                return "Skill on cooldown or insufficient mana.";
 
-            case 3: // Shadow Blast
+            case 3: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
-
                 if (shadowBlast.isSkillAvailable() && getCharacterCurrentMana() >= shadowBlast.getSkillManaCost()) {
                     if (target == this && !reversePowerUsed) {
-                        // Lunar's Gift: Reverse Power (one-time self-reflect)
                         reversePowerUsed = true;
-                        reflectNextAttack = true; // mark self to reflect next incoming attack
+                        reflectNextAttack = true; 
                         useMana(shadowBlast.getSkillManaCost());
                         regenMana(shadowBlast.getSkillManaRegen());
-                        System.out.println("Activated Reverse Power!");
+                        shadowBlast.triggerSkillCooldown();
+                        return getCharacterName() + " activated Reverse Power! The next attack will be reflected.";
                     } else {
-                        // Normal attack
                         target.takeDamage(shadowBlast.getSkillDamage());
                         useMana(shadowBlast.getSkillManaCost());
+                        shadowBlast.triggerSkillCooldown();
+                        return getCharacterName() + " cast Shadow Blast! Dealt " + shadowBlast.getSkillDamage() + " damage.";
                     }
-                    shadowBlast.triggerSkillCooldown();
                 }
-                break;
+                return "Skill on cooldown or insufficient mana.";
         }
+        return "Invalid Action.";
     }
 
     @Override
-    public Skill getSkill1() {
-        return moonStrike;
-    }
-
+    public Skill getSkill1() { return moonStrike; }
     @Override
-    public Skill getSkill2() {
-        return moonlightShine;
-    }
-
+    public Skill getSkill2() { return moonlightShine; }
     @Override
-    public Skill getSkill3() {
-        return shadowBlast;
-    }
+    public Skill getSkill3() { return shadowBlast; }
 }

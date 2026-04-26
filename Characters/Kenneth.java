@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class Kenneth extends GameCharacter implements SkillsInterface {
+public class Kenneth extends GameCharacter {
 
     private Skill aimedShot;
     private Skill overwatchStance;
@@ -20,101 +20,101 @@ public class Kenneth extends GameCharacter implements SkillsInterface {
     }
 
     @Override
-    public void useSkill(int skillNumber, GameCharacter target) {
+    public String useSkill(int skillNumber, GameCharacter target) {
         if(getIsStunned()) {
-            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
-            setIsStunned(false); // Remove stun after skipping turn
-            return;
+            setIsStunned(false);
+            return getCharacterName() + " is stunned and cannot act this turn!";
         }
+        
         switch (skillNumber) {
-            case 1: // Aimed Shot
+            case 1: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (aimedShot.isSkillAvailable() && getCharacterCurrentMana() >= aimedShot.getSkillManaCost()) {
-                    double headshotChance = 0.15; // Base headshot chance
+                    double headshotChance = 0.15;
+                    int damage = aimedShot.getSkillDamage();
+                    String msg = getCharacterName() + " used Aimed Shot. ";
+                    
                     if(overwatchReady) {
-                        System.out.println("\nOverwatch Stance is active! Aimed Shot will deal +15 damage.");
-                        target.takeDamage(15);// Bonus damage for overwatch
-                        overwatchReady = false; // Reset overwatch after use
+                        msg += "Overwatch active (+15 DMG)! ";
+                        target.takeDamage(15);
+                        overwatchReady = false; 
                     }
                     if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
-                        headshotChance = 0.30; // Increased headshot chance on weakened targets
+                        headshotChance = 0.30; 
                     }
                     if(Math.random() < headshotChance) {
-                        System.out.println("\nAimed Shot hit a headshot! Damage is doubled!");
-                        target.takeDamage(aimedShot.getSkillDamage() * 2); // Double damage for headshot
-                        headshotChance = 0.15; // Reset headshot chance after hit
-                    } else {
-                        target.takeDamage(aimedShot.getSkillDamage());
-                    }
+                        msg += "HEADSHOT! Damage doubled! ";
+                        damage *= 2; 
+                    } 
+                    
+                    target.takeDamage(damage);
                     useMana(aimedShot.getSkillManaCost());
                     regenMana(aimedShot.getSkillManaRegen());
                     aimedShot.triggerSkillCooldown();
+                    
+                    return msg + "Dealt " + damage + " total damage.";
                 }
-                break;
+                return "Not enough mana!";
 
-            case 2: // Overwatch Stance
+            case 2: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (overwatchStance.isSkillAvailable() && getCharacterCurrentMana() >= overwatchStance.getSkillManaCost()) {
                     useMana(overwatchStance.getSkillManaCost());
                     regenMana(overwatchStance.getSkillManaRegen());
-                    overwatchReady = true; // counter next attack
+                    overwatchReady = true; 
                     overwatchStance.triggerSkillCooldown();
+                    return getCharacterName() + " enters Overwatch Stance! Next attack is empowered.";
                 }
-                break;
+                return "Skill on cooldown or insufficient mana.";
 
-            case 3: // Suppressive Volley
+            case 3: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (suppressiveVolley.isSkillAvailable() && getCharacterCurrentMana() >= suppressiveVolley.getSkillManaCost()) {
-                    double headshotChance = 0.15; // Base headshot chance
+                    double headshotChance = 0.15; 
+                    int damage = suppressiveVolley.getSkillDamage();
+                    String msg = getCharacterName() + " used Suppressive Volley! ";
+                    
                     if(overwatchReady) {
-                        System.out.println("\nOverwatch Stance is active! Aimed Shot will deal +15 damage.");
-                        target.takeDamage(15);// Bonus damage for overwatch
-                        overwatchReady = false; // Reset overwatch after use
+                        msg += "Overwatch active (+15 DMG)! ";
+                        target.takeDamage(15);
+                        overwatchReady = false; 
                     }
                     if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
-                        headshotChance = 0.30; // Increased headshot chance on weakened targets
+                        headshotChance = 0.30; 
                     }
                     if(Math.random() < headshotChance) {
-                        System.out.println("\nSuppressive Volley hit a headshot! Damage is doubled!");
-                        target.takeDamage(suppressiveVolley.getSkillDamage() * 2); // Double damage for headshot
-                        headshotChance = 0.15; // Reset headshot chance after hit
-                    } else {
-                        target.takeDamage(suppressiveVolley.getSkillDamage());
-                    }
+                        msg += "HEADSHOT! Damage doubled! ";
+                        damage *= 2;
+                    } 
+                    
+                    target.takeDamage(damage);
+                    
                     if(Math.random() < 0.50) {
-                        System.out.println("\nSuppressive Volley suppressed the target! Target will be stunned for 1 turn.");
+                        msg += "Target Suppressed (Stunned)! ";
                         target.setIsStunned(true); 
                     }
+                    
                     useMana(suppressiveVolley.getSkillManaCost());
                     regenMana(suppressiveVolley.getSkillManaRegen());
                     suppressiveVolley.triggerSkillCooldown();
+                    
+                    return msg + "Dealt " + damage + " total damage.";
                 }
-                break;
+                return "Skill on cooldown or insufficient mana.";
         }
-    }
-
-
-    @Override
-    public Skill getSkill1() {
-        return aimedShot;
+        return "Invalid Action.";
     }
 
     @Override
-    public Skill getSkill2() {
-        return overwatchStance;
-    }
-
+    public Skill getSkill1() { return aimedShot; }
     @Override
-    public Skill getSkill3() {
-        return suppressiveVolley;
-    }
+    public Skill getSkill2() { return overwatchStance; }
+    @Override
+    public Skill getSkill3() { return suppressiveVolley; }
 }

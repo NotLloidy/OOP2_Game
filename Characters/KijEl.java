@@ -2,7 +2,7 @@ package Characters;
 
 import Foundation.*;
 
-public class KijEl extends GameCharacter implements SkillsInterface {
+public class KijEl extends GameCharacter {
 
     private Skill arcaneBlast;
     private Skill cinderLance;
@@ -17,65 +17,47 @@ public class KijEl extends GameCharacter implements SkillsInterface {
     }   
 
     @Override
-    public void useSkill(int skillNumber, GameCharacter target) {
+    public String useSkill(int skillNumber, GameCharacter target) {
         Skill skillToUse = null;
         
         if(getIsStunned()) {
-            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
-            setIsStunned(false); // Remove stun after skipping turn
-            return;
+            setIsStunned(false);
+            return getCharacterName() + " is stunned and cannot act this turn!";
         }
 
         switch(skillNumber) {
-            case 1: 
-                skillToUse = arcaneBlast; 
-                break;
-            case 2: 
-                skillToUse = cinderLance; 
-                break;
-            case 3: 
-                skillToUse = cataclysmSigil; 
-                break;
+            case 1: skillToUse = arcaneBlast; break;
+            case 2: skillToUse = cinderLance; break;
+            case 3: skillToUse = cataclysmSigil; break;
         }
 
-        // check if skill can be used
-        if(skillToUse.isSkillAvailable() && getCharacterCurrentMana() >= skillToUse.getSkillManaCost()) {
+        if(skillToUse != null && skillToUse.isSkillAvailable() && getCharacterCurrentMana() >= skillToUse.getSkillManaCost()) {
             if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
-                }
-            // calculate damage
+                return target.block(target);
+            }
+            
             int damage = skillToUse.getSkillDamage();
+            String bonusMsg = "";
 
-            // --- PASSIVE: Arcane's Oath ---
             if(!target.getCharacterRace().equals("Human")) {
-                damage += (int)(damage * 0.25); // +25% damage vs non-Human
+                damage += (int)(damage * 0.25); 
+                bonusMsg = " (Arcane's Oath: +25% DMG against non-humans!) ";
             }
 
-            // apply damage
             target.takeDamage(damage);
-
-            // mana adjustments
             regenMana(skillToUse.getSkillManaRegen());
             useMana(skillToUse.getSkillManaCost());
-
-            // trigger cooldown
             skillToUse.triggerSkillCooldown();
+            
+            return getCharacterName() + " cast " + skillToUse.getSkillName() + "!" + bonusMsg + " Dealt " + damage + " damage.";
         }
+        return "Skill is on cooldown or insufficient mana.";
     }
 
     @Override
-    public Skill getSkill1() { 
-        return this.arcaneBlast; 
-    }
-
+    public Skill getSkill1() { return this.arcaneBlast; }
     @Override
-    public Skill getSkill2() { 
-        return this.cinderLance; 
-    }
-
+    public Skill getSkill2() { return this.cinderLance; }
     @Override
-    public Skill getSkill3() { 
-        return this.cataclysmSigil; 
-    }
+    public Skill getSkill3() { return this.cataclysmSigil; }
 }

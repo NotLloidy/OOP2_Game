@@ -2,15 +2,14 @@ package Characters;
 
 import Foundation.*;
 
-public class ChungMyung extends GameCharacter implements SkillsInterface {
+public class ChungMyung extends GameCharacter {
 
     private Skill blossomThrust;
     private Skill plumPetalDance;
     private Skill saintVerdict;
 
-    // Passive: Plum Resolve
-    private int plumResolveStacks = 0; // Current passive stacks
-    private boolean lastSkillWasBlossom = false; // Track for Plum Petal Dance bonus
+    private int plumResolveStacks = 0; 
+    private boolean lastSkillWasBlossom = false; 
 
     public ChungMyung() {
         super("Chung-Myung", "Human", "Sword Saint", 190, 50, 100);
@@ -21,24 +20,23 @@ public class ChungMyung extends GameCharacter implements SkillsInterface {
     }
 
     @Override
-    public void useSkill(int skillNumber, GameCharacter target) {
+    public String useSkill(int skillNumber, GameCharacter target) {
         if(getIsStunned()) {
-            System.out.println("\n" + getCharacterName() + " is stunned and cannot act this turn!");
-            setIsStunned(false); // Remove stun after skipping turn
-            return;
+            setIsStunned(false);
+            return getCharacterName() + " is stunned and cannot act this turn!";
         }
+        
         switch (skillNumber) {
-            case 1: // Blossom Thrust
+            case 1: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (blossomThrust.isSkillAvailable() && getCharacterCurrentMana() >= blossomThrust.getSkillManaCost()) {
-                    int damage = applyPlumResolve(blossomThrust.getSkillDamage());
+                    int damage = applyPlumResolveDamage(blossomThrust.getSkillDamage());
+                    String extraMsg = "";
 
-                    // Bonus if target below 50% HP
                     if (target.getCharacterCurrentHealthPoints() <= target.getCharacterMaxHealthPoints() / 2) {
-                        System.out.println("\nBlossom Thrust hit a critical strike on the weakened target! +15% damage!");
+                        extraMsg = " (Weakened target! +15% damage) ";
                         damage += damage * 15 / 100;
                     }
 
@@ -47,50 +45,49 @@ public class ChungMyung extends GameCharacter implements SkillsInterface {
                     regenMana(blossomThrust.getSkillManaRegen());
                     blossomThrust.triggerSkillCooldown();
 
-                    // Increase passive stack
-                    addPlumResolveStack(damage);
-
-                    lastSkillWasBlossom = true; // track for Plum Petal Dance bonus
+                    String stackMsg = addPlumResolveStack(damage);
+                    lastSkillWasBlossom = true; 
+                    
+                    return getCharacterName() + " used Blossom Thrust!" + extraMsg + " Dealt " + damage + " damage. " + stackMsg;
                 }
-                break;
-            case 2: // Plum Petal Dance
+                return "Not enough mana!";
+                
+            case 2: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (plumPetalDance.isSkillAvailable() && getCharacterCurrentMana() >= plumPetalDance.getSkillManaCost()) {
                     int damage = plumPetalDance.getSkillDamage();
+                    String extraMsg = "";
 
-                    // Bonus if Blossom Thrust was used last turn
                     if (lastSkillWasBlossom) {
-                        System.out.println("\nPlum Petal Dance is empowered by the previous Blossom Thrust! +10 damage!");
-                        damage += 10; // additional fixed 10 damage
+                        extraMsg = " Empowered by previous strike! (+10 DMG) ";
+                        damage += 10;
                     }
 
-                    // Apply Plum Resolve passive
-                    damage = applyPlumResolve(damage);
-
+                    damage = applyPlumResolveDamage(damage);
                     target.takeDamage(damage);
                     useMana(plumPetalDance.getSkillManaCost());
                     regenMana(plumPetalDance.getSkillManaRegen());
                     plumPetalDance.triggerSkillCooldown();
 
-                    addPlumResolveStack(damage);
+                    String stackMsg = addPlumResolveStack(damage);
                     lastSkillWasBlossom = false;
+                    
+                    return getCharacterName() + " used Plum Petal Dance!" + extraMsg + " Dealt " + damage + " damage. " + stackMsg;
                 }
-                break;
-            case 3: // Saint's Verdict
+                return "Skill is on cooldown or insufficient mana!";
+                
+            case 3: 
                 if(target.getIsBlocking()){
-                    target.block(target);
-                    return;
+                    return target.block(target);
                 }
                 if (saintVerdict.isSkillAvailable() && getCharacterCurrentMana() >= saintVerdict.getSkillManaCost()) {
                     int damage = saintVerdict.getSkillDamage();
-
-                    addPlumResolveStack(damage);
-                    // Apply Plum Resolve passive
-                    damage = applyPlumResolve(damage);
-                    plumResolveStacks = 0;
+                    
+                    String stackMsg = addPlumResolveStack(damage);
+                    damage = applyPlumResolveDamage(damage);
+                    plumResolveStacks = 0; 
 
                     target.takeDamage(damage);
                     useMana(saintVerdict.getSkillManaCost());
@@ -98,46 +95,38 @@ public class ChungMyung extends GameCharacter implements SkillsInterface {
                     saintVerdict.triggerSkillCooldown();
 
                     lastSkillWasBlossom = false;
+                    return getCharacterName() + " used Saint's Verdict! Dealt " + damage + " damage. Plum stacks consumed. " + stackMsg;
                 }
-                break;
+                return "Ultimate is on cooldown or insufficient mana!";
         }
+        return "Invalid action.";
     }
 
-    // Apply Plum Resolve stacks to damage
-    public int applyPlumResolve(int baseDamage) {
+    private int applyPlumResolveDamage(int baseDamage) {
         int damage = baseDamage;
-
         if (plumResolveStacks > 0 && plumResolveStacks < 3) {
-            damage += damage * (plumResolveStacks * 5) / 100; // +5% per stack
-            System.out.println("\nPlum Resolve increased damage by 5%!");
+            damage += damage * (plumResolveStacks * 5) / 100; 
         } else if (plumResolveStacks >= 3) {
-            damage += damage * (plumResolveStacks * 10) / 100; // +30% bonus at 3 stacks
-            regenMana(20); // restore 20 mana
-            System.out.println("\nPlum Resolve fully charged! +30% damage and restored 20 mana!");
-            plumResolveStacks = 0; // reset stacks after boost
+            damage += damage * 30 / 100; 
+            regenMana(20); 
+            plumResolveStacks = 0; 
         }
-
         return damage;
     }
 
-    public void addPlumResolveStack(int damageTaken) {
+    private String addPlumResolveStack(int damageTaken) {
         if (plumResolveStacks < 3 && damageTaken > 0) {
             plumResolveStacks++;
+            if (plumResolveStacks >= 3) return "Plum Resolve is fully charged!";
+            return "Plum Resolve stack added.";
         }
+        return "";
     }
 
     @Override
-    public Skill getSkill1() { 
-        return this.blossomThrust; 
-    }
-
+    public Skill getSkill1() { return this.blossomThrust; }
     @Override
-    public Skill getSkill2() { 
-        return this.plumPetalDance; 
-    }
-
+    public Skill getSkill2() { return this.plumPetalDance; }
     @Override
-    public Skill getSkill3() { 
-        return this.saintVerdict; 
-    }
+    public Skill getSkill3() { return this.saintVerdict; }
 }

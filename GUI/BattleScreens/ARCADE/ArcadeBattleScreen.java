@@ -42,7 +42,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private int opponentCount           = 8;
 
     private boolean initialized = false;
-    private boolean prepared    = false;   // true after prepareAndGetFirstOpponent()
+    private boolean prepared    = false;
     private boolean arcadeOver  = false;
 
     private VersusScreen versusScreen;
@@ -70,19 +70,16 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         this.versusScreen = vs; this.cardLayout = cl; this.container = cont;
     }
 
-    // =========================================================================
-    // PREPARE (called by GameGUI BEFORE showing VersusScreen for opponent #1)
-    // Builds the opponent order and returns the first opponent's display name.
-    // initBattle() will then skip rebuilding since prepared=true.
-    // =========================================================================
+    // ── Two-phase init ────────────────────────────────────────────────────
+
     public String prepareAndGetFirstOpponent() {
         player = session.getPlayer1();
         if (player == null) return null;
 
         buildOpponentOrder();
         currentOpponentIndex = 0;
-        arcadeOver  = false;
-        prepared    = true;
+        arcadeOver = false;
+        prepared   = true;
 
         if (opponentOrder.isEmpty()) return null;
 
@@ -90,14 +87,10 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         return first != null ? first.getCharacterName() : null;
     }
 
-    // =========================================================================
-    // INIT — skips buildOpponentOrder if prepareAndGetFirstOpponent() already ran
-    // =========================================================================
     public void initBattle() {
         if (initialized) return;
 
         if (!prepared) {
-            // Direct entry (fallback) — build order ourselves
             player = session.getPlayer1();
             if (player == null) { dialogue.setText("No player selected!"); return; }
             buildOpponentOrder();
@@ -105,9 +98,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
             arcadeOver = false;
         }
 
-        prepared    = false;   // reset for next run
+        prepared    = false;
         initialized = true;
-
         loadNextOpponent();
     }
 
@@ -250,15 +242,29 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         repaint();
     }
 
+    // ── Round management ──────────────────────────────────────────────────
+
     private void resetRound() {
         round++;
-        player.setCharacterCurrentHealthPoints(player.getCharacterMaxHealthPoints());
-        enemy .setCharacterCurrentHealthPoints(enemy .getCharacterMaxHealthPoints());
-        player.setCharacterCurrentMana(player.getCharacterMaxMana());
-        enemy .setCharacterCurrentMana(enemy .getCharacterMaxMana());
-        defendDisabled = false; state = ActionState.MAIN;
+
+        // resetForNewRound() restores HP, mana, isCharacterAlive, blocks,
+        // and status flags — fixes the "instant death in round 2" bug
+        player.resetForNewRound();
+        enemy.resetForNewRound();
+
+        // Reset skill cooldowns
+        player.getSkill1().resetCooldown();
+        player.getSkill2().resetCooldown();
+        player.getSkill3().resetCooldown();
+        enemy.getSkill1().resetCooldown();
+        enemy.getSkill2().resetCooldown();
+        enemy.getSkill3().resetCooldown();
+
+        defendDisabled = false;
+        state = ActionState.MAIN;
         dialogue.append("\n-- Round " + round + " --");
-        updateStatusLabel(); updateButtons();
+        updateStatusLabel();
+        updateButtons();
     }
 
     private void endRound(String message) {
@@ -270,10 +276,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
             if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
             disableButtons();
 
-            // Show VersusScreen before the next opponent
             GameCharacter nextEnemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
-            player.setCharacterCurrentHealthPoints(player.getCharacterMaxHealthPoints());
-            player.setCharacterCurrentMana(player.getCharacterMaxMana());
+            player.resetForNewRound();  // restore player fully before next fight
 
             if (versusScreen != null && cardLayout != null) {
                 cardLayout.show(container, "VersusScreen");
@@ -481,7 +485,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.17), 12, 12);
     }
 
-    // ── Reset ─────────────────────────────────────────────────────────────
+    // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
         initialized          = false; arcadeOver           = false;

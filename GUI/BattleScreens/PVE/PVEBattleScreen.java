@@ -10,18 +10,13 @@ import java.awt.*;
 
 public class PVEBattleScreen extends BaseBattleScreen {
 
-    // ── Sprites ───────────────────────────────────────────────────────────
     private final Image bgImage;
     private Image playerSprite;
     private Image enemySprite;
 
-    // ── Buttons ───────────────────────────────────────────────────────────
     private JButton btnFight, btnDefend, btnCheck, btnBack;
-
-    // ── Dialogue ──────────────────────────────────────────────────────────
     private JTextArea dialogue;
 
-    // ── State ─────────────────────────────────────────────────────────────
     private GameCharacter player;
     private GameCharacter enemy;
     private boolean defendDisabled = false;
@@ -37,7 +32,6 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private final BattleSystem system;
     private final GameSession  session;
 
-    // ── Sprite layout fields (set in layoutUI) ────────────────────────────
     private int spX, spY, spW, spH;
     private int enX, enY, enW, enH;
 
@@ -49,7 +43,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
-                rescaleButtons();
+                updateButtons();
                 layoutUI();
             }
         });
@@ -57,7 +51,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
     public void setGameGUI(GameGUI gui) { this.gameGUI = gui; }
 
-    // ── Initialise battle ─────────────────────────────────────────────────
+    // ── Init ──────────────────────────────────────────────────────────────
 
     public void initBattle() {
         if (initialized) return;
@@ -109,22 +103,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
         updateButtons();
     }
 
-    // ── Rescale all button icons when panel is resized ────────────────────
-
-    private void rescaleButtons() {
-        // Re-apply the current icon for each button so it gets scaled to the
-        // new computeButtonHeight() value. We track which image each button
-        // is currently showing via its tooltip (or we just re-run updateButtons).
-        updateButtons();
-    }
-
     // ── Layout ────────────────────────────────────────────────────────────
 
     private void layoutUI() {
         int w = getWidth(), h = getHeight();
         if (w == 0 || h == 0) return;
 
-        // Sprite areas
         spW = (int)(w * 0.28); spH = (int)(h * 0.48);
         spX = (int)(w * 0.08); spY = (int)(h * 0.13);
         enW = spW;              enH = spH;
@@ -135,13 +119,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         dialogue.setBounds((int)(w * 0.10), (int)(h * 0.63), (int)(w * 0.80), (int)(h * 0.16));
 
-        // Button row — all buttons share the same Y baseline
         int btnY = (int)(h * 0.83);
-
-        // In DEFEND state only btnDefend and btnCheck are shown;
-        // in CHECK state all action buttons are hidden except btnBack.
-        // sizeToIcon() uses the button's current preferred size (set during
-        // icon scaling) so width adapts automatically.
         sizeToIcon(btnFight,  (int)(w * 0.10), btnY);
         sizeToIcon(btnDefend, (int)(w * 0.30), btnY);
         sizeToIcon(btnCheck,  (int)(w * 0.55), btnY);
@@ -166,9 +144,6 @@ public class PVEBattleScreen extends BaseBattleScreen {
             return;
         }
 
-        // Block (action 4) stays in DEFEND so the player sees the updated
-        // charge count and can choose to block again or press Back themselves.
-        // All other actions return to MAIN.
         if (action != 4) switchState(ActionState.MAIN);
         aiTurn();
     }
@@ -198,11 +173,23 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
     private void resetRound() {
         round++;
-        restoreCharacter(player);
-        restoreCharacter(enemy);
+
+        // resetForNewRound() restores HP, mana, isCharacterAlive, blocks,
+        // and status flags — fixes the "instant death in round 2" bug
+        player.resetForNewRound();
+        enemy.resetForNewRound();
+
+        // Also reset skill cooldowns so round 2 starts fresh
+        player.getSkill1().resetCooldown();
+        player.getSkill2().resetCooldown();
+        player.getSkill3().resetCooldown();
+        enemy.getSkill1().resetCooldown();
+        enemy.getSkill2().resetCooldown();
+        enemy.getSkill3().resetCooldown();
+
         defendDisabled = false;
         state = ActionState.MAIN;
-        dialogue.setText("── Round " + round + " ──\nWhat will " + player.getCharacterName() + " do?");
+        dialogue.setText("-- Round " + round + " --\nWhat will " + player.getCharacterName() + " do?");
         updateButtons();
     }
 
@@ -212,25 +199,23 @@ public class PVEBattleScreen extends BaseBattleScreen {
         if (playerWins == 2) {
             dialogue.append("\nYOU WON THE MATCH!");
             disableButtons();
-            delay(900, () -> gameGUI.showGameOver(player.getCharacterName(), enemy.getCharacterName(), true, "MainMenu"));
+            delay(900, () -> gameGUI.showGameOver(
+                    player.getCharacterName(), enemy.getCharacterName(), true, "MainMenu"));
             return;
         }
         if (enemyWins == 2) {
             dialogue.append("\nYOU LOST THE MATCH!");
             disableButtons();
-            delay(900, () -> gameGUI.showGameOver(enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
+            delay(900, () -> gameGUI.showGameOver(
+                    enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
             return;
         }
         resetRound();
     }
 
-    private static void restoreCharacter(GameCharacter c) {
-        c.setCharacterCurrentHealthPoints(c.getCharacterMaxHealthPoints());
-        c.setCharacterCurrentMana(c.getCharacterMaxMana());
-    }
-
     private void disableButtons() {
-        for (JButton b : new JButton[]{btnFight, btnDefend, btnCheck, btnBack}) b.setEnabled(false);
+        for (JButton b : new JButton[]{btnFight, btnDefend, btnCheck, btnBack})
+            b.setEnabled(false);
     }
 
     private static void delay(int ms, Runnable r) {
@@ -246,47 +231,32 @@ public class PVEBattleScreen extends BaseBattleScreen {
         updateButtons();
     }
 
-    /**
-     * Central button state machine.
-     *
-     * MAIN   → Fight / Defend / Check visible; Back disabled (shows disabled graphic).
-     * FIGHT  → Skill 1/2/3 replace Fight/Defend/Check; Back re-enabled → returns to MAIN.
-     * DEFEND → Fight hidden, Back hidden; Defend shows block count; Check becomes "BACK".
-     *           When blocks reach 0 the Defend button shows BTN_BLOCK0 and is disabled;
-     *           if user re-enters DEFEND after leaving it stays that way.
-     * CHECK  → Only Back visible/enabled; dialogue shows skill stats.
-     */
     private void updateButtons() {
         resetAllButtons();
 
-        // Default visibility — each case can override
         btnFight .setVisible(true);
         btnDefend.setVisible(true);
         btnCheck .setVisible(true);
         btnBack  .setVisible(true);
 
         switch (state) {
-            // ── MAIN ──────────────────────────────────────────────────────
             case MAIN -> {
                 setButtonLabel(btnFight,  "FIGHT",  BTN_FIGHT_PATH);
                 setButtonLabel(btnDefend, "DEFEND", BTN_DEFEND_PATH);
                 setButtonLabel(btnCheck,  "CHECK",  BTN_CHECK_PATH);
                 setButtonLabel(btnBack,   "BACK",   BTN_BACK_PATH);
-
-                // Refresh disabled icon to match current scale
                 btnBack.setDisabledIcon(makeScaledIcon(BTN_BACK_DISABLED));
 
                 btnFight .setEnabled(true);
                 btnDefend.setEnabled(true);
                 btnCheck .setEnabled(true);
-                btnBack  .setEnabled(false);   // shows disabled graphic
+                btnBack  .setEnabled(false);
 
                 btnFight .addActionListener(e -> switchState(ActionState.FIGHT));
                 btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
                 btnCheck .addActionListener(e -> switchState(ActionState.CHECK));
             }
 
-            // ── FIGHT ─────────────────────────────────────────────────────
             case FIGHT -> {
                 setButtonLabel(btnFight,  "Skill 1", BTN_SKILL1_ON);
                 setButtonLabel(btnDefend, "Skill 2", BTN_SKILL2_ON);
@@ -301,7 +271,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
                 btnFight .setEnabled(skillReady(player, 1));
                 btnDefend.setEnabled(skillReady(player, 2));
                 btnCheck .setEnabled(skillReady(player, 3));
-                btnBack  .setEnabled(true);   // re-enabled in FIGHT state
+                btnBack  .setEnabled(true);
 
                 btnFight .addActionListener(e -> playerTurn(1));
                 btnDefend.addActionListener(e -> playerTurn(2));
@@ -309,38 +279,31 @@ public class PVEBattleScreen extends BaseBattleScreen {
                 btnBack  .addActionListener(e -> switchState(ActionState.MAIN));
             }
 
-            // ── DEFEND ────────────────────────────────────────────────────
             case DEFEND -> {
-                // Fight and Back are hidden in DEFEND
                 btnFight.setVisible(false);
                 btnBack .setVisible(false);
 
                 int blocks = player != null ? player.getRemainingBlocks() : 0;
-
-                // Defend button always shows current block graphic
                 setButtonLabel(btnDefend, "Block (" + blocks + ")", blockPath(blocks));
                 btnDefend.setDisabledIcon(makeScaledIcon(blockPath(0)));
                 btnDefend.setEnabled(blocks > 0 && !defendDisabled);
 
-                // Check button repurposed as "BACK" in defend sub-menu
                 setButtonLabel(btnCheck, "BACK", BTN_BACK_PATH);
                 btnCheck.setEnabled(true);
 
                 btnDefend.addActionListener(e -> {
                     int nb = player != null ? player.getRemainingBlocks() : 0;
-                    if (nb <= 0) return;                    // safety guard
-                    playerTurn(4);                          // block + AI turn; state stays DEFEND
+                    if (nb <= 0) return;
+                    playerTurn(4);
                     int remaining = player != null ? player.getRemainingBlocks() : 0;
                     if (remaining <= 0) defendDisabled = true;
-                    switchState(ActionState.DEFEND);        // refresh count/graphic/enabled
+                    switchState(ActionState.DEFEND);
                 });
 
                 btnCheck.addActionListener(e -> switchState(ActionState.MAIN));
             }
 
-            // ── CHECK ─────────────────────────────────────────────────────
             case CHECK -> {
-                // Only Back is visible/enabled; all others hidden
                 btnFight .setVisible(false);
                 btnDefend.setVisible(false);
                 btnCheck .setVisible(false);
@@ -366,7 +329,6 @@ public class PVEBattleScreen extends BaseBattleScreen {
             }
         }
 
-        // Re-apply button positions after any icon swap
         if (getWidth() > 0) layoutUI();
     }
 
@@ -395,10 +357,10 @@ public class PVEBattleScreen extends BaseBattleScreen {
     // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
-        initialized    = false;
-        player         = null; enemy      = null;
-        playerWins     = 0;    enemyWins  = 0;    round = 1;
-        defendDisabled = false; state     = ActionState.MAIN;
+        initialized     = false;
+        player          = null; enemy         = null;
+        playerWins      = 0;    enemyWins     = 0;    round = 1;
+        defendDisabled  = false; state        = ActionState.MAIN;
         playerAnimating = false; enemyAnimating = false;
         playerAnimLabel.setVisible(false);
         enemyAnimLabel .setVisible(false);
@@ -425,10 +387,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
         drawBars(g, player, spX, (int)(h * 0.02), barW);
         drawBars(g, enemy,  enX, (int)(h * 0.02), barW);
 
-        if (player != null && enemy != null) {
-            drawWinCounter(g, "P", playerWins, enemyWins, "CPU",
-                           w / 2, (int)(h * 0.65));
-        }
+        if (player != null && enemy != null)
+            drawWinCounter(g, "P", playerWins, enemyWins, "CPU", w / 2, (int)(h * 0.65));
 
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.62), (int)(w * 0.82), (int)(h * 0.18), 12, 12);

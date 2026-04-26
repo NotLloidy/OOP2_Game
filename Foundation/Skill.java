@@ -58,4 +58,8 @@ public class Skill {
             this.skillCurrentCooldown--;
         }
     }
+
+    public void resetCooldown() {
+        this.skillCurrentCooldown = 0;
+    }
 }

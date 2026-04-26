@@ -21,7 +21,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private JTextArea dialogue;
     private JLabel statusLabel;
 
-    // ── Sprite positions ──────────────────────────────────────────────────
     private int spX, spY, spW, spH;
     private int enX, enY, enW, enH;
 
@@ -43,6 +42,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private int opponentCount           = 8;
 
     private boolean initialized = false;
+    private boolean prepared    = false;   // true after prepareAndGetFirstOpponent()
     private boolean arcadeOver  = false;
 
     private VersusScreen versusScreen;
@@ -58,7 +58,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
-                updateButtons();   // rescales icons
+                updateButtons();
                 layoutUI();
             }
         });
@@ -70,19 +70,45 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         this.versusScreen = vs; this.cardLayout = cl; this.container = cont;
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────
-
-    public void initBattle() {
-        if (initialized) return;
+    // =========================================================================
+    // PREPARE (called by GameGUI BEFORE showing VersusScreen for opponent #1)
+    // Builds the opponent order and returns the first opponent's display name.
+    // initBattle() will then skip rebuilding since prepared=true.
+    // =========================================================================
+    public String prepareAndGetFirstOpponent() {
         player = session.getPlayer1();
-        if (player == null) { dialogue.setText("No player selected!"); return; }
+        if (player == null) return null;
 
         buildOpponentOrder();
         currentOpponentIndex = 0;
-        arcadeOver = false;
+        arcadeOver  = false;
+        prepared    = true;
+
+        if (opponentOrder.isEmpty()) return null;
+
+        GameCharacter first = system.selectCharacter(opponentOrder.get(0));
+        return first != null ? first.getCharacterName() : null;
+    }
+
+    // =========================================================================
+    // INIT — skips buildOpponentOrder if prepareAndGetFirstOpponent() already ran
+    // =========================================================================
+    public void initBattle() {
+        if (initialized) return;
+
+        if (!prepared) {
+            // Direct entry (fallback) — build order ourselves
+            player = session.getPlayer1();
+            if (player == null) { dialogue.setText("No player selected!"); return; }
+            buildOpponentOrder();
+            currentOpponentIndex = 0;
+            arcadeOver = false;
+        }
+
+        prepared    = false;   // reset for next run
+        initialized = true;
 
         loadNextOpponent();
-        initialized = true;
     }
 
     private void buildOpponentOrder() {
@@ -116,7 +142,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         enemySprite  = new ImageIcon(IDLE_RIGHT_DIR + rightKey + IDLE_R_SFX).getImage();
 
         playerWins     = 0; enemyWins = 0; round = 1;
-        defendDisabled = false; state  = ActionState.MAIN;
+        defendDisabled = false; state = ActionState.MAIN;
 
         updateStatusLabel();
         dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/" + opponentOrder.size()
@@ -152,7 +178,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         statusLabel.setFont(new Font("Impact", Font.PLAIN, 20));
         add(statusLabel);
 
-        // Skill animation overlays
         playerAnimLabel = new JLabel();
         playerAnimLabel.setVisible(false);
         add(playerAnimLabel);
@@ -206,7 +231,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
             playerWins++; updateStatusLabel(); endRound("You win round " + round + "!"); return;
         }
 
-        // Block stays in DEFEND; all other actions return to MAIN.
         if (action != 4) switchState(ActionState.MAIN);
         aiTurn();
     }
@@ -233,7 +257,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         player.setCharacterCurrentMana(player.getCharacterMaxMana());
         enemy .setCharacterCurrentMana(enemy .getCharacterMaxMana());
         defendDisabled = false; state = ActionState.MAIN;
-        dialogue.append("\n── Round " + round + " ──");
+        dialogue.append("\n-- Round " + round + " --");
         updateStatusLabel(); updateButtons();
     }
 
@@ -246,6 +270,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
             if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
             disableButtons();
 
+            // Show VersusScreen before the next opponent
             GameCharacter nextEnemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
             player.setCharacterCurrentHealthPoints(player.getCharacterMaxHealthPoints());
             player.setCharacterCurrentMana(player.getCharacterMaxMana());
@@ -308,14 +333,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void switchState(ActionState newState) { state = newState; updateButtons(); }
 
-    /**
-     * Central button state machine — mirrors PVEBattleScreen exactly.
-     *
-     * MAIN   → Fight / Defend / Check; Back DISABLED (shows disabled graphic).
-     * FIGHT  → Skill 1/2/3; Back ENABLED → returns to MAIN.
-     * DEFEND → Fight & Back hidden; Defend = block count; Check = "BACK".
-     * CHECK  → Only Back visible/enabled; dialogue shows skill stats.
-     */
     private void updateButtons() {
         resetAllButtons();
 
@@ -325,7 +342,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         btnBack  .setVisible(true);
 
         switch (state) {
-            // ── MAIN ──────────────────────────────────────────────────────
             case MAIN -> {
                 setButtonLabel(btnFight,  "FIGHT",  BTN_FIGHT_PATH);
                 setButtonLabel(btnDefend, "DEFEND", BTN_DEFEND_PATH);
@@ -336,14 +352,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                 btnFight .setEnabled(true);
                 btnDefend.setEnabled(true);
                 btnCheck .setEnabled(true);
-                btnBack  .setEnabled(false);   // disabled → shows disabled graphic
+                btnBack  .setEnabled(false);
 
                 btnFight .addActionListener(e -> switchState(ActionState.FIGHT));
                 btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
                 btnCheck .addActionListener(e -> switchState(ActionState.CHECK));
             }
 
-            // ── FIGHT ─────────────────────────────────────────────────────
             case FIGHT -> {
                 setButtonLabel(btnFight,  "Skill 1", BTN_SKILL1_ON);
                 setButtonLabel(btnDefend, "Skill 2", BTN_SKILL2_ON);
@@ -365,7 +380,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                 btnFight .setEnabled(s1);
                 btnDefend.setEnabled(s2);
                 btnCheck .setEnabled(s3);
-                btnBack  .setEnabled(true);   // re-enabled in FIGHT
+                btnBack  .setEnabled(true);
 
                 btnFight .addActionListener(e -> playerTurn(1));
                 btnDefend.addActionListener(e -> playerTurn(2));
@@ -373,7 +388,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                 btnBack  .addActionListener(e -> switchState(ActionState.MAIN));
             }
 
-            // ── DEFEND ────────────────────────────────────────────────────
             case DEFEND -> {
                 btnFight.setVisible(false);
                 btnBack .setVisible(false);
@@ -388,17 +402,16 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
                 btnDefend.addActionListener(e -> {
                     int nb = player != null ? player.getRemainingBlocks() : 0;
-                    if (nb <= 0) return;                    // safety guard
-                    playerTurn(4);                          // block + AI turn; state stays DEFEND
+                    if (nb <= 0) return;
+                    playerTurn(4);
                     int remaining = player != null ? player.getRemainingBlocks() : 0;
                     if (remaining <= 0) defendDisabled = true;
-                    switchState(ActionState.DEFEND);        // refresh count/graphic/enabled
+                    switchState(ActionState.DEFEND);
                 });
 
                 btnCheck.addActionListener(e -> switchState(ActionState.MAIN));
             }
 
-            // ── CHECK ─────────────────────────────────────────────────────
             case CHECK -> {
                 btnFight .setVisible(false);
                 btnDefend.setVisible(false);
@@ -464,7 +477,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                          enX, (int)(h * 0.08));
         }
 
-        // Semi-transparent tray behind dialogue
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.17), 12, 12);
     }
@@ -473,6 +485,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     public void reset() {
         initialized          = false; arcadeOver           = false;
+        prepared             = false;
         currentOpponentIndex = 0;     playerWins           = 0;
         enemyWins            = 0;     round                = 1;
         defendDisabled       = false; state                = ActionState.MAIN;

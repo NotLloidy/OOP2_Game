@@ -19,6 +19,7 @@ public class SelectSoleilScreen extends JPanel {
     private JButton prev;
     private JButton info;
     private JButton select;
+    private JButton exit;
 
     public SelectSoleilScreen(GameGUI gui) {
 
@@ -36,6 +37,10 @@ public class SelectSoleilScreen extends JPanel {
         info = createButton();
         info.addActionListener(e -> gui.showScreen("SoleilInfoScreen"));
         this.add(info);
+
+        exit = createButton();
+        exit.addActionListener(e -> gui.showScreen("MainMenu"));
+        this.add(exit);
 
         select = createButton();
         select.addActionListener(e -> {
@@ -119,6 +124,7 @@ public class SelectSoleilScreen extends JPanel {
         prev.setBounds((int)(w * 0.52), (int)(h * 0.41), (int)(btnWidth * 0.5), (int)(btnHeight * 1.5));
         info.setBounds((int)(w * 0.27), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
         select.setBounds((int)(w * 0.11), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
+        exit.setBounds((int)(w * 0.19), (int)(h * 0.79), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
     }
 
     @Override

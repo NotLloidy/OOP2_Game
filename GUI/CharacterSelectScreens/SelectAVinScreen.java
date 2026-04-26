@@ -17,6 +17,7 @@ public class SelectAVinScreen extends JPanel {
     private JButton prev;
     private JButton info;
     private JButton select;
+    private JButton exit;
 
     public SelectAVinScreen(GameGUI gui) {
 
@@ -36,7 +37,7 @@ public class SelectAVinScreen extends JPanel {
         prev.addActionListener(e -> {
             GameSession session = GameSession.getInstance();
             if (session.getSelectingPlayer() == 1) {
-                gui.showScreen("MainMenu");
+                gui.showScreen("SelectZakkarScreen");
             } else {
                 // P2 is picking — "back" goes to start of char select
                 gui.showScreen("SelectAVinScreen");
@@ -107,6 +108,10 @@ public class SelectAVinScreen extends JPanel {
                 updatePositions();
             }
         });
+
+        exit = createButton();
+        exit.addActionListener(e -> gui.showScreen("MainMenu"));
+        this.add(exit);
     }
 
     private JButton createButton() {
@@ -129,6 +134,7 @@ public class SelectAVinScreen extends JPanel {
         prev.setBounds  ((int)(w * 0.52), (int)(h * 0.41), (int)(btnWidth * 0.5), (int)(btnHeight * 1.5));
         info.setBounds  ((int)(w * 0.27), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
         select.setBounds((int)(w * 0.11), (int)(h * 0.69), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
+        exit.setBounds((int)(w * 0.19), (int)(h * 0.79), (int)(btnWidth * 1.2), (int)(btnHeight * 0.7));
     }
 
     @Override

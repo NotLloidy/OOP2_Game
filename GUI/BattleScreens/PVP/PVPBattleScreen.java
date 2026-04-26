@@ -47,7 +47,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private boolean initialized = false;
     private boolean matchOver   = false;
 
-    // Reference to host frame for Game Over screen
     private GameGUI gameGUI;
 
     public PVPBattleScreen() {
@@ -65,9 +64,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         });
     }
 
-    public void setGameGUI(GameGUI gui) {
-        this.gameGUI = gui;
-    }
+    public void setGameGUI(GameGUI gui) { this.gameGUI = gui; }
 
     // ── Init ──────────────────────────────────────────────────────────────
 
@@ -230,10 +227,20 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
     private void resetRound() {
         round++;
-        player1.setCharacterCurrentHealthPoints(player1.getCharacterMaxHealthPoints());
-        player2.setCharacterCurrentHealthPoints(player2.getCharacterMaxHealthPoints());
-        player1.setCharacterCurrentMana(player1.getCharacterMaxMana());
-        player2.setCharacterCurrentMana(player2.getCharacterMaxMana());
+
+        // resetForNewRound() restores HP, mana, isCharacterAlive, blocks,
+        // and status flags — fixes the "instant death in round 2" bug
+        player1.resetForNewRound();
+        player2.resetForNewRound();
+
+        // Reset skill cooldowns
+        player1.getSkill1().resetCooldown();
+        player1.getSkill2().resetCooldown();
+        player1.getSkill3().resetCooldown();
+        player2.getSkill1().resetCooldown();
+        player2.getSkill2().resetCooldown();
+        player2.getSkill3().resetCooldown();
+
         p1DefendDisabled = false; p2DefendDisabled = false;
         p1TurnDone = false; p2TurnDone = false; awaitingP2 = false;
         p1State = ActionState.MAIN; p2State = ActionState.MAIN;

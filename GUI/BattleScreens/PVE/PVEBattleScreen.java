@@ -399,7 +399,9 @@ public class PVEBattleScreen extends BaseBattleScreen {
         drawBars(g, enemy,  enX, (int)(h * 0.02), barW);
 
         if (player != null && enemy != null)
-            drawWinCounter(g, "P", playerWins, enemyWins, "CPU", w / 2, (int)(h * 0.65));
+            drawWinCounter(g, "P", playerWins, enemyWins, "CPU",
+               w / 2,
+               (int)(h * 0.15)); // move near top
 
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.62), (int)(w * 0.82), (int)(h * 0.18), 12, 12);

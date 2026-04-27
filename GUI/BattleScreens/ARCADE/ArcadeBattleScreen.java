@@ -203,7 +203,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         playerAnimLabel.setBounds(spX, spY, spW, spH);
         enemyAnimLabel .setBounds(enX, enY, enW, enH);
 
-        statusLabel.setBounds((int)(w * 0.25), (int)(h * 0.60), (int)(w * 0.50), 28);
         dialogue   .setBounds((int)(w * 0.10), (int)(h * 0.65), (int)(w * 0.80), (int)(h * 0.15));
 
         int btnY = (int)(h * 0.85);
@@ -213,6 +212,14 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         sizeToIcon(btnBack,   (int)(w * 0.76), btnY);
 
         roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
+
+        int spacing = 5; 
+        statusLabel.setBounds(
+        roundLabel.getX(),
+        roundLabel.getY() + roundLabel.getHeight() + spacing,
+        roundLabel.getWidth(),
+        28
+);
     }
 
     // ── Turn logic ────────────────────────────────────────────────────────
@@ -490,8 +497,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (enemy != null) {
             g.setFont(new Font("Impact", Font.PLAIN, 15)); g.setColor(new Color(255, 200, 20));
-            g.drawString("Opp. " + (currentOpponentIndex + 1) + "/" + opponentOrder.size(),
-                         enX, (int)(h * 0.08));
+
         }
 
         g.setColor(new Color(0, 0, 0, 140));

@@ -438,10 +438,10 @@ public class PVPBattleScreen extends BaseBattleScreen {
         // Win counter
         int cx = w / 2;
         g.setFont(new Font("Impact", Font.PLAIN, 18));
-        g.setColor(Color.WHITE);
+        g.setColor(new Color(255, 220, 30)); // same as roundLabel
         FontMetrics fm = g.getFontMetrics();
         String score = "P1  " + p1Wins + " - " + p2Wins + "  P2";
-        g.drawString(score, cx - fm.stringWidth(score) / 2, (int)(h * 0.64));
+        g.drawString(score, cx - fm.stringWidth(score) / 2, (int)(h * 0.15));
 
         // Highlight whose side is active
         if (!matchOver) {

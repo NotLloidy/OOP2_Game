@@ -49,6 +49,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private CardLayout cardLayout;
     private JPanel container;
     private GUI.GameGUI gameGUI;
+    private JLabel roundLabel;
 
     public ArcadeBattleScreen() {
         setLayout(null);
@@ -101,6 +102,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         prepared    = false;
         initialized = true;
         loadNextOpponent();
+        roundLabel.setText("ROUND " + round);
     }
 
     private void buildOpponentOrder() {
@@ -134,6 +136,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         enemySprite  = new ImageIcon(IDLE_RIGHT_DIR + rightKey + IDLE_R_SFX).getImage();
 
         playerWins     = 0; enemyWins = 0; round = 1;
+        roundLabel.setText("ROUND " + round);
         defendDisabled = false; state = ActionState.MAIN;
 
         updateStatusLabel();
@@ -170,6 +173,11 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         statusLabel.setFont(new Font("Impact", Font.PLAIN, 20));
         add(statusLabel);
 
+        roundLabel = new JLabel("ROUND 1", SwingConstants.CENTER);
+        roundLabel.setForeground(new Color(255, 220, 30));
+        roundLabel.setFont(new Font("Impact", Font.PLAIN, 26));
+        add(roundLabel);
+
         playerAnimLabel = new JLabel();
         playerAnimLabel.setVisible(false);
         add(playerAnimLabel);
@@ -203,6 +211,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         sizeToIcon(btnDefend, (int)(w * 0.30), btnY);
         sizeToIcon(btnCheck,  (int)(w * 0.55), btnY);
         sizeToIcon(btnBack,   (int)(w * 0.76), btnY);
+
+        roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
     }
 
     // ── Turn logic ────────────────────────────────────────────────────────
@@ -263,6 +273,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         defendDisabled = false;
         state = ActionState.MAIN;
         dialogue.append("\n-- Round " + round + " --");
+        roundLabel.setText("ROUND " + round);
+
         updateStatusLabel();
         updateButtons();
     }
@@ -271,6 +283,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         dialogue.append("\n" + message);
 
         if (playerWins == 2) {
+        
             dialogue.append("\nYou defeated " + enemy.getCharacterName() + "!");
             currentOpponentIndex++;
             if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }

@@ -22,6 +22,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
     private JTextArea dialogue;
     private JLabel    turnLabel;
+    private JLabel roundLabel;
 
     private boolean p1DefendDisabled = false;
     private boolean p2DefendDisabled = false;
@@ -65,6 +66,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
     // ── Init ──────────────────────────────────────────────────────────────
 
     public void initBattle() {
+        roundLabel.setText("ROUND " + round);
         if (initialized) return;
 
         player1 = session.getPlayer1();
@@ -104,10 +106,14 @@ public class PVPBattleScreen extends BaseBattleScreen {
         dialogue.setLineWrap(true);
         dialogue.setWrapStyleWord(true);
         dialogue.setOpaque(false);
-        dialogue.setBackground(Color.BLACK);
         dialogue.setForeground(Color.WHITE);
         dialogue.setFont(new Font("SansSerif", Font.PLAIN, 13));
         add(dialogue);
+
+        roundLabel = new JLabel("ROUND 1", SwingConstants.CENTER);
+        roundLabel.setForeground(new Color(255, 220, 30));
+        roundLabel.setFont(new Font("Impact", Font.PLAIN, 26));
+        add(roundLabel);
 
         turnLabel = new JLabel("PLAYER 1's turn", SwingConstants.CENTER);
         turnLabel.setForeground(new Color(255, 220, 30));
@@ -141,6 +147,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         turnLabel.setBounds((int)(w * 0.30), (int)(h * 0.62), (int)(w * 0.40), 30);
         dialogue .setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));
+        roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
 
         // Shared buttons — same positions as PVE
         int btnY = (int)(h * 0.83);
@@ -198,6 +205,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
     // ── Round / match management ──────────────────────────────────────────
 
     private void resetRound() {
+        
         round++;
 
         player1.resetForNewRound();
@@ -219,6 +227,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         turnLabel.setForeground(new Color(80, 180, 255));
         log("-- Round " + round + " --");
         updateButtons();
+        roundLabel.setText("ROUND " + round);
     }
 
     private void endRound(String message) {

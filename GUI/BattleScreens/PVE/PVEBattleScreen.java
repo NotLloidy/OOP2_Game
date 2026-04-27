@@ -21,6 +21,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private GameCharacter enemy;
     private boolean defendDisabled = false;
     private ActionState state = ActionState.MAIN;
+    private JLabel roundLabel;
 
     private int playerWins = 0;
     private int enemyWins  = 0;
@@ -68,6 +69,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         dialogue.setText("Battle started!\nWhat will " + player.getCharacterName() + " do?");
         initialized = true;
+        roundLabel.setText("ROUND " + round);
+
         updateButtons();
         repaint();
     }
@@ -91,6 +94,11 @@ public class PVEBattleScreen extends BaseBattleScreen {
         dialogue.setForeground(Color.WHITE);
         dialogue.setFont(new Font("SansSerif", Font.PLAIN, 13));
         add(dialogue);
+
+        roundLabel = new JLabel("ROUND 1", SwingConstants.CENTER);
+        roundLabel.setForeground(new Color(255, 220, 30));
+        roundLabel.setFont(new Font("Impact", Font.PLAIN, 26));
+        add(roundLabel);
 
         playerAnimLabel = new JLabel();
         playerAnimLabel.setVisible(false);
@@ -124,6 +132,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
         sizeToIcon(btnDefend, (int)(w * 0.30), btnY);
         sizeToIcon(btnCheck,  (int)(w * 0.55), btnY);
         sizeToIcon(btnBack,   (int)(w * 0.76), btnY);
+
+        roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
     }
 
     // ── Turn logic ────────────────────────────────────────────────────────
@@ -190,6 +200,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         defendDisabled = false;
         state = ActionState.MAIN;
         dialogue.setText("-- Round " + round + " --\nWhat will " + player.getCharacterName() + " do?");
+        roundLabel.setText("ROUND " + round);
         updateButtons();
     }
 

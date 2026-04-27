@@ -263,10 +263,10 @@ public class GameGUI extends JFrame {
 
         if (mode == BattleMode.PVP) {
             if (picking == 1) {
-                selectionBanner.setText("  PLAYER 1 — Choose your fighter");
+                selectionBanner.setText("  PLAYER 1 - Choose your fighter");
                 selectionBanner.setForeground(new Color(80, 180, 255));
             } else {
-                selectionBanner.setText("  PLAYER 2 — Choose your fighter");
+                selectionBanner.setText("  PLAYER 2 - Choose your fighter");
                 selectionBanner.setForeground(new Color(255, 100, 100));
             }
         } else {

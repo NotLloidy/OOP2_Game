@@ -141,7 +141,11 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private void playerTurn(int action) {
         if (player == null || enemy == null) return;
 
-        if (action >= 1 && action <= 3) showPlayerSkillAnim(player.getSpriteKey(), action);
+        int animDelay = 0;
+        if (action >= 1 && action <= 3) {
+            showPlayerSkillAnim(player.getSpriteKey(), action);
+            animDelay = 1500;
+        }
 
         String result = system.performAction(player, enemy, action, true);
         dialogue.setText(result);
@@ -155,7 +159,18 @@ public class PVEBattleScreen extends BaseBattleScreen {
         }
 
         if (action != 4) switchState(ActionState.MAIN);
-        aiTurn();
+
+        // Disable buttons while animation plays and AI is responding
+        btnFight.setEnabled(false);
+        btnDefend.setEnabled(false);
+        btnCheck.setEnabled(false);
+
+        Timer aiDelay = new Timer(animDelay, e -> {
+            aiTurn();
+            updateButtons();
+        });
+        aiDelay.setRepeats(false);
+        aiDelay.start();
     }
 
     private void aiTurn() {
@@ -184,12 +199,9 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private void resetRound() {
         round++;
 
-        // resetForNewRound() restores HP, mana, isCharacterAlive, blocks,
-        // and status flags — fixes the "instant death in round 2" bug
         player.resetForNewRound();
         enemy.resetForNewRound();
 
-        // Also reset skill cooldowns so round 2 starts fresh
         player.getSkill1().resetCooldown();
         player.getSkill2().resetCooldown();
         player.getSkill3().resetCooldown();
@@ -401,7 +413,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         if (player != null && enemy != null)
             drawWinCounter(g, "P", playerWins, enemyWins, "CPU",
                w / 2,
-               (int)(h * 0.15)); // move near top
+               (int)(h * 0.15));
 
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.62), (int)(w * 0.82), (int)(h * 0.18), 12, 12);

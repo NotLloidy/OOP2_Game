@@ -213,13 +213,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
 
-        int spacing = 5; 
+        int spacing = 5;
         statusLabel.setBounds(
-        roundLabel.getX(),
-        roundLabel.getY() + roundLabel.getHeight() + spacing,
-        roundLabel.getWidth(),
-        28
-);
+            roundLabel.getX(),
+            roundLabel.getY() + roundLabel.getHeight() + spacing,
+            roundLabel.getWidth(),
+            28
+        );
     }
 
     // ── Turn logic ────────────────────────────────────────────────────────
@@ -227,7 +227,11 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void playerTurn(int action) {
         if (arcadeOver || player == null || enemy == null) return;
 
-        if (action >= 1 && action <= 3) showPlayerSkillAnim(player.getSpriteKey(), action);
+        int animDelay = 0;
+        if (action >= 1 && action <= 3) {
+            showPlayerSkillAnim(player.getSpriteKey(), action);
+            animDelay = 1500;
+        }
 
         String result = system.performAction(player, enemy, action, true);
         dialogue.setText(result);
@@ -241,11 +245,24 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         }
 
         if (action != 4) switchState(ActionState.MAIN);
-        aiTurn();
+
+        // Disable buttons while animation plays and AI is responding
+        btnFight.setEnabled(false);
+        btnDefend.setEnabled(false);
+        btnCheck.setEnabled(false);
+
+        Timer aiDelay = new Timer(animDelay, e -> {
+            aiTurn();
+            updateButtons();
+        });
+        aiDelay.setRepeats(false);
+        aiDelay.start();
     }
 
     private void aiTurn() {
         int aiAction = system.getAIAction(enemy);
+        if (aiAction >= 1 && aiAction <= 3) showEnemySkillAnim(enemy.getSpriteKey(), aiAction);
+
         String result = system.performAction(enemy, player, aiAction, false);
         dialogue.append("\n" + result);
         enemy.getSkill1().reduceSkillCooldown();
@@ -264,12 +281,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void resetRound() {
         round++;
 
-        // resetForNewRound() restores HP, mana, isCharacterAlive, blocks,
-        // and status flags — fixes the "instant death in round 2" bug
         player.resetForNewRound();
         enemy.resetForNewRound();
 
-        // Reset skill cooldowns
         player.getSkill1().resetCooldown();
         player.getSkill2().resetCooldown();
         player.getSkill3().resetCooldown();
@@ -290,14 +304,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         dialogue.append("\n" + message);
 
         if (playerWins == 2) {
-        
             dialogue.append("\nYou defeated " + enemy.getCharacterName() + "!");
             currentOpponentIndex++;
             if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
             disableButtons();
 
             GameCharacter nextEnemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
-            player.resetForNewRound();  // restore player fully before next fight
+            player.resetForNewRound();
 
             if (versusScreen != null && cardLayout != null) {
                 cardLayout.show(container, "VersusScreen");
@@ -494,11 +507,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         int barW = (int)(w * 0.22);
         drawBars(g, player, spX, (int)(h * 0.02), barW);
         drawBars(g, enemy,  enX, (int)(h * 0.02), barW);
-
-        if (enemy != null) {
-            g.setFont(new Font("Impact", Font.PLAIN, 15)); g.setColor(new Color(255, 200, 20));
-
-        }
 
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.17), 12, 12);

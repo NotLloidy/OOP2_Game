@@ -142,8 +142,9 @@ public class PVPBattleScreen extends BaseBattleScreen {
         p2W = p1W;              p2H = p1H;
         p2X = (int)(w * 0.64); p2Y = p1Y;
 
-        playerAnimLabel.setBounds(p1X, p1Y, p1W, p1H);
-        enemyAnimLabel .setBounds(p2X, p2Y, p2W, p2H);
+        int animW = p1W * 2, animH = p1H * 2;
+        playerAnimLabel.setBounds(p1X - p1W / 2, p1Y - p1H / 2, animW, animH);
+        enemyAnimLabel .setBounds(p2X - p2W / 2, p2Y - p2H / 2, animW, animH);
 
         turnLabel.setBounds((int)(w * 0.30), (int)(h * 0.62), (int)(w * 0.40), 30);
         dialogue .setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));

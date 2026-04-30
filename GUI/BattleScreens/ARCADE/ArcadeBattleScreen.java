@@ -200,8 +200,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         enW = spW; enH = spH;
         enX = (int)(w * 0.64); enY = spY;
 
-        playerAnimLabel.setBounds(spX, spY, spW, spH);
-        enemyAnimLabel .setBounds(enX, enY, enW, enH);
+        int animW = spW * 2, animH = spH * 2;
+        playerAnimLabel.setBounds(spX - spW / 2, spY - spH / 2, animW, animH);
+        enemyAnimLabel .setBounds(enX - enW / 2, enY - enH / 2, animW, animH);
 
         dialogue   .setBounds((int)(w * 0.10), (int)(h * 0.65), (int)(w * 0.80), (int)(h * 0.15));
 

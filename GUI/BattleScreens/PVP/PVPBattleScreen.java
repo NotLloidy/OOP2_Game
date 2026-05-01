@@ -146,7 +146,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         playerAnimLabel.setBounds(p1X - p1W / 2, p1Y - p1H / 2, animW, animH);
         enemyAnimLabel .setBounds(p2X - p2W / 2, p2Y - p2H / 2, animW, animH);
 
-        turnLabel.setBounds((int)(w * 0.30), (int)(h * 0.62), (int)(w * 0.40), 30);
+        turnLabel.setBounds((int)(w * 0.28), (int)(h * 0.60), (int)(w * 0.44), 36);
         dialogue .setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));
         roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
 
@@ -193,8 +193,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
             return;
         }
 
-        // Hand off to other player — only non-block actions switch state to MAIN
-        if (action != 4) state = ActionState.MAIN;
+        // Hand off to other player — always switch turn, reset state to MAIN for non-block actions
+        state = ActionState.MAIN;
         currentTurn = isP1 ? 2 : 1;
         turnLabel.setText("PLAYER " + currentTurn + "'s turn");
         turnLabel.setForeground(currentTurn == 1
@@ -337,14 +337,16 @@ public class PVPBattleScreen extends BaseBattleScreen {
                 btnDefend.addActionListener(e -> {
                     int nb = active != null ? active.getRemainingBlocks() : 0;
                     if (nb <= 0) return;
+                    // Capture whose turn it is BEFORE doTurn switches it
+                    boolean wasP1Turn = (currentTurn == 1);
                     doTurn(4);
                     // Update defend-disabled flag for the player who just blocked
                     int remaining = active != null ? active.getRemainingBlocks() : 0;
                     if (remaining <= 0) {
-                        if (currentTurn == 1) p1DefendDisabled = true;
-                        else                  p2DefendDisabled = true;
+                        if (wasP1Turn) p1DefendDisabled = true;
+                        else           p2DefendDisabled = true;
                     }
-                    switchState(ActionState.DEFEND);
+                    // doTurn already switched state to MAIN and changed turn; no need to switchState here
                 });
 
                 btnCheck.addActionListener(e -> switchState(ActionState.MAIN));
@@ -443,6 +445,14 @@ public class PVPBattleScreen extends BaseBattleScreen {
         FontMetrics fm = g.getFontMetrics();
         String score = "P1  " + p1Wins + " - " + p2Wins + "  P2";
         g.drawString(score, cx - fm.stringWidth(score) / 2, (int)(h * 0.15));
+
+        // Turn label background box
+        g.setColor(new Color(0, 0, 0, 160));
+        g.fillRoundRect((int)(w * 0.28), (int)(h * 0.60), (int)(w * 0.44), 36, 10, 10);
+
+        // Dialogue box background
+        g.setColor(new Color(0, 0, 0, 140));
+        g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.14), 12, 12);
 
         // Highlight whose side is active
         if (!matchOver) {

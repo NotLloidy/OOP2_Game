@@ -168,7 +168,10 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         Timer aiDelay = new Timer(animDelay, e -> {
             aiTurn();
-            updateButtons();
+            // Only update buttons if we're still in an active battle state
+            if (player != null && player.isCharacterAlive() && enemy != null && enemy.isCharacterAlive()) {
+                updateButtons();
+            }
         });
         aiDelay.setRepeats(false);
         aiDelay.start();
@@ -215,6 +218,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         dialogue.setText("-- Round " + round + " --\nWhat will " + player.getCharacterName() + " do?");
         roundLabel.setText("ROUND " + round);
         updateButtons();
+        repaint();
     }
 
     private void endRound(String message) {

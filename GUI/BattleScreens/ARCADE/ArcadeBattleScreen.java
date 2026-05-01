@@ -126,6 +126,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void loadNextOpponent() {
         if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
 
+        initialized = false; // allow re-init for next opponent
         enemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
         session.setPlayer2(enemy);
 
@@ -138,6 +139,11 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         playerWins     = 0; enemyWins = 0; round = 1;
         roundLabel.setText("ROUND " + round);
         defendDisabled = false; state = ActionState.MAIN;
+
+        playerAnimating = false;
+        enemyAnimating  = false;
+        if (playerAnimLabel != null) playerAnimLabel.setVisible(false);
+        if (enemyAnimLabel  != null) enemyAnimLabel .setVisible(false);
 
         updateStatusLabel();
         dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/" + opponentOrder.size()
@@ -254,7 +260,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         Timer aiDelay = new Timer(animDelay, e -> {
             aiTurn();
-            updateButtons();
+            if (player != null && player.isCharacterAlive() && enemy != null && enemy.isCharacterAlive()) {
+                updateButtons();
+            }
         });
         aiDelay.setRepeats(false);
         aiDelay.start();
@@ -299,6 +307,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         updateStatusLabel();
         updateButtons();
+        repaint();
     }
 
     private void endRound(String message) {

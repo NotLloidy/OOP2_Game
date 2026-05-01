@@ -6,8 +6,18 @@ import java.awt.*;
 public class GameOverScreen extends JPanel {
 
     private static final String BG_PATH    = "Assets/battle_sprites/battleArena.gif";
+    // TODO: Replace BG_PATH above with the dedicated Game Over background asset once it is ready.
+    //       e.g. private static final String BG_PATH = "Assets/battle_sprites/gameOverBackground.gif";
+
     private static final String SPRITE_DIR = "Assets/character_related/idleAnimation/left/";
     private static final String SPRITE_SFX = "-left.gif";
+
+    // ── Button asset paths ─────────────────────────────────────────────────
+    // TODO: Replace these with the real Game Over screen button assets once they are ready.
+    //       e.g. private static final String BTN_PLAY_AGAIN_PATH = "Assets/gameover_buttons/play_again_btn.png";
+    //            private static final String BTN_EXIT_PATH       = "Assets/gameover_buttons/exit_btn.png";
+    private static final String BTN_PLAY_AGAIN_PATH = "Assets/battle_sprites/battle_buttons/actions/fight_btn.gif";
+    private static final String BTN_EXIT_PATH       = "Assets/battle_sprites/battle_buttons/actions/back_btn.gif";
 
     private Image bgImage;
     private Image winnerSprite;
@@ -32,9 +42,14 @@ public class GameOverScreen extends JPanel {
     private boolean particlesFired = false;
 
     private Timer    animTimer;
-    private Runnable onComplete;
+    private Runnable onPlayAgain;
+    private Runnable onExit;
 
     private Font titleFont;
+
+    // ── Post-animation action buttons ─────────────────────────────────────
+    private JButton btnPlayAgain;
+    private JButton btnExit;
 
     public GameOverScreen() {
         setLayout(null);
@@ -49,28 +64,141 @@ public class GameOverScreen extends JPanel {
         pvy    = new float[PARTICLE_COUNT];
         palpha = new float[PARTICLE_COUNT];
         pcolor = new Color[PARTICLE_COUNT];
+
+        createButtons();
     }
+
+    // ── Button construction ────────────────────────────────────────────────
+
+    private void createButtons() {
+        btnPlayAgain = makeImageButton(BTN_PLAY_AGAIN_PATH, "Play Again");
+        btnExit      = makeImageButton(BTN_EXIT_PATH,       "Exit");
+
+        // TODO: Once the real Game Over screen is ready, set both buttons to
+        //       setVisible(false) here so they start hidden and are revealed
+        //       by showButtons(). For now they are visible so you can verify positioning.
+        btnPlayAgain.setVisible(true);
+        btnExit     .setVisible(true);
+
+        // Buttons start disabled; they become active only after the animation ends
+        btnPlayAgain.setEnabled(false);
+        btnExit     .setEnabled(false);
+
+        add(btnPlayAgain);
+        add(btnExit);
+    }
+
+    /**
+     * Creates a borderless image button scaled to a consistent height.
+     * Mirrors the helper style used in BaseBattleScreen.
+     */
+    private JButton makeImageButton(String imagePath, String tooltip) {
+        JButton btn = new JButton();
+        btn.setToolTipText(tooltip);
+        btn.setBorderPainted(false);
+        btn.setContentAreaFilled(false);
+        btn.setFocusPainted(false);
+
+        ImageIcon raw = new ImageIcon(imagePath);
+        int targetH = 55; // button height in pixels — easy to change when aligning
+        int targetW = (int)(targetH * (281f / 119f)); // same aspect ratio as battle buttons
+        if (raw.getIconWidth() > 0 && raw.getIconHeight() > 0) {
+            Image scaled = raw.getImage().getScaledInstance(targetW, targetH, Image.SCALE_SMOOTH);
+            btn.setIcon(new ImageIcon(scaled));
+        }
+        btn.setPreferredSize(new Dimension(targetW, targetH));
+        return btn;
+    }
+
+    /**
+     * Positions the two action buttons after the panel has a valid size.
+     * <p>
+     * TODO: Once the dedicated Game Over screen layout is known, update the
+     *       X/Y constants below to align the buttons with that screen's design.
+     *       All magic numbers are grouped here so they are easy to find and tweak.
+     */
+    private void layoutButtons() {
+        int w = getWidth();
+        int h = getHeight();
+        if (w == 0 || h == 0) return;
+
+        Dimension dpa = btnPlayAgain.getPreferredSize();
+        Dimension dex = btnExit    .getPreferredSize();
+
+        // ── POSITION KNOBS ────────────────────────────────────────────────
+        // Vertical position: 72 % down the panel (easy to move as a single fraction)
+        int btnY = (int)(h * 0.72f);
+
+        // Horizontal centres for each button.
+        // Play Again sits left-of-centre, Exit sits right-of-centre.
+        // Adjust the fractions to snap them onto the new screen's buttons.
+        int playAgainCentreX = (int)(w * 0.35f);
+        int exitCentreX      = (int)(w * 0.65f);
+        // ─────────────────────────────────────────────────────────────────
+
+        btnPlayAgain.setBounds(
+            playAgainCentreX - dpa.width  / 2, btnY,
+            dpa.width,  dpa.height
+        );
+        btnExit.setBounds(
+            exitCentreX      - dex.width  / 2, btnY,
+            dex.width,  dex.height
+        );
+    }
+
+    // ── Show API ──────────────────────────────────────────────────────────
 
     // ── Used by PVE and Arcade ────────────────────────────────────────────
     public void show(String winnerCharName, String loserCharName,
                      boolean playerWon, Runnable afterAnimation) {
         this.customTitle = null;
-        showInternal(winnerCharName, loserCharName, playerWon, afterAnimation);
+        showInternal(winnerCharName, loserCharName, playerWon,
+                     afterAnimation,   // onPlayAgain == same "restart" runnable
+                     afterAnimation);  // onExit      == same runnable for now
+                                       // GameGUI passes the correct runnables via the
+                                       // four-argument overload below whenever it needs
+                                       // different behaviour per button.
+    }
+
+    /**
+     * Full overload used by GameGUI.
+     *
+     * @param onPlayAgain runnable to execute when "Play Again" is pressed
+     * @param onExit      runnable to execute when "Exit" is pressed
+     */
+    public void show(String winnerCharName, String loserCharName,
+                     boolean playerWon,
+                     Runnable onPlayAgain, Runnable onExit) {
+        this.customTitle = null;
+        showInternal(winnerCharName, loserCharName, playerWon, onPlayAgain, onExit);
     }
 
     // ── Used by PVP — shows a custom title like "A-Vin Won!" ─────────────
     public void show(String winnerCharName, String loserCharName,
                      boolean playerWon, String customTitle, Runnable afterAnimation) {
         this.customTitle = customTitle;
-        showInternal(winnerCharName, loserCharName, playerWon, afterAnimation);
+        showInternal(winnerCharName, loserCharName, playerWon,
+                     afterAnimation, afterAnimation);
+    }
+
+    /**
+     * Full PVP overload with separate play-again / exit runnables.
+     */
+    public void show(String winnerCharName, String loserCharName,
+                     boolean playerWon, String customTitle,
+                     Runnable onPlayAgain, Runnable onExit) {
+        this.customTitle = customTitle;
+        showInternal(winnerCharName, loserCharName, playerWon, onPlayAgain, onExit);
     }
 
     private void showInternal(String winnerCharName, String loserCharName,
-                               boolean playerWon, Runnable afterAnimation) {
+                               boolean playerWon,
+                               Runnable onPlayAgain, Runnable onExit) {
         this.winnerName  = winnerCharName;
         this.loserName   = loserCharName;
         this.playerWon   = playerWon;
-        this.onComplete  = afterAnimation;
+        this.onPlayAgain = onPlayAgain;
+        this.onExit      = onExit;
 
         String fileKey = winnerCharName.toLowerCase().replaceAll("[^a-z0-9]", "");
         winnerSprite   = new ImageIcon(SPRITE_DIR + fileKey + SPRITE_SFX).getImage();
@@ -86,9 +214,45 @@ public class GameOverScreen extends JPanel {
         titleY        = -150f;
         titleTargetY  = getHeight() > 0 ? getHeight() * 0.50f : 300f;
 
+        // Hide and disable buttons until the animation finishes
+        btnPlayAgain.setEnabled(false);
+        btnExit     .setEnabled(false);
+
+        // TODO: When the real screen is ready, uncomment the two lines below
+        //       so buttons are invisible during the animation and only reveal
+        //       once showButtons() is called.
+        // btnPlayAgain.setVisible(false);
+        // btnExit     .setVisible(false);
+
+        // Wire up button actions (clear old listeners first)
+        for (java.awt.event.ActionListener al : btnPlayAgain.getActionListeners())
+            btnPlayAgain.removeActionListener(al);
+        for (java.awt.event.ActionListener al : btnExit.getActionListeners())
+            btnExit.removeActionListener(al);
+
+        btnPlayAgain.addActionListener(e -> { if (this.onPlayAgain != null) this.onPlayAgain.run(); });
+        btnExit     .addActionListener(e -> { if (this.onExit      != null) this.onExit     .run(); });
+
+        layoutButtons();
         startAnimation();
         repaint();
     }
+
+    /** Called at the end of the animation to enable (and reveal) the buttons. */
+    private void showButtons() {
+        btnPlayAgain.setEnabled(true);
+        btnExit     .setEnabled(true);
+
+        // TODO: When the real screen is ready, uncomment these lines so the
+        //       buttons fade/appear only after the animation completes.
+        // btnPlayAgain.setVisible(true);
+        // btnExit     .setVisible(true);
+
+        layoutButtons();
+        repaint();
+    }
+
+    // ── Animation ─────────────────────────────────────────────────────────
 
     private void startAnimation() {
         if (animTimer != null && animTimer.isRunning()) animTimer.stop();
@@ -129,7 +293,7 @@ public class GameOverScreen extends JPanel {
                         phase = 3;
                         Timer hold = new Timer(2200, ev -> {
                             animTimer.stop();
-                            if (onComplete != null) onComplete.run();
+                            showButtons(); // Animation done → reveal / enable buttons
                         });
                         hold.setRepeats(false);
                         hold.start();
@@ -173,11 +337,16 @@ public class GameOverScreen extends JPanel {
         }
     }
 
+    // ── Layout ────────────────────────────────────────────────────────────
+
     @Override
     public void doLayout() {
         super.doLayout();
+        layoutButtons();
         repaint();
     }
+
+    // ── Paint ─────────────────────────────────────────────────────────────
 
     @Override
     protected void paintComponent(Graphics g) {

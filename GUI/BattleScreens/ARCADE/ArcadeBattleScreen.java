@@ -363,7 +363,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (gameGUI != null) {
             Timer delay = new Timer(900, e ->
-                gameGUI.showGameOver(player.getCharacterName(), "", true, "MainMenu"));
+                // Use showGameOverArcade so Play Again restarts the full arcade run
+                // with the same selected character instead of going to the next screen.
+                gameGUI.showGameOverArcade(player.getCharacterName(), "", true, "MainMenu"));
             delay.setRepeats(false); delay.start();
         }
     }
@@ -377,7 +379,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (gameGUI != null) {
             Timer delay = new Timer(900, e ->
-                gameGUI.showGameOver(enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
+                // Use showGameOverArcade so Play Again restarts the full arcade run
+                // with the same selected character instead of going to the next screen.
+                gameGUI.showGameOverArcade(enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
             delay.setRepeats(false); delay.start();
         }
     }

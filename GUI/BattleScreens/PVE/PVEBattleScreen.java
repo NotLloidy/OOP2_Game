@@ -427,6 +427,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
     // ── Paint ─────────────────────────────────────────────────────────────
 
     @Override
+    public void doLayout() {
+        super.doLayout();
+        layoutUI();
+    }
+
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         int w = getWidth(), h = getHeight();

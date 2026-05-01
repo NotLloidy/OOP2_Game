@@ -26,6 +26,13 @@ public class TitleScreen extends JPanel {
 
     // Override paintComponent to draw the image scaled to current panel size
     @Override
+    public void doLayout() {
+        super.doLayout();
+        revalidate();
+        repaint();
+    }
+
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 

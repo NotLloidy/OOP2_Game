@@ -174,6 +174,12 @@ public class GameOverScreen extends JPanel {
     }
 
     @Override
+    public void doLayout() {
+        super.doLayout();
+        repaint();
+    }
+
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;

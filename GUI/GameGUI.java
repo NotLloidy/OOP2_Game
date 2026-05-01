@@ -49,7 +49,28 @@ public class GameGUI extends JFrame {
         cardLayout = new CardLayout();
         container  = new JPanel(cardLayout);
 
-        JLayeredPane layered = new JLayeredPane();
+        // Use a JLayeredPane that automatically fills its children to its own
+        // bounds so resize/fullscreen takes effect on the very next paint.
+        JLayeredPane layered = new JLayeredPane() {
+            @Override
+            public void doLayout() {
+                int w = getWidth(), h = getHeight();
+                container.setBounds(0, 0, w, h);
+                selectionBanner.setBounds(0, 0, w, 40);
+                // Force every child of the container to redo its internal layout
+                for (Component child : container.getComponents()) {
+                    child.setBounds(0, 0, w, h);
+                    if (child instanceof JPanel p) {
+                        p.revalidate();
+                        // Fire a synthetic resize so null-layout panels recalc
+                        for (java.awt.event.ComponentListener cl : p.getComponentListeners())
+                            cl.componentResized(new java.awt.event.ComponentEvent(
+                                    p, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+                    }
+                }
+            }
+        };
+        layered.setLayout(null);
         container.setBounds(0, 0, 800, 600);
         layered.add(container,       JLayeredPane.DEFAULT_LAYER);
         layered.add(selectionBanner, JLayeredPane.PALETTE_LAYER);
@@ -58,7 +79,8 @@ public class GameGUI extends JFrame {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                relayoutAll();
+                getContentPane().doLayout();
+                getContentPane().repaint();
             }
         });
 
@@ -117,10 +139,8 @@ public class GameGUI extends JFrame {
     // LAYOUT HELPERS
     // =========================================================================
     private void relayoutAll() {
-        int w = getContentPane().getWidth();
-        int h = getContentPane().getHeight();
-        container.setBounds(0, 0, w, h);
-        selectionBanner.setBounds(0, 0, w, 40);
+        getContentPane().doLayout();
+        getContentPane().repaint();
     }
 
     private void installFullScreenToggle() {
@@ -149,7 +169,11 @@ public class GameGUI extends JFrame {
             setVisible(true);
             isFullScreen = false;
         }
-        relayoutAll();
+        // Layout must run after the window has its final size
+        SwingUtilities.invokeLater(() -> {
+            getContentPane().doLayout();
+            getContentPane().repaint();
+        });
     }
 
     // =========================================================================

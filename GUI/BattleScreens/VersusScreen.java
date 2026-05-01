@@ -164,6 +164,12 @@ public class VersusScreen extends JPanel {
     // ── Paint ────────────────────────────────────────────────────────────
 
     @Override
+    public void doLayout() {
+        super.doLayout();
+        repaint();
+    }
+
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;

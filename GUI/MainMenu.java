@@ -83,6 +83,13 @@ public class MainMenu extends JPanel {
     }
 
     @Override
+    public void doLayout() {
+        super.doLayout();
+        revalidate();
+        repaint();
+    }
+
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);

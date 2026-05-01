@@ -18,7 +18,7 @@ public class Zakkarr extends GameCharacter {
 
         guardiansBlade = new Skill("Guardian's Blade", 5, 0, 5, 0,0);
         shieldOfValor = new Skill("Shield of Valor", 20, 0, 0, 2,0);
-        deathsReturn = new Skill("Death's Return", 0, 50, 0, 999,0);
+        deathsReturn = new Skill("Death's Return", 0, 50, 0, 999,4);
     }
 
     @Override

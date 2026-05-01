@@ -13,7 +13,7 @@ public class BrivanJawmir extends GameCharacter {
 
         riftCleaverThrust = new Skill("Rift Cleaver Thrust", 10, 0, 10, 0,0);
         crescentReaver = new Skill("Crescent Reaver", 10, 20, 0, 3,0);
-        emberVault = new Skill("Ember Vault", 50, 50, 0, 4,0);
+        emberVault = new Skill("Ember Vault", 50, 50, 0, 4,4);
     }
 
     @Override

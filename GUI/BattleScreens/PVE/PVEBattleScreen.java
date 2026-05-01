@@ -15,7 +15,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private Image enemySprite;
 
     private JButton btnFight, btnDefend, btnCheck, btnBack;
-    private JTextArea dialogue;
+    private JTextArea    dialogue;
+    private JScrollPane  dialogueScroll;
 
     private GameCharacter player;
     private GameCharacter enemy;
@@ -61,6 +62,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         if (player == null || enemy == null) {
             dialogue.setText("Battle not initialised!");
+        scrollToBottom();
             return;
         }
 
@@ -68,6 +70,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         enemySprite  = new ImageIcon(IDLE_RIGHT_DIR + enemy.getSpriteKey()  + IDLE_R_SFX).getImage();
 
         dialogue.setText("Battle started!\nWhat will " + player.getCharacterName() + " do?");
+        scrollToBottom();
         initialized = true;
         roundLabel.setText("ROUND " + round);
 
@@ -93,7 +96,13 @@ public class PVEBattleScreen extends BaseBattleScreen {
         dialogue.setOpaque(false);
         dialogue.setForeground(Color.WHITE);
         dialogue.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        add(dialogue);
+        dialogueScroll = new JScrollPane(dialogue);
+        dialogueScroll.setBorder(null);
+        dialogueScroll.setOpaque(false);
+        dialogueScroll.getViewport().setOpaque(false);
+        dialogueScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        dialogueScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(dialogueScroll);
 
         roundLabel = new JLabel("ROUND 1", SwingConstants.CENTER);
         roundLabel.setForeground(new Color(255, 220, 30));
@@ -126,7 +135,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         playerAnimLabel.setBounds(spX - spW / 2, spY - spH / 2, animW, animH);
         enemyAnimLabel .setBounds(enX - enW / 2, enY - enH / 2, animW, animH);
 
-        dialogue.setBounds((int)(w * 0.10), (int)(h * 0.63), (int)(w * 0.80), (int)(h * 0.16));
+        dialogueScroll.setBounds((int)(w * 0.10), (int)(h * 0.63), (int)(w * 0.80), (int)(h * 0.16));
 
         int btnY = (int)(h * 0.83);
         sizeToIcon(btnFight,  (int)(w * 0.10), btnY);
@@ -150,6 +159,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         String result = system.performAction(player, enemy, action, true);
         dialogue.setText(result);
+        scrollToBottom();
         reduceCooldowns(player);
         repaint();
 
@@ -183,6 +193,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         String result = system.performAction(enemy, player, aiAction, false);
         dialogue.append("\n" + enemy.getCharacterName() + ": " + result);
+        scrollToBottom();
         reduceCooldowns(enemy);
 
         if (!player.isCharacterAlive()) {
@@ -216,6 +227,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         defendDisabled = false;
         state = ActionState.MAIN;
         dialogue.setText("-- Round " + round + " --\nWhat will " + player.getCharacterName() + " do?");
+        scrollToBottom();
         roundLabel.setText("ROUND " + round);
         updateButtons();
         repaint();
@@ -223,9 +235,11 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
     private void endRound(String message) {
         dialogue.append("\n" + message);
+        scrollToBottom();
 
         if (playerWins == 2) {
             dialogue.append("\nYOU WON THE MATCH!");
+        scrollToBottom();
             disableButtons();
             delay(900, () -> gameGUI.showGameOver(
                     player.getCharacterName(), enemy.getCharacterName(), true, "MainMenu"));
@@ -233,6 +247,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         }
         if (enemyWins == 2) {
             dialogue.append("\nYOU LOST THE MATCH!");
+        scrollToBottom();
             disableButtons();
             delay(900, () -> gameGUI.showGameOver(
                     enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
@@ -348,10 +363,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
                         fmtSkill(player.getSkill2()) + "\n" +
                         fmtSkill(player.getSkill3())
                     );
+        scrollToBottom();
                 }
 
                 btnBack.addActionListener(e -> {
                     dialogue.setText("What will " + (player != null ? player.getCharacterName() : "?") + " do?");
+        scrollToBottom();
                     switchState(ActionState.MAIN);
                 });
             }
@@ -382,6 +399,15 @@ public class PVEBattleScreen extends BaseBattleScreen {
         clearListeners(btnCheck); clearListeners(btnBack);
     }
 
+    // ── Scroll dialogue to latest entry ──────────────────────────────────
+    private void scrollToBottom() {
+        if (dialogueScroll == null) return;
+        SwingUtilities.invokeLater(() -> {
+            JScrollBar bar = dialogueScroll.getVerticalScrollBar();
+            bar.setValue(bar.getMaximum());
+        });
+    }
+
     // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
@@ -393,6 +419,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         playerAnimLabel.setVisible(false);
         enemyAnimLabel .setVisible(false);
         dialogue.setText("");
+        scrollToBottom();
         updateButtons();
         repaint();
     }

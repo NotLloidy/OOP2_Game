@@ -20,7 +20,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
     // ── Single shared button set (same as PVE) ────────────────────────────
     private JButton btnFight, btnDefend, btnCheck, btnBack;
 
-    private JTextArea dialogue;
+    private JTextArea    dialogue;
+    private JScrollPane  dialogueScroll;
     private JLabel    turnLabel;
     private JLabel roundLabel;
 
@@ -74,6 +75,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         if (player1 == null || player2 == null) {
             dialogue.setText("Both players must be selected!");
+        scrollToBottom();
             return;
         }
 
@@ -83,6 +85,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         currentTurn = 1;
         dialogue.setText("Round 1 — P1: " + player1.getCharacterName()
                        + "  vs  P2: " + player2.getCharacterName());
+        scrollToBottom();
         turnLabel.setText("PLAYER 1's turn");
 
         initialized = true;
@@ -108,7 +111,13 @@ public class PVPBattleScreen extends BaseBattleScreen {
         dialogue.setOpaque(false);
         dialogue.setForeground(Color.WHITE);
         dialogue.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        add(dialogue);
+        dialogueScroll = new JScrollPane(dialogue);
+        dialogueScroll.setBorder(null);
+        dialogueScroll.setOpaque(false);
+        dialogueScroll.getViewport().setOpaque(false);
+        dialogueScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        dialogueScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(dialogueScroll);
 
         roundLabel = new JLabel("ROUND 1", SwingConstants.CENTER);
         roundLabel.setForeground(new Color(255, 220, 30));
@@ -147,7 +156,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         enemyAnimLabel .setBounds(p2X - p2W / 2, p2Y - p2H / 2, animW, animH);
 
         turnLabel.setBounds((int)(w * 0.28), (int)(h * 0.60), (int)(w * 0.44), 36);
-        dialogue .setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));
+        dialogueScroll.setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));
         roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
 
         // Shared buttons — same positions as PVE
@@ -180,6 +189,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         String result = system.performAction(atk, def, action, isP1);
         dialogue.setText((isP1 ? "[P1] " : "[P2] ") + result);
+        scrollToBottom();
 
         atk.getSkill1().reduceSkillCooldown();
         atk.getSkill2().reduceSkillCooldown();
@@ -263,7 +273,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
         btnCheck.setEnabled(false); btnBack.setEnabled(false);
     }
 
-    private void log(String text) { dialogue.append("\n" + text); }
+    private void log(String text) { dialogue.append("\n" + text);
+        scrollToBottom(); }
 
     // ── State machine (mirrors PVE exactly) ───────────────────────────────
 
@@ -369,11 +380,13 @@ public class PVPBattleScreen extends BaseBattleScreen {
                         fmtSkill(active.getSkill2()) + "\n" +
                         fmtSkill(active.getSkill3())
                     );
+        scrollToBottom();
                 }
 
                 btnBack.addActionListener(e -> {
                     dialogue.setText("What will P" + currentTurn + " ("
                             + (active != null ? active.getCharacterName() : "?") + ") do?");
+        scrollToBottom();
                     switchState(ActionState.MAIN);
                 });
             }
@@ -404,6 +417,15 @@ public class PVPBattleScreen extends BaseBattleScreen {
         clearListeners(btnCheck); clearListeners(btnBack);
     }
 
+    // ── Scroll dialogue to latest entry ──────────────────────────────────
+    private void scrollToBottom() {
+        if (dialogueScroll == null) return;
+        SwingUtilities.invokeLater(() -> {
+            JScrollBar bar = dialogueScroll.getVerticalScrollBar();
+            bar.setValue(bar.getMaximum());
+        });
+    }
+
     // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
@@ -415,6 +437,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         playerAnimating  = false; enemyAnimating = false;
         playerAnimLabel.setVisible(false); enemyAnimLabel.setVisible(false);
         dialogue.setText("");
+        scrollToBottom();
         turnLabel.setText("PLAYER 1's turn");
         turnLabel.setForeground(new Color(255, 220, 30));
         updateButtons(); repaint();

@@ -61,7 +61,7 @@ public class SelectSoleilScreen extends JPanel {
                     // P1 picks Soleil Mooncrest
                     session.setPlayer1(new SoleilMooncrest());
                     session.setSelectingPlayer(2);
-                    gui.showScreen("SelectSoleilScreen");   // send P2 to character select
+                    gui.showScreen("SelectAVinScreen");   // send P2 to character select
 
                 } else {
                     // P2 picks Soleil Mooncrest — check not same as P1

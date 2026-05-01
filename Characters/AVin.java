@@ -18,7 +18,7 @@ public class AVin extends GameCharacter {
         codeJab = new Skill("Code Jab", 20, 0, 10, 0,0);
         codeSurge = new Skill("Code Surge", 40, 10, 0, 0,0);
         overClock = new Skill("Overclock", 0, 15, 0, 3,0);
-        logicCrash = new Skill("Logic Crash", 50, 60, 0, 999,0);
+        logicCrash = new Skill("Logic Crash", 50, 60, 0, 999,4);
 
         isOverclocked = false;
         usedUlt = false;

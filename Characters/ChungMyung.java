@@ -16,7 +16,7 @@ public class ChungMyung extends GameCharacter {
 
         blossomThrust = new Skill("Blossom Thrust", 10, 0, 5, 0,0);
         plumPetalDance = new Skill("Plum Petal Dance", 25, 20, 0, 3,0);
-        saintVerdict = new Skill("Saint's Verdict", 46, 70, 0, 999,0);
+        saintVerdict = new Skill("Saint's Verdict", 46, 70, 0, 999,4);
     }
 
     @Override

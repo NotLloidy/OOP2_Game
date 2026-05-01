@@ -17,7 +17,7 @@ public class SoleilMooncrest extends GameCharacter {
 
         moonStrike = new Skill("Moon Strike", 10, 0, 10, 0,0);
         moonlightShine = new Skill("Moonlight Shine", 20, 30, 0, 2,0);
-        shadowBlast = new Skill("Shadow Blast", 40, 50, 0, 5,0);
+        shadowBlast = new Skill("Shadow Blast", 40, 50, 0, 5,4);
     }
 
     @Override

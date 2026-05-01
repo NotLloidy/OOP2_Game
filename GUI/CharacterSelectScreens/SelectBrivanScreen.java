@@ -62,7 +62,7 @@ public class SelectBrivanScreen extends JPanel {
                     // P1 picks Brivan
                     session.setPlayer1(new BrivanJawmir());
                     session.setSelectingPlayer(2);
-                    gui.showScreen("SelectBrivanScreen");   // send P2 to character select
+                    gui.showScreen("SelectAVinScreen");   // send P2 to character select
 
                 } else {
                     // P2 picks Brivan — check not same as P1

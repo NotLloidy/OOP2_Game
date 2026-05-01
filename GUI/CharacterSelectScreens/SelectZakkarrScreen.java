@@ -62,7 +62,7 @@ public class SelectZakkarrScreen extends JPanel {
                     // P1 picks Zakkarr
                     session.setPlayer1(new Zakkarr());
                     session.setSelectingPlayer(2);
-                    gui.showScreen("SelectZakkarrScreen");   // send P2 to character select
+                    gui.showScreen("SelectAVinScreen");   // send P2 to character select
 
                 } else {
                     // P2 picks Zakkarr — check not same as P1

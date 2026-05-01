@@ -62,7 +62,7 @@ public class SelectKennethScreen extends JPanel {
                     // P1 picks Kenneth
                     session.setPlayer1(new Kenneth());
                     session.setSelectingPlayer(2);
-                    gui.showScreen("SelectKennethScreen");   // send P2 to character select
+                    gui.showScreen("SelectAVinScreen");   // send P2 to character select
 
                 } else {
                     // P2 picks Kenneth — check not same as P1

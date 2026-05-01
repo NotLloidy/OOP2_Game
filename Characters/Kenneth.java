@@ -14,7 +14,7 @@ public class Kenneth extends GameCharacter {
 
         aimedShot = new Skill("Aimed Shot", 20, 10, 10, 0,0);
         overwatchStance = new Skill("Overwatch Stance", 0, 15, 0, 2,0);
-        suppressiveVolley = new Skill("Suppressive Volley", 40, 20, 0, 4,0);
+        suppressiveVolley = new Skill("Suppressive Volley", 40, 20, 0, 4,4);
 
         overwatchReady = false;
     }

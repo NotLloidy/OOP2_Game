@@ -18,7 +18,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private Image enemySprite;
 
     private JButton btnFight, btnDefend, btnCheck, btnBack;
-    private JTextArea dialogue;
+    private JTextArea    dialogue;
+    private JScrollPane  dialogueScroll;
     private JLabel statusLabel;
 
     private int spX, spY, spW, spH;
@@ -93,7 +94,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (!prepared) {
             player = session.getPlayer1();
-            if (player == null) { dialogue.setText("No player selected!"); return; }
+            if (player == null) { dialogue.setText("No player selected!");
+        scrollToBottom(); return; }
             buildOpponentOrder();
             currentOpponentIndex = 0;
             arcadeOver = false;
@@ -148,6 +150,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         updateStatusLabel();
         dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/" + opponentOrder.size()
                        + ": " + enemy.getCharacterName());
+        scrollToBottom();
 
         enableButtons(); updateButtons(); repaint();
     }
@@ -172,7 +175,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         dialogue.setEditable(false); dialogue.setLineWrap(true); dialogue.setWrapStyleWord(true);
         dialogue.setOpaque(false); dialogue.setForeground(Color.WHITE);
         dialogue.setFont(new Font("SansSerif", Font.PLAIN, 13));
-        add(dialogue);
+        dialogueScroll = new JScrollPane(dialogue);
+        dialogueScroll.setBorder(null);
+        dialogueScroll.setOpaque(false);
+        dialogueScroll.getViewport().setOpaque(false);
+        dialogueScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        dialogueScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        add(dialogueScroll);
 
         statusLabel = new JLabel("ARCADE MODE", SwingConstants.CENTER);
         statusLabel.setForeground(new Color(255, 200, 20));
@@ -210,7 +219,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         playerAnimLabel.setBounds(spX - spW / 2, spY - spH / 2, animW, animH);
         enemyAnimLabel .setBounds(enX - enW / 2, enY - enH / 2, animW, animH);
 
-        dialogue   .setBounds((int)(w * 0.10), (int)(h * 0.65), (int)(w * 0.80), (int)(h * 0.15));
+        dialogueScroll.setBounds((int)(w * 0.10), (int)(h * 0.65), (int)(w * 0.80), (int)(h * 0.15));
 
         int btnY = (int)(h * 0.85);
         sizeToIcon(btnFight,  (int)(w * 0.10), btnY);
@@ -242,6 +251,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         String result = system.performAction(player, enemy, action, true);
         dialogue.setText(result);
+        scrollToBottom();
         player.getSkill1().reduceSkillCooldown();
         player.getSkill2().reduceSkillCooldown();
         player.getSkill3().reduceSkillCooldown();
@@ -274,6 +284,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         String result = system.performAction(enemy, player, aiAction, false);
         dialogue.append("\n" + result);
+        scrollToBottom();
         enemy.getSkill1().reduceSkillCooldown();
         enemy.getSkill2().reduceSkillCooldown();
         enemy.getSkill3().reduceSkillCooldown();
@@ -303,6 +314,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         defendDisabled = false;
         state = ActionState.MAIN;
         dialogue.append("\n-- Round " + round + " --");
+        scrollToBottom();
         roundLabel.setText("ROUND " + round);
 
         updateStatusLabel();
@@ -312,9 +324,11 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void endRound(String message) {
         dialogue.append("\n" + message);
+        scrollToBottom();
 
         if (playerWins == 2) {
             dialogue.append("\nYou defeated " + enemy.getCharacterName() + "!");
+        scrollToBottom();
             currentOpponentIndex++;
             if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
             disableButtons();
@@ -343,6 +357,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void arcadeClear() {
         arcadeOver = true;
         dialogue.setText("ARCADE CLEAR! You defeated all opponents!");
+        scrollToBottom();
         statusLabel.setText("ARCADE CLEAR");
         disableButtons();
 
@@ -356,6 +371,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void gameOver() {
         arcadeOver = true;
         dialogue.setText("GAME OVER");
+        scrollToBottom();
         statusLabel.setText("GAME OVER");
         disableButtons();
 
@@ -476,11 +492,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                         fmtSkill(player.getSkill2()) + "\n" +
                         fmtSkill(player.getSkill3())
                     );
+        scrollToBottom();
                 }
 
                 btnBack.addActionListener(e -> {
                     dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/"
                                    + opponentOrder.size() + ": " + (enemy != null ? enemy.getCharacterName() : "?"));
+        scrollToBottom();
                     switchState(ActionState.MAIN);
                 });
             }
@@ -522,6 +540,15 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.17), 12, 12);
     }
 
+    // ── Scroll dialogue to latest entry ──────────────────────────────────
+    private void scrollToBottom() {
+        if (dialogueScroll == null) return;
+        SwingUtilities.invokeLater(() -> {
+            JScrollBar bar = dialogueScroll.getVerticalScrollBar();
+            bar.setValue(bar.getMaximum());
+        });
+    }
+
     // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
@@ -535,6 +562,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         if (playerAnimLabel != null) playerAnimLabel.setVisible(false);
         if (enemyAnimLabel  != null) enemyAnimLabel .setVisible(false);
         dialogue.setText("");
+        scrollToBottom();
         statusLabel.setText("ARCADE MODE");
         repaint();
     }

@@ -62,7 +62,7 @@ public class SelectSungJinWooScreen extends JPanel {
                     // P1 picks SungJinWoo
                     session.setPlayer1(new SungJinWoo());
                     session.setSelectingPlayer(2);
-                    gui.showScreen("SelectSungJinWooScreen");   // send P2 to character select
+                    gui.showScreen("SelectAVinScreen");   // send P2 to character select
 
                 } else {
                     // P2 picks SungJinWoo — check not same as P1

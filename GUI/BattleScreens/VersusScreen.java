@@ -113,22 +113,25 @@ public class VersusScreen extends JPanel {
         animTimer = new Timer(16, e -> {
             int w = getWidth(), h = getHeight();
 
-            int dispH = (int)(h * 0.72); 
-            int leftDispW = dispH * leftNatW / leftNatH; 
-            int rightDispW = dispH * rightNatW / rightNatH;
+            int dispH = (int)(h * 0.72);
+            // Cap each sprite width to 45% of screen so wide sprites don't overflow their half
+            int maxHalfW   = (int)(w * 0.45f);
+            int rawLeftW   = dispH * leftNatW  / leftNatH;
+            int rawRightW  = dispH * rightNatW / rightNatH;
+            int leftDispW  = Math.min(rawLeftW,  maxHalfW);
+            int rightDispW = Math.min(rawRightW, maxHalfW);
 
-            // Left half center = 30% of screen width
-            float leftCenterX = w * 0.30f;
+            // Left character: center in the left 50% of the screen
+            float leftCenterX  = w * 0.25f;
+            float leftTarget   = leftCenterX - leftDispW * 0.5f;
+            // Never let left sprite start off-screen left
+            leftTarget = Math.max(leftTarget, w * 0.02f);
 
-            // Right half center = 70% of screen width
-            float rightCenterX = w * 0.70f;
-
-            // Convert center → top-left draw position
-            float leftTarget  = (leftCenterX + 150)  - leftDispW  * 0.5f;
-            float rightTarget = rightCenterX - rightDispW * 0.5f;
-
-            // Prevent going off-screen (right side)
-            rightTarget = Math.min(rightTarget, w - rightDispW);
+            // Right character: center in the right 50% of the screen
+            float rightCenterX = w * 0.75f;
+            float rightTarget  = rightCenterX - rightDispW * 0.5f;
+            // Never let right sprite go off-screen right
+            rightTarget = Math.min(rightTarget, w - rightDispW - w * 0.02f);
 
             leftX  += (leftTarget  - leftX)  * 0.12f;
             rightX += (rightTarget - rightX) * 0.12f;
@@ -182,8 +185,9 @@ public class VersusScreen extends JPanel {
         // Sprite dimensions — fixed height, aspect-ratio-correct width
         int dispH     = (int)(h * 0.72);
         int spriteY   = (int)(h * 0.05);
-        int leftDispW  = dispH * leftNatW  / leftNatH;
-        int rightDispW = dispH * rightNatW / rightNatH;
+        int maxHalfW   = (int)(w * 0.45f);
+        int leftDispW  = Math.min(dispH * leftNatW  / leftNatH, maxHalfW);
+        int rightDispW = Math.min(dispH * rightNatW / rightNatH, maxHalfW);
 
         // Left character
         if (leftSprite != null)

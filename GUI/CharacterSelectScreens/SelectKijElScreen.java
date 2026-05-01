@@ -62,7 +62,7 @@ public class SelectKijElScreen extends JPanel {
                     // P1 picks AVin
                     session.setPlayer1(new KijEl());
                     session.setSelectingPlayer(2);
-                    gui.showScreen("SelectKijElScreen");   // send P2 to character select
+                    gui.showScreen("SelectAVinScreen");   // send P2 to character select
 
                 } else {
                     // P2 picks AVin — check not same as P1

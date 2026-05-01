@@ -45,10 +45,13 @@ public abstract class BaseBattleScreen extends JPanel {
 
     // ── Button row layout constants ───────────────────────────────────────
     /** Target button height as fraction of panel height. */
-    protected static final float BTN_H_FRAC = 0.065f;
+    protected static final float BTN_H_FRAC = 0.080f;
     /** Minimum / maximum clamped button height in pixels. */
-    protected static final int   BTN_H_MIN  = 32;
-    protected static final int   BTN_H_MAX  = 60;
+    protected static final int   BTN_H_MIN  = 40;
+    protected static final int   BTN_H_MAX  = 75;
+    /** Fixed aspect ratio applied to ALL buttons so they are uniform width.
+     *  Based on the action button natural size (281x119 ≈ 2.36:1). */
+    protected static final float BTN_ASPECT  = 281f / 119f;
 
     // ── Overlay labels for skill animations ───────────────────────────────
     protected JLabel playerAnimLabel;
@@ -104,33 +107,28 @@ public abstract class BaseBattleScreen extends JPanel {
      * and applies it to the button.
      */
     protected void applyScaledIcon(JButton btn, String imagePath) {
-        ImageIcon raw  = new ImageIcon(imagePath);
-        int       natW = raw.getIconWidth();
-        int       natH = raw.getIconHeight();
-        if (natW <= 0 || natH <= 0) {
+        ImageIcon raw = new ImageIcon(imagePath);
+        int targetH = computeButtonHeight();
+        int targetW = (int)(targetH * BTN_ASPECT);
+        if (raw.getIconWidth() <= 0 || raw.getIconHeight() <= 0) {
             btn.setIcon(raw);
-            btn.setPreferredSize(new Dimension(100, computeButtonHeight()));
+            btn.setPreferredSize(new Dimension(targetW, targetH));
             return;
         }
-        int targetH = computeButtonHeight();
-        int targetW = targetH * natW / natH;
         Image scaled = raw.getImage().getScaledInstance(targetW, targetH, Image.SCALE_SMOOTH);
-        ImageIcon icon = new ImageIcon(scaled);
-        btn.setIcon(icon);
+        btn.setIcon(new ImageIcon(scaled));
         btn.setPreferredSize(new Dimension(targetW, targetH));
     }
 
     /**
-     * Same as {@link #applyScaledIcon} but returns the icon for use as a
-     * disabled icon (same scale, just stored separately).
+     * Same as applyScaledIcon but returns the icon for use as a
+     * disabled icon — forced to the same uniform size.
      */
     protected ImageIcon makeScaledIcon(String imagePath) {
-        ImageIcon raw  = new ImageIcon(imagePath);
-        int       natW = raw.getIconWidth();
-        int       natH = raw.getIconHeight();
-        if (natW <= 0 || natH <= 0) return raw;
+        ImageIcon raw = new ImageIcon(imagePath);
         int targetH = computeButtonHeight();
-        int targetW = targetH * natW / natH;
+        int targetW = (int)(targetH * BTN_ASPECT);
+        if (raw.getIconWidth() <= 0 || raw.getIconHeight() <= 0) return raw;
         Image scaled = raw.getImage().getScaledInstance(targetW, targetH, Image.SCALE_SMOOTH);
         return new ImageIcon(scaled);
     }

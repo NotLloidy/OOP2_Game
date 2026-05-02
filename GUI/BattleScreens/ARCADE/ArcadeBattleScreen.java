@@ -95,7 +95,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         if (!prepared) {
             player = session.getPlayer1();
             if (player == null) { dialogue.setText("No player selected!");
-        scrollToBottom(); return; }
+                scrollToBottom(); return; }
             buildOpponentOrder();
             currentOpponentIndex = 0;
             arcadeOver = false;
@@ -128,7 +128,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void loadNextOpponent() {
         if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
 
-        initialized = false; // allow re-init for next opponent
+        initialized = false;
         enemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
         session.setPlayer2(enemy);
 
@@ -263,7 +263,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (action != 4) switchState(ActionState.MAIN);
 
-        // Disable buttons while animation plays and AI is responding
         btnFight.setEnabled(false);
         btnDefend.setEnabled(false);
         btnCheck.setEnabled(false);
@@ -328,7 +327,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (playerWins == 2) {
             dialogue.append("\nYou defeated " + enemy.getCharacterName() + "!");
-        scrollToBottom();
+            scrollToBottom();
             currentOpponentIndex++;
             if (currentOpponentIndex >= opponentOrder.size()) { arcadeClear(); return; }
             disableButtons();
@@ -363,9 +362,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (gameGUI != null) {
             Timer delay = new Timer(900, e ->
-                // Use showGameOverArcade so Play Again restarts the full arcade run
-                // with the same selected character instead of going to the next screen.
-                gameGUI.showGameOverArcade(player.getCharacterName(), "", true, "MainMenu"));
+                // showGameOverArcade so Play Again restarts the full arcade run
+                gameGUI.showGameOverArcade(
+                    player.getCharacterName(), "", true, "MainMenu"));
             delay.setRepeats(false); delay.start();
         }
     }
@@ -379,9 +378,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (gameGUI != null) {
             Timer delay = new Timer(900, e ->
-                // Use showGameOverArcade so Play Again restarts the full arcade run
-                // with the same selected character instead of going to the next screen.
-                gameGUI.showGameOverArcade(enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
+                // showGameOverArcade so Play Again restarts the full arcade run
+                gameGUI.showGameOverArcade(
+                    enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
             delay.setRepeats(false); delay.start();
         }
     }
@@ -496,13 +495,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                         fmtSkill(player.getSkill2()) + "\n" +
                         fmtSkill(player.getSkill3())
                     );
-        scrollToBottom();
+                    scrollToBottom();
                 }
 
                 btnBack.addActionListener(e -> {
                     dialogue.setText("Opponent " + (currentOpponentIndex + 1) + "/"
                                    + opponentOrder.size() + ": " + (enemy != null ? enemy.getCharacterName() : "?"));
-        scrollToBottom();
+                    scrollToBottom();
                     switchState(ActionState.MAIN);
                 });
             }
@@ -551,6 +550,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     }
 
     // ── Scroll dialogue to latest entry ──────────────────────────────────
+
     private void scrollToBottom() {
         if (dialogueScroll == null) return;
         SwingUtilities.invokeLater(() -> {

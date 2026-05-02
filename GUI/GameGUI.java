@@ -4,6 +4,7 @@ import GUI.BattleScreens.ARCADE.ArcadeBattleScreen;
 import GUI.BattleScreens.PVP.PVPBattleScreen;
 import GUI.BattleScreens.VersusScreen;
 import GUI.BattleScreens.GameOverScreen;
+import GUI.BattleScreens.PlayOrExitScreen;
 import GUI.CharacterSelectScreens.*;
 import GUI.BattleScreens.PVE.PVEBattleScreen;
 import GUI.CharacterInfo.*;
@@ -18,20 +19,19 @@ import java.awt.event.ComponentEvent;
 
 public class GameGUI extends JFrame {
 
-    private final CardLayout     cardLayout;
-    private final JPanel         container;
-    private final VersusScreen   versusScreen;
-    private final GameOverScreen gameOverScreen;
+    private final CardLayout       cardLayout;
+    private final JPanel           container;
+    private final VersusScreen     versusScreen;
+    private final GameOverScreen   gameOverScreen;
+    private final PlayOrExitScreen playOrExitScreen; // shown after the Game Over animation
 
     // Floating banner shown during character select
     private final JLabel selectionBanner = new JLabel("", SwingConstants.CENTER);
 
-    // Direct reference needed for the two-phase arcade init
+    // Direct references needed for reset / initBattle calls
     private final ArcadeBattleScreen arcadeScreen;
-
-    // Keep references so we can call reset()/initBattle() from showGameOver
-    private final PVEBattleScreen pveScreen;
-    private final PVPBattleScreen pvpScreen;
+    private final PVEBattleScreen    pveScreen;
+    private final PVPBattleScreen    pvpScreen;
 
     private boolean isFullScreen = false;
 
@@ -53,20 +53,16 @@ public class GameGUI extends JFrame {
         cardLayout = new CardLayout();
         container  = new JPanel(cardLayout);
 
-        // Use a JLayeredPane that automatically fills its children to its own
-        // bounds so resize/fullscreen takes effect on the very next paint.
         JLayeredPane layered = new JLayeredPane() {
             @Override
             public void doLayout() {
                 int w = getWidth(), h = getHeight();
                 container.setBounds(0, 0, w, h);
                 selectionBanner.setBounds(0, 0, w, 40);
-                // Force every child of the container to redo its internal layout
                 for (Component child : container.getComponents()) {
                     child.setBounds(0, 0, w, h);
                     if (child instanceof JPanel p) {
                         p.revalidate();
-                        // Fire a synthetic resize so null-layout panels recalc
                         for (java.awt.event.ComponentListener cl : p.getComponentListeners())
                             cl.componentResized(new java.awt.event.ComponentEvent(
                                     p, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
@@ -122,6 +118,10 @@ public class GameGUI extends JFrame {
         gameOverScreen = new GameOverScreen();
         container.add(gameOverScreen, "GameOverScreen");
 
+        // PlayOrExitScreen — shown after the Game Over animation ends
+        playOrExitScreen = new PlayOrExitScreen();
+        container.add(playOrExitScreen, "PlayOrExitScreen");
+
         pveScreen = new PVEBattleScreen();
         container.add(pveScreen, "PVEBattleScreen");
         pveScreen.setGameGUI(this);
@@ -142,10 +142,6 @@ public class GameGUI extends JFrame {
     // =========================================================================
     // LAYOUT HELPERS
     // =========================================================================
-    private void relayoutAll() {
-        getContentPane().doLayout();
-        getContentPane().repaint();
-    }
 
     private void installFullScreenToggle() {
         getRootPane().registerKeyboardAction(
@@ -173,7 +169,6 @@ public class GameGUI extends JFrame {
             setVisible(true);
             isFullScreen = false;
         }
-        // Layout must run after the window has its final size
         SwingUtilities.invokeLater(() -> {
             getContentPane().doLayout();
             getContentPane().repaint();
@@ -183,8 +178,8 @@ public class GameGUI extends JFrame {
     // =========================================================================
     // SHOW SCREEN
     // =========================================================================
-    public void showScreen(String name) {
 
+    public void showScreen(String name) {
         updateSelectionBanner(name);
 
         switch (name) {
@@ -224,19 +219,14 @@ public class GameGUI extends JFrame {
             }
 
             // ── ARCADE ───────────────────────────────────────────────────────
-            // Step 1: reset and build opponent list via prepareAndGetFirstOpponent()
-            // Step 2: show VersusScreen for opponent #1
-            // Step 3: after animation -> show battle and call initBattle()
             case "ArcadeBattleScreen" -> {
                 GameSession   session = GameSession.getInstance();
                 GameCharacter player  = session.getPlayer1();
 
                 arcadeScreen.reset();
-
                 String firstOpponent = arcadeScreen.prepareAndGetFirstOpponent();
 
                 if (firstOpponent == null) {
-                    // Fallback: no opponents found
                     cardLayout.show(container, "ArcadeBattleScreen");
                     arcadeScreen.initBattle();
                     return;
@@ -254,19 +244,24 @@ public class GameGUI extends JFrame {
     }
 
     // =========================================================================
-    // GAME OVER — PVE  ("YOU WIN!" / "GAME OVER")
-    // Play Again → rematch with the same enemy already stored in GameSession
-    // Exit       → go to MainMenu
+    // GAME OVER
+    //
+    // Flow:  battle ends
+    //          → showGameOver() called by the battle screen
+    //          → card switches to GameOverScreen (battleArena.gif + animation)
+    //          → animation finishes → onComplete fires
+    //          → PlayOrExitScreen is set up with the correct runnables and shown
+    //          → player clicks Play Again or Exit
     // =========================================================================
+
+    // ── PVE ──────────────────────────────────────────────────────────────────
     public void showGameOver(String winnerName, String loserName,
                              boolean playerWon, String nextScreen) {
 
-        cardLayout.show(container, "GameOverScreen");
-
-        // ── Play Again: restart PVE with the same two characters ──────────
+        // Play Again: VS screen → rematch with the same two characters
         Runnable playAgain = () -> {
-            cardLayout.show(container, "VersusScreen");
             GameSession session = GameSession.getInstance();
+            cardLayout.show(container, "VersusScreen");
             versusScreen.show(
                 session.getPlayer1().getCharacterName(),
                 session.getPlayer2().getCharacterName(),
@@ -278,26 +273,26 @@ public class GameGUI extends JFrame {
             );
         };
 
-        // ── Exit: go to the requested next screen (usually "MainMenu") ────
+        // Exit: go to the requested next screen (always "MainMenu" from PVE)
         Runnable exit = () -> showScreen(nextScreen);
 
-        gameOverScreen.show(winnerName, loserName, playerWon, playAgain, exit);
+        // Set up PlayOrExitScreen first, then play the animation.
+        // When the animation ends it will card-switch to PlayOrExitScreen.
+        playOrExitScreen.setup(playAgain, exit);
+
+        cardLayout.show(container, "GameOverScreen");
+        gameOverScreen.show(winnerName, loserName, playerWon,
+                () -> cardLayout.show(container, "PlayOrExitScreen"));
     }
 
-    // =========================================================================
-    // GAME OVER — PVP  (custom title e.g. "A-Vin Won!")
-    // Play Again → rematch with the same two players already in GameSession
-    // Exit       → go to MainMenu
-    // =========================================================================
+    // ── PVP (custom title e.g. "A-Vin Won!") ─────────────────────────────────
     public void showGameOver(String winnerName, String loserName,
                              boolean playerWon, String customTitle, String nextScreen) {
 
-        cardLayout.show(container, "GameOverScreen");
-
-        // ── Play Again: restart PVP with the same two characters ──────────
+        // Play Again: VS screen → rematch with same two players
         Runnable playAgain = () -> {
-            cardLayout.show(container, "VersusScreen");
             GameSession session = GameSession.getInstance();
+            cardLayout.show(container, "VersusScreen");
             versusScreen.show(
                 session.getPlayer1().getCharacterName(),
                 session.getPlayer2().getCharacterName(),
@@ -309,23 +304,23 @@ public class GameGUI extends JFrame {
             );
         };
 
-        // ── Exit: go to the requested next screen (usually "MainMenu") ────
+        // Exit: go to the requested next screen (always "MainMenu" from PVP)
         Runnable exit = () -> showScreen(nextScreen);
 
-        gameOverScreen.show(winnerName, loserName, playerWon, customTitle, playAgain, exit);
+        playOrExitScreen.setup(playAgain, exit);
+
+        cardLayout.show(container, "GameOverScreen");
+        gameOverScreen.show(winnerName, loserName, playerWon, customTitle,
+                () -> cardLayout.show(container, "PlayOrExitScreen"));
     }
 
-    // =========================================================================
-    // GAME OVER — ARCADE
-    // Play Again → restart the full arcade run with the same selected character
-    // Exit       → go to MainMenu
-    // =========================================================================
+    // ── ARCADE ───────────────────────────────────────────────────────────────
+    // Called by ArcadeBattleScreen for both arcadeClear() and gameOver().
+    // Play Again rebuilds the full opponent list with the same character.
     public void showGameOverArcade(String winnerName, String loserName,
                                    boolean playerWon, String nextScreen) {
 
-        cardLayout.show(container, "GameOverScreen");
-
-        // ── Play Again: full arcade reset, rebuild opponent list, show VS ─
+        // Play Again: full arcade reset with the same selected character
         Runnable playAgain = () -> {
             GameSession   session = GameSession.getInstance();
             GameCharacter player  = session.getPlayer1();
@@ -346,17 +341,21 @@ public class GameGUI extends JFrame {
             });
         };
 
-        // ── Exit: go to the requested next screen (usually "MainMenu") ────
+        // Exit: go to the requested next screen (always "MainMenu" from Arcade)
         Runnable exit = () -> showScreen(nextScreen);
 
-        gameOverScreen.show(winnerName, loserName, playerWon, playAgain, exit);
+        playOrExitScreen.setup(playAgain, exit);
+
+        cardLayout.show(container, "GameOverScreen");
+        gameOverScreen.show(winnerName, loserName, playerWon,
+                () -> cardLayout.show(container, "PlayOrExitScreen"));
     }
 
     // =========================================================================
     // SELECTION BANNER
     // =========================================================================
-    private void updateSelectionBanner(String screen) {
 
+    private void updateSelectionBanner(String screen) {
         boolean isSelectScreen = screen.startsWith("Select");
 
         if (!isSelectScreen) {
@@ -387,6 +386,7 @@ public class GameGUI extends JFrame {
     // =========================================================================
     // MAIN
     // =========================================================================
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(GameGUI::new);
     }

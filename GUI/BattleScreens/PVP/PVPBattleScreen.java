@@ -17,7 +17,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private Image p1Sprite;
     private Image p2Sprite;
 
-    // ── Single shared button set (same as PVE) ────────────────────────────
     private JButton btnFight, btnDefend, btnCheck, btnBack;
 
     private JTextArea    dialogue;
@@ -34,7 +33,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private final BattleSystem system;
     private final GameSession  session;
 
-    // Whose turn it is — 1 = P1, 2 = P2
     private int currentTurn = 1;
 
     private ActionState state = ActionState.MAIN;
@@ -52,7 +50,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
         setLayout(null);
         session = GameSession.getInstance();
         system  = new BattleSystem();
-        bgImage = new ImageIcon(BG_PATH).getImage();
+        // PVE/PVP arena background
+        bgImage = new ImageIcon("Assets/battle_sprites/pvp_pve_battlearena.gif").getImage();
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
@@ -75,7 +74,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         if (player1 == null || player2 == null) {
             dialogue.setText("Both players must be selected!");
-        scrollToBottom();
+            scrollToBottom();
             return;
         }
 
@@ -159,7 +158,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
         dialogueScroll.setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));
         roundLabel.setBounds((int)(w * 0.35), (int)(h * 0.03), (int)(w * 0.30), 40);
 
-        // Shared buttons — same positions as PVE
         int btnY = (int)(h * 0.83);
         sizeToIcon(btnFight,  (int)(w * 0.10), btnY);
         sizeToIcon(btnDefend, (int)(w * 0.30), btnY);
@@ -167,7 +165,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         sizeToIcon(btnBack,   (int)(w * 0.76), btnY);
     }
 
-    // ── Helpers: active player / defend flag ──────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     private GameCharacter attacker() { return currentTurn == 1 ? player1 : player2; }
     private GameCharacter defender() { return currentTurn == 1 ? player2 : player1; }
@@ -196,14 +194,12 @@ public class PVPBattleScreen extends BaseBattleScreen {
         atk.getSkill3().reduceSkillCooldown();
         repaint();
 
-        // Check if defender just died
         if (!def.isCharacterAlive()) {
             if (isP1) p1Wins++; else p2Wins++;
             endRound((isP1 ? "P1" : "P2") + " wins round " + round + "!");
             return;
         }
 
-        // Hand off to other player — always switch turn, reset state to MAIN for non-block actions
         state = ActionState.MAIN;
         currentTurn = isP1 ? 2 : 1;
         turnLabel.setText("PLAYER " + currentTurn + "'s turn");
@@ -216,7 +212,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
     // ── Round / match management ──────────────────────────────────────────
 
     private void resetRound() {
-        
         round++;
 
         player1.resetForNewRound();
@@ -273,10 +268,12 @@ public class PVPBattleScreen extends BaseBattleScreen {
         btnCheck.setEnabled(false); btnBack.setEnabled(false);
     }
 
-    private void log(String text) { dialogue.append("\n" + text);
-        scrollToBottom(); }
+    private void log(String text) {
+        dialogue.append("\n" + text);
+        scrollToBottom();
+    }
 
-    // ── State machine (mirrors PVE exactly) ───────────────────────────────
+    // ── State machine ─────────────────────────────────────────────────────
 
     private void switchState(ActionState next) {
         state = next;
@@ -348,16 +345,13 @@ public class PVPBattleScreen extends BaseBattleScreen {
                 btnDefend.addActionListener(e -> {
                     int nb = active != null ? active.getRemainingBlocks() : 0;
                     if (nb <= 0) return;
-                    // Capture whose turn it is BEFORE doTurn switches it
                     boolean wasP1Turn = (currentTurn == 1);
                     doTurn(4);
-                    // Update defend-disabled flag for the player who just blocked
                     int remaining = active != null ? active.getRemainingBlocks() : 0;
                     if (remaining <= 0) {
                         if (wasP1Turn) p1DefendDisabled = true;
                         else           p2DefendDisabled = true;
                     }
-                    // doTurn already switched state to MAIN and changed turn; no need to switchState here
                 });
 
                 btnCheck.addActionListener(e -> switchState(ActionState.MAIN));
@@ -380,13 +374,13 @@ public class PVPBattleScreen extends BaseBattleScreen {
                         fmtSkill(active.getSkill2()) + "\n" +
                         fmtSkill(active.getSkill3())
                     );
-        scrollToBottom();
+                    scrollToBottom();
                 }
 
                 btnBack.addActionListener(e -> {
                     dialogue.setText("What will P" + currentTurn + " ("
                             + (active != null ? active.getCharacterName() : "?") + ") do?");
-        scrollToBottom();
+                    scrollToBottom();
                     switchState(ActionState.MAIN);
                 });
             }
@@ -417,7 +411,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
         clearListeners(btnCheck); clearListeners(btnBack);
     }
 
-    // ── Scroll dialogue to latest entry ──────────────────────────────────
     private void scrollToBottom() {
         if (dialogueScroll == null) return;
         SwingUtilities.invokeLater(() -> {
@@ -467,23 +460,19 @@ public class PVPBattleScreen extends BaseBattleScreen {
         drawBars(g, player1, p1X, (int)(h * 0.02), barW);
         drawBars(g, player2, p2X, (int)(h * 0.02), barW);
 
-        // Win counter
         int cx = w / 2;
         g.setFont(new Font("Impact", Font.PLAIN, 18));
-        g.setColor(new Color(255, 220, 30)); // same as roundLabel
+        g.setColor(new Color(255, 220, 30));
         FontMetrics fm = g.getFontMetrics();
         String score = "P1  " + p1Wins + " - " + p2Wins + "  P2";
         g.drawString(score, cx - fm.stringWidth(score) / 2, (int)(h * 0.15));
 
-        // Turn label background box
         g.setColor(new Color(0, 0, 0, 160));
         g.fillRoundRect((int)(w * 0.28), (int)(h * 0.60), (int)(w * 0.44), 36, 10, 10);
 
-        // Dialogue box background
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.14), 12, 12);
 
-        // Highlight whose side is active
         if (!matchOver) {
             Graphics2D g2 = (Graphics2D) g;
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.10f));

@@ -41,7 +41,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
         setLayout(null);
         session = GameSession.getInstance();
         system  = new BattleSystem();
-        bgImage = new ImageIcon(BG_PATH).getImage();
+        // PVE/PVP arena background
+        bgImage = new ImageIcon("Assets/battle_sprites/pvp_pve_battlearena.gif").getImage();
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
@@ -62,7 +63,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         if (player == null || enemy == null) {
             dialogue.setText("Battle not initialised!");
-        scrollToBottom();
+            scrollToBottom();
             return;
         }
 
@@ -171,14 +172,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         if (action != 4) switchState(ActionState.MAIN);
 
-        // Disable buttons while animation plays and AI is responding
         btnFight.setEnabled(false);
         btnDefend.setEnabled(false);
         btnCheck.setEnabled(false);
 
         Timer aiDelay = new Timer(animDelay, e -> {
             aiTurn();
-            // Only update buttons if we're still in an active battle state
             if (player != null && player.isCharacterAlive() && enemy != null && enemy.isCharacterAlive()) {
                 updateButtons();
             }
@@ -239,7 +238,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         if (playerWins == 2) {
             dialogue.append("\nYOU WON THE MATCH!");
-        scrollToBottom();
+            scrollToBottom();
             disableButtons();
             delay(900, () -> gameGUI.showGameOver(
                     player.getCharacterName(), enemy.getCharacterName(), true, "MainMenu"));
@@ -247,7 +246,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         }
         if (enemyWins == 2) {
             dialogue.append("\nYOU LOST THE MATCH!");
-        scrollToBottom();
+            scrollToBottom();
             disableButtons();
             delay(900, () -> gameGUI.showGameOver(
                     enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
@@ -363,12 +362,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
                         fmtSkill(player.getSkill2()) + "\n" +
                         fmtSkill(player.getSkill3())
                     );
-        scrollToBottom();
+                    scrollToBottom();
                 }
 
                 btnBack.addActionListener(e -> {
                     dialogue.setText("What will " + (player != null ? player.getCharacterName() : "?") + " do?");
-        scrollToBottom();
+                    scrollToBottom();
                     switchState(ActionState.MAIN);
                 });
             }
@@ -399,7 +398,6 @@ public class PVEBattleScreen extends BaseBattleScreen {
         clearListeners(btnCheck); clearListeners(btnBack);
     }
 
-    // ── Scroll dialogue to latest entry ──────────────────────────────────
     private void scrollToBottom() {
         if (dialogueScroll == null) return;
         SwingUtilities.invokeLater(() -> {

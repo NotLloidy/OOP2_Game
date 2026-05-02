@@ -56,7 +56,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         setLayout(null);
         session = GameSession.getInstance();
         system  = new BattleSystem();
-        bgImage = new ImageIcon(BG_PATH).getImage();
+        bgImage = new ImageIcon("Assets/battle_sprites/arcadeArena.gif").getImage();
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {

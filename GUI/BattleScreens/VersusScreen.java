@@ -9,13 +9,13 @@ import java.awt.*;
  * Characters slide in from opposite sides, VS logo fades in, then the
  * completion callback fires after a short hold.
  *
- * Sprites are rendered at a fixed HEIGHT (72 % of the panel height) while
- * their WIDTH is computed from the image's natural aspect ratio, so no
- * character is ever squished or stretched.
+ * Animation runs on a dedicated background Thread.
+ * All Swing state mutations are dispatched through SwingUtilities.invokeLater
+ * so the EDT is never blocked and never accessed from the wrong thread.
  */
 public class VersusScreen extends JPanel {
 
-    // ── Asset paths ──────────────────────────────────────────────────────
+    // ── Asset paths ───────────────────────────────────────────────────────
     private static final String LEFT_SPRITE_PATH    = "Assets/character_related/idleAnimation/left/";
     private static final String RIGHT_SPRITE_PATH   = "Assets/character_related/idleAnimation/right/";
     private static final String LEFT_SPRITE_SUFFIX  = "-left.gif";
@@ -23,146 +23,210 @@ public class VersusScreen extends JPanel {
     private static final String BG_IMAGE_PATH       = "Assets/battle_sprites/versusBackGround.gif";
     private static final String VS_OVERLAY_PATH     = "Assets/battle_sprites/versusLogo.gif";
 
+    // ── Animation timing ──────────────────────────────────────────────────
+    /** Target frame time in ms (~60 fps). */
+    private static final int FRAME_MS  = 16;
+    /** How long to hold the completed screen before firing onComplete (ms). */
+    private static final int HOLD_MS   = 1500;
+
+    // ── Images ────────────────────────────────────────────────────────────
     private Image bgImage;
     private Image vsOverlay;
     private Image leftSprite;
     private Image rightSprite;
 
-    // Animation state
-    private float leftX   = -500f;
-    private float rightX  = 1800f;
-    private float vsAlpha = 0f;
-    private float nameAlpha = 0f;
-    private boolean animDone = false;
+    // ── Animation state — only written by the anim thread via invokeLater ─
+    private volatile float   leftX     = -500f;
+    private volatile float   rightX    = 1800f;
+    private volatile float   vsAlpha   = 0f;
+    private volatile float   nameAlpha = 0f;
 
-    // The actual character names (for name plates)
     private String leftDisplayName  = "";
     private String rightDisplayName = "";
 
-    private Timer animTimer;
-    private Runnable onComplete;
-
-    // Computed natural sprite sizes (pixels) – set in show()
+    // Natural sprite dimensions (pixels)
     private int leftNatW  = 200, leftNatH  = 300;
     private int rightNatW = 200, rightNatH = 300;
 
     private Font nameFont;
     private Font vsFont;
 
+    // ── Thread management ─────────────────────────────────────────────────
+    /** The currently running animation thread, or null if none. */
+    private Thread animThread;
+    /** Set to true to ask the running thread to stop early (e.g. on show() re-entry). */
+    private volatile boolean stopRequested = false;
+
+    private Runnable onComplete;
+
     public VersusScreen() {
         setLayout(null);
         setOpaque(true);
+
         bgImage   = new ImageIcon(BG_IMAGE_PATH).getImage();
         vsOverlay = loadOptional(VS_OVERLAY_PATH);
-
-        nameFont = new Font("Impact", Font.PLAIN, 42);
-        vsFont   = new Font("Impact", Font.PLAIN, 110);
+        nameFont  = new Font("Impact", Font.PLAIN, 42);
+        vsFont    = new Font("Impact", Font.PLAIN, 110);
     }
 
-    private String toFileKey(String name) {
-        return name.toLowerCase().replaceAll("[^a-z0-9]", "");
-    }
+    // ── Public API ────────────────────────────────────────────────────────
 
-    // ── Public API ───────────────────────────────────────────────────────
-
-    /** Shows the screen, animates both characters in, then invokes {@code afterAnimation}. */
+    /**
+     * Starts the versus animation for the given characters, then invokes
+     * {@code afterAnimation} on the EDT once the hold period ends.
+     *
+     * Safe to call from the EDT or any other thread.
+     */
     public void show(String player1Name, String player2Name, Runnable afterAnimation) {
+        // Stop any animation already in flight
+        stopCurrentThread();
+
         this.leftDisplayName  = player1Name;
         this.rightDisplayName = player2Name;
-
         this.onComplete       = afterAnimation;
-        this.animDone         = false;
 
-        String leftKey  = toFileKey(player1Name);
-        String rightKey = toFileKey(player2Name);
+        // Load sprites and measure them on a loader thread so MediaTracker
+        // blocking never stalls the EDT.
+        Thread loaderThread = new Thread(() -> {
+            String leftKey  = toFileKey(player1Name);
+            String rightKey = toFileKey(player2Name);
 
-        leftSprite  = new ImageIcon(LEFT_SPRITE_PATH  + leftKey  + LEFT_SPRITE_SUFFIX ).getImage();
-        rightSprite = new ImageIcon(RIGHT_SPRITE_PATH + rightKey + RIGHT_SPRITE_SUFFIX).getImage();
+            Image ls = new ImageIcon(LEFT_SPRITE_PATH  + leftKey  + LEFT_SPRITE_SUFFIX ).getImage();
+            Image rs = new ImageIcon(RIGHT_SPRITE_PATH + rightKey + RIGHT_SPRITE_SUFFIX).getImage();
 
-        // Wait for images so we get accurate natural dimensions
-        MediaTracker mt = new MediaTracker(this);
-        mt.addImage(leftSprite,  0);
-        mt.addImage(rightSprite, 1);
-        try { mt.waitForAll(); } catch (InterruptedException ignored) {}
+            // Block until images are fully loaded so we get correct dimensions
+            MediaTracker mt = new MediaTracker(VersusScreen.this);
+            mt.addImage(ls, 0);
+            mt.addImage(rs, 1);
+            try { mt.waitForAll(); } catch (InterruptedException ignored) { return; }
 
-        leftNatW  = Math.max(1, leftSprite .getWidth(null));
-        leftNatH  = Math.max(1, leftSprite .getHeight(null));
-        rightNatW = Math.max(1, rightSprite.getWidth(null));
-        rightNatH = Math.max(1, rightSprite.getHeight(null));
+            final int lw = Math.max(1, ls.getWidth(null));
+            final int lh = Math.max(1, ls.getHeight(null));
+            final int rw = Math.max(1, rs.getWidth(null));
+            final int rh = Math.max(1, rs.getHeight(null));
 
-        // Reset animation positions
-        leftX    = -leftNatW  - 100f;
-        rightX   = getWidth() + rightNatW + 100f;
-        vsAlpha  = 0f;
-        nameAlpha = 0f;
+            // Push all state onto the EDT, then kick off the anim thread
+            SwingUtilities.invokeLater(() -> {
+                leftSprite  = ls;
+                rightSprite = rs;
+                leftNatW = lw;  leftNatH = lh;
+                rightNatW = rw; rightNatH = rh;
 
-        startAnimation();
-        repaint();
+                // Reset animation positions before the thread starts
+                int panelW = getWidth();
+                leftX    = -(lw + 100f);
+                rightX   = panelW + rw + 100f;
+                vsAlpha  = 0f;
+                nameAlpha = 0f;
+
+                repaint();
+                startAnimThread();
+            });
+        }, "VersusScreen-Loader");
+
+        loaderThread.setDaemon(true);
+        loaderThread.start();
     }
 
-    // ── Animation ────────────────────────────────────────────────────────
+    // ── Thread helpers ────────────────────────────────────────────────────
 
-    private void startAnimation() {
-        if (animTimer != null && animTimer.isRunning()) animTimer.stop();
-
-        animTimer = new Timer(16, e -> {
-            int w = getWidth(), h = getHeight();
-
-            int dispH = (int)(h * 0.72);
-            // Cap each sprite width to 45% of screen so wide sprites don't overflow their half
-            int maxHalfW   = (int)(w * 0.45f);
-            int rawLeftW   = dispH * leftNatW  / leftNatH;
-            int rawRightW  = dispH * rightNatW / rightNatH;
-            int leftDispW  = Math.min(rawLeftW,  maxHalfW);
-            int rightDispW = Math.min(rawRightW, maxHalfW);
-
-            // Left character: center in the left 50% of the screen
-            float leftCenterX  = w * 0.25f;
-            float leftTarget   = leftCenterX - leftDispW * 0.5f;
-            // Never let left sprite start off-screen left
-            leftTarget = Math.max(leftTarget, w * 0.02f);
-
-            // Right character: center in the right 50% of the screen
-            float rightCenterX = w * 0.75f;
-            float rightTarget  = rightCenterX - rightDispW * 0.5f;
-            // Never let right sprite go off-screen right
-            rightTarget = Math.min(rightTarget, w - rightDispW - w * 0.02f);
-
-            leftX  += (leftTarget  - leftX)  * 0.12f;
-            rightX += (rightTarget - rightX) * 0.12f;
-
-            boolean leftSettled  = Math.abs(leftX  - leftTarget)  < 2f;
-            boolean rightSettled = Math.abs(rightX - rightTarget) < 2f;
-
-            if (leftSettled && rightSettled) {
-                vsAlpha   = Math.min(1f, vsAlpha   + 0.06f);
-                nameAlpha = Math.min(1f, nameAlpha + 0.04f);
-            }
-
-            if (Math.abs(rightX - rightTarget) >= 2f) {
-                rightX += (rightTarget - rightX) * 0.12f;
-            }
-
-            repaint();
-
-            if (leftSettled && rightSettled && vsAlpha >= 1f && nameAlpha >= 1f && !animDone) {
-                animDone = true;
-                animTimer.stop();
-                Timer hold = new Timer(1500, ev -> { if (onComplete != null) onComplete.run(); });
-                hold.setRepeats(false);
-                hold.start();
-            }
-        });
-        animTimer.start();
+    /** Signals the current animation thread to stop and waits for it to exit. */
+    private void stopCurrentThread() {
+        stopRequested = true;
+        if (animThread != null && animThread.isAlive()) {
+            animThread.interrupt();
+            // Give it a moment to exit; we don't need to join hard here
+            // because the thread is daemon and checks stopRequested each frame.
+        }
+        animThread    = null;
+        stopRequested = false;
     }
 
-    // ── Paint ────────────────────────────────────────────────────────────
+    /**
+     * Spawns the animation thread.
+     * Must be called on the EDT (after image state has been set).
+     */
+    private void startAnimThread() {
+        stopRequested = false;
 
-    @Override
-    public void doLayout() {
-        super.doLayout();
-        repaint();
+        animThread = new Thread(() -> {
+            try {
+                runAnimationLoop();
+            } catch (InterruptedException e) {
+                // Normal exit path when stopCurrentThread() is called
+                Thread.currentThread().interrupt();
+            }
+        }, "VersusScreen-Anim");
+
+        animThread.setDaemon(true);
+        animThread.start();
     }
+
+    /**
+     * The animation loop — runs entirely on the animation thread.
+     * Reads panel dimensions and mutates animation state, then posts a
+     * repaint request to the EDT each frame.
+     *
+     * @throws InterruptedException propagated so the caller can clean up
+     */
+    private void runAnimationLoop() throws InterruptedException {
+
+        while (!stopRequested) {
+            long frameStart = System.currentTimeMillis();
+
+            // ── Snapshot panel dimensions (safe to read from any thread) ──
+            int w = getWidth();
+            int h = getHeight();
+
+            // Sprite display sizes — fixed height, aspect-correct width
+            int dispH      = (int)(h * 0.72);
+            int leftDispW  = (leftNatH  > 0) ? dispH * leftNatW  / leftNatH  : dispH;
+            int rightDispW = (rightNatH > 0) ? dispH * rightNatW / rightNatH : dispH;
+
+            // Target X positions — left char in left half, right char in right half
+            float leftTarget  = (float)(w / 2 - leftDispW)  * 0.10f + w * 0.02f;
+            float rightTarget = (float)(w / 2 - rightDispW) * 0.14f + w * 0.02f;
+
+            // ── Step animation state ───────────────────────────────────────
+            final float newLeftX  = leftX  + (leftTarget  - leftX)  * 0.12f;
+            final float newRightX = rightX + (rightTarget - rightX) * 0.12f;
+
+            boolean charsSettled = Math.abs(newLeftX  - leftTarget)  < 2f
+                                && Math.abs(newRightX - rightTarget) < 2f;
+
+            final float newVsAlpha   = charsSettled ? Math.min(1f, vsAlpha   + 0.06f) : vsAlpha;
+            final float newNameAlpha = charsSettled ? Math.min(1f, nameAlpha + 0.04f) : nameAlpha;
+
+            boolean fullyDone = charsSettled && newVsAlpha >= 1f && newNameAlpha >= 1f;
+
+            // ── Post state update + repaint to the EDT ────────────────────
+            SwingUtilities.invokeLater(() -> {
+                leftX     = newLeftX;
+                rightX    = newRightX;
+                vsAlpha   = newVsAlpha;
+                nameAlpha = newNameAlpha;
+                repaint();
+            });
+
+            if (fullyDone) {
+                // Animation complete — hold for HOLD_MS then fire callback
+                Thread.sleep(HOLD_MS);
+                if (!stopRequested) {
+                    SwingUtilities.invokeLater(() -> {
+                        if (onComplete != null) onComplete.run();
+                    });
+                }
+                return; // exit the loop naturally
+            }
+
+            // ── Sleep for the remainder of the frame ──────────────────────
+            long elapsed = System.currentTimeMillis() - frameStart;
+            long sleepMs = FRAME_MS - elapsed;
+            if (sleepMs > 0) Thread.sleep(sleepMs);
+        }
+    }
+
+    // ── Paint ─────────────────────────────────────────────────────────────
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -183,12 +247,10 @@ public class VersusScreen extends JPanel {
         g2.setPaint(grad);
         g2.fillRect(0, 0, w, h);
 
-        // Sprite dimensions — fixed height, aspect-ratio-correct width
-        int dispH     = (int)(h * 0.72);
-        int spriteY   = (int)(h * 0.05);
-        int maxHalfW   = (int)(w * 0.45f);
-        int leftDispW  = Math.min(dispH * leftNatW  / leftNatH, maxHalfW);
-        int rightDispW = Math.min(dispH * rightNatW / rightNatH, maxHalfW);
+        int dispH      = (int)(h * 0.72);
+        int spriteY    = (int)(h * 0.05);
+        int leftDispW  = (leftNatH  > 0) ? dispH * leftNatW  / leftNatH  : dispH;
+        int rightDispW = (rightNatH > 0) ? dispH * rightNatW / rightNatH : dispH;
 
         // Left character
         if (leftSprite != null)
@@ -218,7 +280,7 @@ public class VersusScreen extends JPanel {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1f));
         }
 
-        // Name plates (use actual display names, not file keys)
+        // Name plates
         if (nameAlpha > 0) {
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, nameAlpha));
             int plateH = (int)(h * 0.11);
@@ -229,19 +291,17 @@ public class VersusScreen extends JPanel {
         }
     }
 
-    private void drawNamePlate(Graphics2D g2, String name, int px, int py, int pw, int ph, boolean leftAlign) {
-        // Dark backing bar
+    private void drawNamePlate(Graphics2D g2, String name,
+                                int px, int py, int pw, int ph, boolean leftAlign) {
         g2.setColor(new Color(0, 0, 0, 170));
         g2.fillRect(px, py, pw, ph);
 
-        // Gold accent stripe
         g2.setColor(new Color(255, 200, 20));
         g2.fillRect(px, py, pw, 3);
 
         g2.setFont(nameFont);
         FontMetrics fm = g2.getFontMetrics();
 
-        // Scale font down if name is too wide
         Font f = nameFont;
         while (fm.stringWidth(name) > pw - 30 && f.getSize() > 16) {
             f  = f.deriveFont((float)(f.getSize() - 2));
@@ -255,12 +315,14 @@ public class VersusScreen extends JPanel {
                 : px + pw - fm.stringWidth(name) - 18;
         int ty = py + (ph + fm.getAscent()) / 2 - 4;
 
-        // Shadow
-        g2.setColor(new Color(0, 0, 0, 200));
-        g2.drawString(name, tx + 3, ty + 3);
-        // White text
-        g2.setColor(Color.WHITE);
-        g2.drawString(name, tx, ty);
+        g2.setColor(new Color(0, 0, 0, 200)); g2.drawString(name, tx + 3, ty + 3);
+        g2.setColor(Color.WHITE);              g2.drawString(name, tx,     ty);
+    }
+
+    // ── Utilities ─────────────────────────────────────────────────────────
+
+    private String toFileKey(String name) {
+        return name.toLowerCase().replaceAll("[^a-z0-9]", "");
     }
 
     private Image loadOptional(String path) {

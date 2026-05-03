@@ -22,7 +22,7 @@ public class SoleilInfoScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_info/infoSoleilMooncrest.png").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_info/infoSoleilMooncrest.png").getImage();
 
         play = createButton();
         play.addActionListener(e -> {

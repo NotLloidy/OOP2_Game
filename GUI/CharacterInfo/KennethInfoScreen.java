@@ -22,7 +22,7 @@ public class KennethInfoScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_info/infoKenneth.png").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_info/infoKenneth.png").getImage();
 
         play = createButton();
         play.addActionListener(e -> {

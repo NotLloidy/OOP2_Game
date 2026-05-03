@@ -21,8 +21,8 @@ public class AVinInfoScreen extends JPanel {
     public AVinInfoScreen(GameGUI gui) {
 
         this.setLayout(null);
-
-        bgImage = new ImageIcon("Assets/character_info/infoAVin.png").getImage();
+        
+        bgImage = new ImageIcon("Assets/character_related/character_info/infoAVin.png").getImage();
 
         play = createButton();
         play.addActionListener(e -> {

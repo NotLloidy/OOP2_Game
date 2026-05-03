@@ -32,7 +32,7 @@ public class SelectKennethScreen extends JPanel {
         this.add(next);
 
         prev = createButton();
-        prev.addActionListener(e -> gui.showScreen("SelectChungScreen"));
+        prev.addActionListener(e -> gui.showScreen("SelectChungMyungScreen"));
         this.add(prev);
 
         info = createButton();
@@ -131,8 +131,7 @@ public class SelectKennethScreen extends JPanel {
     @Override
     public void doLayout() {
         super.doLayout();
-        revalidate();
-        repaint();
+        updatePositions();
     }
 
     @Override

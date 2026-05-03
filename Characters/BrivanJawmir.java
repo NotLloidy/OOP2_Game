@@ -11,9 +11,9 @@ public class BrivanJawmir extends GameCharacter {
     public BrivanJawmir() {
         super("Brivan Jawmir", "Human", "Arcane Warden", 160, 60, 100);
 
-        riftCleaverThrust = new Skill("Rift Cleaver Thrust", 10, 0, 10, 0,0);
-        crescentReaver = new Skill("Crescent Reaver", 10, 20, 0, 3,0);
-        emberVault = new Skill("Ember Vault", 50, 50, 0, 4,4);
+        riftCleaverThrust = new Skill("Rift Cleaver Thrust", 20, 0, 10, 0,0);
+        crescentReaver = new Skill("Crescent Reaver", 45, 20, 0, 3,0);
+        emberVault = new Skill("Ember Vault", 80, 50, 0, 999,4);
     }
 
     @Override

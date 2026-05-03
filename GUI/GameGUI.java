@@ -94,11 +94,11 @@ public class GameGUI extends JFrame {
         // Character Select
         container.add(new SelectAVinScreen(this),       "SelectAVinScreen");
         container.add(new SelectBrivanScreen(this),     "SelectBrivanScreen");
-        container.add(new SelectChungMyungScreen(this), "SelectChungScreen");
+        container.add(new SelectChungMyungScreen(this), "SelectChungMyungScreen");
         container.add(new SelectKennethScreen(this),    "SelectKennethScreen");
         container.add(new SelectSoleilScreen(this),     "SelectSoleilScreen");
         container.add(new SelectSungJinWooScreen(this), "SelectSungJinWooScreen");
-        container.add(new SelectZakkarrScreen(this),    "SelectZakkarScreen");
+        container.add(new SelectZakkarrScreen(this),    "SelectZakkarrScreen");
         container.add(new SelectKijElScreen(this),      "SelectKijElScreen");
 
         // Character Info

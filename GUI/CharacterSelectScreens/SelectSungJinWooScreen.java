@@ -28,7 +28,7 @@ public class SelectSungJinWooScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_related/character_select/sungjinwooSelect.gif").getImage();
 
         next = createButton();
-        next.addActionListener(e -> gui.showScreen("SelectZakkarScreen"));
+        next.addActionListener(e -> gui.showScreen("SelectZakkarrScreen"));
         this.add(next);
 
         exit = createButton();
@@ -131,8 +131,7 @@ public class SelectSungJinWooScreen extends JPanel {
     @Override
     public void doLayout() {
         super.doLayout();
-        revalidate();
-        repaint();
+        updatePositions();
     }
 
     @Override

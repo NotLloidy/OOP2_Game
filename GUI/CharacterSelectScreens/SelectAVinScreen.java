@@ -34,15 +34,7 @@ public class SelectAVinScreen extends JPanel {
         // Goes back to MainMenu only if P1 is still picking; otherwise back to
         // the start of character select so P2 can repick from the beginning.
         prev = createButton();
-        prev.addActionListener(e -> {
-            GameSession session = GameSession.getInstance();
-            if (session.getSelectingPlayer() == 1) {
-                gui.showScreen("SelectZakkarScreen");
-            } else {
-                // P2 is picking — "back" goes to start of char select
-                gui.showScreen("SelectAVinScreen");
-            }
-        });
+        prev.addActionListener(e -> gui.showScreen("SelectZakkarrScreen"));
         this.add(prev);
 
         // ── INFO button ───────────────────────────────────────────────────────
@@ -140,8 +132,7 @@ public class SelectAVinScreen extends JPanel {
     @Override
     public void doLayout() {
         super.doLayout();
-        revalidate();
-        repaint();
+        updatePositions();
     }
 
     @Override

@@ -11,9 +11,9 @@ public class KijEl extends GameCharacter {
     public KijEl() {
         super("Kij-EL", "Human", "Arcane Mage", 200, 50, 100);
         
-        arcaneBlast = new Skill("Arcane Blast", 10, 0, 10, 0,0);
-        cinderLance = new Skill("Cinder Lance", 20, 30, 0, 2,0);
-        cataclysmSigil = new Skill("Cataclysm Sigil", 60, 70, 0, 999,4);
+        arcaneBlast = new Skill("Arcane Blast", 30, 0, 10, 0,0);
+        cinderLance = new Skill("Cinder Lance", 45, 30, 0, 2,0);
+        cataclysmSigil = new Skill("Cataclysm Sigil", 80, 70, 0, 999,4);
     }   
 
     @Override

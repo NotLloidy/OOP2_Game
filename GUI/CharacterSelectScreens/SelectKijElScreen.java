@@ -131,8 +131,7 @@ public class SelectKijElScreen extends JPanel {
     @Override
     public void doLayout() {
         super.doLayout();
-        revalidate();
-        repaint();
+        updatePositions();
     }
 
     @Override

@@ -230,10 +230,51 @@ public abstract class BaseBattleScreen extends JPanel {
         return ANIM_BASE + dir + "/" + spriteKey + "Skill" + skillNum + sfx + ".gif";
     }
 
+    /**
+     * Scales a skill animation GIF to fit within the panel, centres it on the
+     * character's sprite position, and clamps it so it never goes off-screen.
+     *
+     * @param cx  horizontal centre of the character's sprite (pixels)
+     * @param cy  vertical centre of the character's sprite (pixels)
+     */
+    private void placeAnimLabel(JLabel label, String path, int cx, int cy) {
+        ImageIcon raw = new ImageIcon(path);
+        int natW = raw.getIconWidth();
+        int natH = raw.getIconHeight();
+        if (natW <= 0 || natH <= 0) { label.setIcon(raw); return; }
+
+        int panelW = getWidth();
+        int panelH = getHeight();
+
+        // Max display size: 55% of panel width, 70% of panel height
+        int maxW = (int)(panelW * 0.55f);
+        int maxH = (int)(panelH * 0.70f);
+
+        // Scale proportionally to fit within the cap
+        float scale = Math.min((float) maxW / natW, (float) maxH / natH);
+        int dispW = (int)(natW * scale);
+        int dispH = (int)(natH * scale);
+
+        // Scale the icon so the JLabel renders it at the right size
+        Image scaled = raw.getImage().getScaledInstance(dispW, dispH, Image.SCALE_DEFAULT);
+        label.setIcon(new ImageIcon(scaled));
+
+        // Centre on the character, then clamp inside panel bounds
+        int x = cx - dispW / 2;
+        int y = cy - dispH / 2;
+        x = Math.max(0, Math.min(x, panelW - dispW));
+        y = Math.max(0, Math.min(y, panelH - dispH));
+
+        label.setBounds(x, y, dispW, dispH);
+    }
+
     protected void showPlayerSkillAnim(String spriteKey, int skillNum) {
         if (playerAnimLabel == null) return;
         playerAnimating = true;
-        playerAnimLabel.setIcon(new ImageIcon(getSkillAnimPath(spriteKey, skillNum, true)));
+        String path = getSkillAnimPath(spriteKey, skillNum, true);
+        int cx = playerCharCenterX();
+        int cy = playerCharCenterY();
+        placeAnimLabel(playerAnimLabel, path, cx, cy);
         playerAnimLabel.setVisible(true);
         repaint();
         Timer t = new Timer(1500, e -> {
@@ -248,7 +289,10 @@ public abstract class BaseBattleScreen extends JPanel {
     protected void showEnemySkillAnim(String spriteKey, int skillNum) {
         if (enemyAnimLabel == null) return;
         enemyAnimating = true;
-        enemyAnimLabel.setIcon(new ImageIcon(getSkillAnimPath(spriteKey, skillNum, false)));
+        String path = getSkillAnimPath(spriteKey, skillNum, false);
+        int cx = enemyCharCenterX();
+        int cy = enemyCharCenterY();
+        placeAnimLabel(enemyAnimLabel, path, cx, cy);
         enemyAnimLabel.setVisible(true);
         repaint();
         Timer t = new Timer(1500, e -> {
@@ -259,4 +303,10 @@ public abstract class BaseBattleScreen extends JPanel {
         t.setRepeats(false);
         t.start();
     }
+
+    /** Override in each subclass to return the pixel centre of the player sprite. */
+    protected int playerCharCenterX() { return getWidth()  / 4; }
+    protected int playerCharCenterY() { return getHeight() / 2; }
+    protected int enemyCharCenterX()  { return getWidth()  * 3 / 4; }
+    protected int enemyCharCenterY()  { return getHeight() / 2; }
 }

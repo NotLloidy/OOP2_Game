@@ -16,7 +16,7 @@ public class SungJinWoo extends GameCharacter {
 
         shadowSlash = new Skill("Shadow Slash", 15, 5, 0, 0,0);
         shadowExtraction = new Skill("Shadow Extraction", 25, 20, 8, 2,0);
-        summonIgris = new Skill("Summon Igris", 60, 50, 0, 5,4);
+        summonIgris = new Skill("Summon Igris", 60, 50, 0, 999,4);
 
         isIgrisSummoned = false;
         isShadowSummoned = false;

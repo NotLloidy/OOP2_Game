@@ -42,6 +42,7 @@ public class SoleilMooncrest extends GameCharacter {
             lunarEmpowered = true;
         }
 
+
         switch(skillNumber) {
             case 1: 
                 if(target.getIsBlocking()){

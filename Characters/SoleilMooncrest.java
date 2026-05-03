@@ -10,7 +10,6 @@ public class SoleilMooncrest extends GameCharacter {
     private int lunarTurnCounter;
     private boolean lunarEmpowered;
 
-
     public SoleilMooncrest() {
         super("Soleil Mooncrest", "Human", "Moonlit Witch", 200, 50, 100);
 
@@ -61,6 +60,7 @@ public class SoleilMooncrest extends GameCharacter {
                     target.takeDamage(damage);
                     regenMana(moonStrike.getSkillManaRegen());
                     moonStrike.triggerSkillCooldown(); 
+
                     return getCharacterName() + " used Moon Strike! Dealt " + damage + " damage.";
                 }
                 return "Not enough mana!";
@@ -81,6 +81,7 @@ public class SoleilMooncrest extends GameCharacter {
                     target.takeDamage(damage);
                     useMana(moonlightShine.getSkillManaCost());
                     moonlightShine.triggerSkillCooldown();
+
                     return getCharacterName() + " used Moonlight Shine! Dealt " + damage + " damage.";
                 }
                 return "Skill on cooldown or insufficient mana.";
@@ -92,7 +93,7 @@ public class SoleilMooncrest extends GameCharacter {
                 if (shadowBlast.isSkillAvailable() && getCharacterCurrentMana() >= shadowBlast.getSkillManaCost()) {
                     int damage = shadowBlast.getSkillDamage();
 
-                    if (lunarEmpowered) {
+                    if(lunarEmpowered) {
                         damage += 10;
                         heal(10);
                         lunarEmpowered = false;
@@ -101,6 +102,7 @@ public class SoleilMooncrest extends GameCharacter {
                     target.takeDamage(damage);
                     useMana(shadowBlast.getSkillManaCost());
                     shadowBlast.triggerSkillCooldown();
+
                     return getCharacterName() + " cast Shadow Blast! Dealt " + damage + " damage.";
                 }
                 return "Skill on cooldown or insufficient mana.";

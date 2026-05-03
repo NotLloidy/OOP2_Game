@@ -12,9 +12,9 @@ public class Kenneth extends GameCharacter {
     public Kenneth() {
         super("Kenneth", "Human", "Marksman", 150, 30, 60);
 
-        aimedShot = new CharacterSkills("Aimed Shot", 20, 10, 10, 0,0);
+        aimedShot = new CharacterSkills("Aimed Shot", 20, 0, 5, 0,0);
         overwatchStance = new CharacterSkills("Overwatch Stance", 0, 15, 0, 2,0);
-        suppressiveVolley = new CharacterSkills("Suppressive Volley", 70, 20, 0, 999,4);
+        suppressiveVolley = new CharacterSkills("Suppressive Volley", 70, 50, 0, 999,4);
 
         overwatchReady = false;
     }

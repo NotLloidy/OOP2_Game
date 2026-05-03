@@ -78,6 +78,12 @@ public class PVPBattleScreen extends BaseBattleScreen {
             return;
         }
 
+        // Fully restore both characters so a rematch always starts at full HP/MP
+        player1.resetForNewRound();
+        player2.resetForNewRound();
+        player1.getSkill1().resetCooldown(); player1.getSkill2().resetCooldown(); player1.getSkill3().resetCooldown();
+        player2.getSkill1().resetCooldown();  player2.getSkill2().resetCooldown();  player2.getSkill3().resetCooldown();
+
         p1Sprite = new ImageIcon(IDLE_LEFT_DIR  + player1.getSpriteKey() + IDLE_L_SFX).getImage();
         p2Sprite = new ImageIcon(IDLE_RIGHT_DIR + player2.getSpriteKey() + IDLE_R_SFX).getImage();
 
@@ -146,10 +152,13 @@ public class PVPBattleScreen extends BaseBattleScreen {
         if (w == 0 || h == 0) return;
 
         p1W = (int)(w * 0.28); p1H = (int)(h * 0.47);
-        p1X = (int)(w * 0.08); p1Y = (int)(h * 0.35);
+        p1X = (int)(w * 0.08); p1Y = (int)(h * 0.13);
         p2W = p1W;              p2H = p1H;
         p2X = (int)(w * 0.64); p2Y = p1Y;
 
+        int animW = p1W * 2, animH = p1H * 2;
+        playerAnimLabel.setBounds(p1X - p1W / 2, p1Y - p1H / 2, animW, animH);
+        enemyAnimLabel .setBounds(p2X - p2W / 2, p2Y - p2H / 2, animW, animH);
 
         turnLabel.setBounds((int)(w * 0.28), (int)(h * 0.60), (int)(w * 0.44), 36);
         dialogueScroll.setBounds((int)(w * 0.10), (int)(h * 0.66), (int)(w * 0.80), (int)(h * 0.11));
@@ -440,11 +449,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
         super.doLayout();
         layoutUI();
     }
-
-    @Override protected int playerCharCenterX() { return p1X + p1W / 2; }
-    @Override protected int playerCharCenterY() { return p1Y + p1H / 2; }
-    @Override protected int enemyCharCenterX()  { return p2X + p2W / 2; }
-    @Override protected int enemyCharCenterY()  { return p2Y + p2H / 2; }
 
     @Override
     protected void paintComponent(Graphics g) {

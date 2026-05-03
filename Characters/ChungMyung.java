@@ -7,7 +7,6 @@ public class ChungMyung extends GameCharacter {
     private CharacterSkills blossomThrust;
     private CharacterSkills plumPetalDance;
     private CharacterSkills saintVerdict;
-
     private int plumResolveStacks = 0; 
     private boolean lastSkillWasBlossom = false; 
 

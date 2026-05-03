@@ -82,6 +82,7 @@ public class BrivanJawmir extends GameCharacter {
                         damage += 15;
                         target.setIsStunned(true); 
                     }
+                    
                     target.takeDamage(damage);
                     useMana(emberVault.getSkillManaCost());
                     regenMana(emberVault.getSkillManaRegen());

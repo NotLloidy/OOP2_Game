@@ -26,9 +26,6 @@ public class Zakkarr extends GameCharacter {
         if (!isCharacterAlive()) return;
         super.takeDamage(amount);
 
-        // This would ideally return a String in a full event-driven engine,
-        // but since takeDamage is void, the GUI will handle the health bar update 
-        // to show the revival silently.
         if (!hasRevived && getCharacterCurrentHealthPoints() <= 0 && getCharacterCurrentMana() >= deathsReturn.getSkillManaCost()) {
             revive(150, 100); 
             hasRevived = true;

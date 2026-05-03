@@ -23,8 +23,6 @@ import java.util.List;
  */
 public class LeaderboardScreen extends JPanel {
 
-    // ── Background ────────────────────────────────────────────────────────
-    // TODO: replace with your real leaderboard background path if needed.
     private static final String BG_PATH = "Assets/navigation/leaderboard.gif";
     private Image bgImage;
 

@@ -4,6 +4,7 @@ import Foundation.*;
 import GUI.BattleScreens.BaseBattleScreen;
 import GUI.BattleScreens.VersusScreen;
 import GameEngines.*;
+import UTILS.FileHandler;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,6 +52,14 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private JPanel container;
     private GUI.GameGUI gameGUI;
     private JLabel roundLabel;
+
+    // ── Arcade run timer ──────────────────────────────────────────────────
+    // Counts elapsed whole seconds from the moment initBattle() is called
+    // until arcadeClear() fires. Displayed live in the status label.
+    private Timer  runTimer;          // fires every 1 000 ms
+    private int    elapsedSeconds = 0;
+    private JLabel timerLabel;        // live display, e.g. "Time: 2:05"
+    // ─────────────────────────────────────────────────────────────────────
 
     public ArcadeBattleScreen() {
         setLayout(null);
@@ -103,9 +112,38 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         prepared    = false;
         initialized = true;
+
+        startRunTimer(); //start timing the full arcade run
+
         loadNextOpponent();
         roundLabel.setText("ROUND " + round);
     }
+
+    // ── Run timer helpers ─────────────────────────────────────────────────
+
+    /** Starts (or restarts) the 1-second elapsed-time ticker. */
+    private void startRunTimer() {
+        stopRunTimer();
+        elapsedSeconds = 0;
+        updateTimerLabel();
+
+        runTimer = new Timer(1000, e -> {
+            elapsedSeconds++;
+            updateTimerLabel();
+        });
+        runTimer.start();
+    }
+
+    /** Stops the ticker without resetting the elapsed count. */
+    private void stopRunTimer() {
+        if (runTimer != null && runTimer.isRunning()) runTimer.stop();
+    }
+
+    private void updateTimerLabel() {
+        timerLabel.setText("Time: " + FileHandler.formatTime(elapsedSeconds));
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
 
     private void buildOpponentOrder() {
         opponentOrder.clear();
@@ -131,6 +169,12 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         initialized = false;
         enemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
         session.setPlayer2(enemy);
+
+        // Fully restore the player before each new opponent so HP/MP/cooldowns are fresh
+        player.resetForNewRound();
+        player.getSkill1().resetCooldown();
+        player.getSkill2().resetCooldown();
+        player.getSkill3().resetCooldown();
 
         String leftKey  = toFileKey(player.getCharacterName());
         String rightKey = toFileKey(enemy.getCharacterName());
@@ -193,6 +237,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         roundLabel.setFont(new Font("Impact", Font.PLAIN, 26));
         add(roundLabel);
 
+        // ── Timer label ───────────────────────────────────────────────────
+        timerLabel = new JLabel("Time: 0:00", SwingConstants.CENTER);
+        timerLabel.setForeground(new Color(255, 255, 255));
+        timerLabel.setFont(new Font("Impact", Font.PLAIN, 18));
+        add(timerLabel);
+        // ─────────────────────────────────────────────────────────────────
+
         playerAnimLabel = new JLabel();
         playerAnimLabel.setVisible(false);
         add(playerAnimLabel);
@@ -215,7 +266,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         enW = spW; enH = spH;
         enX = (int)(w * 0.64); enY = spY;
 
-
         dialogueScroll.setBounds((int)(w * 0.10), (int)(h * 0.65), (int)(w * 0.80), (int)(h * 0.15));
 
         int btnY = (int)(h * 0.85);
@@ -233,6 +283,16 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
             roundLabel.getWidth(),
             28
         );
+
+        // ── Timer label position ──────────────────────────────────────────
+        // Sits just below the status label. Move by adjusting the fraction.
+        timerLabel.setBounds(
+            roundLabel.getX(),
+            statusLabel.getY() + statusLabel.getHeight() + spacing,
+            roundLabel.getWidth(),
+            24
+        );
+        // ─────────────────────────────────────────────────────────────────
     }
 
     // ── Turn logic ────────────────────────────────────────────────────────
@@ -330,7 +390,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
             disableButtons();
 
             GameCharacter nextEnemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
-            player.resetForNewRound();
 
             if (versusScreen != null && cardLayout != null) {
                 cardLayout.show(container, "VersusScreen");
@@ -352,14 +411,19 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void arcadeClear() {
         arcadeOver = true;
-        dialogue.setText("ARCADE CLEAR! You defeated all opponents!");
+        stopRunTimer(); //stop the clock
+
+        // Save best time for the logged-in account
+        FileHandler.saveArcadeTime(elapsedSeconds);
+
+        dialogue.setText("ARCADE CLEAR! You defeated all opponents!\nTime: "
+                + FileHandler.formatTime(elapsedSeconds));
         scrollToBottom();
         statusLabel.setText("ARCADE CLEAR");
         disableButtons();
 
         if (gameGUI != null) {
             Timer delay = new Timer(900, e ->
-                // showGameOverArcade so Play Again restarts the full arcade run
                 gameGUI.showGameOverArcade(
                     player.getCharacterName(), "", true, "MainMenu"));
             delay.setRepeats(false); delay.start();
@@ -368,6 +432,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void gameOver() {
         arcadeOver = true;
+        stopRunTimer(); //stop the clock (no save — player didn't clear)
+
         dialogue.setText("GAME OVER");
         scrollToBottom();
         statusLabel.setText("GAME OVER");
@@ -375,7 +441,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         if (gameGUI != null) {
             Timer delay = new Timer(900, e ->
-                // showGameOverArcade so Play Again restarts the full arcade run
                 gameGUI.showGameOverArcade(
                     enemy.getCharacterName(), player.getCharacterName(), false, "MainMenu"));
             delay.setRepeats(false); delay.start();
@@ -564,6 +629,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
+        stopRunTimer();
+        elapsedSeconds       = 0;
+
         initialized          = false; arcadeOver           = false;
         prepared             = false;
         currentOpponentIndex = 0;     playerWins           = 0;
@@ -576,6 +644,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         dialogue.setText("");
         scrollToBottom();
         statusLabel.setText("ARCADE MODE");
+        if (timerLabel != null) timerLabel.setText("Time: 0:00");
         repaint();
     }
 

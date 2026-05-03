@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import GameEngines.GameSession;
 import Foundation.BattleMode;
+import UTILS.FileHandler;
 
 public class MainMenu extends JPanel {
 
@@ -11,7 +12,7 @@ public class MainMenu extends JPanel {
     private JButton pve;
     private JButton pvp;
     private JButton arcade;
-    private JButton settings;
+    private JButton logout;
 
     public MainMenu(GameGUI gui) {
 
@@ -36,16 +37,18 @@ public class MainMenu extends JPanel {
 
         arcade = createButton();
         arcade.addActionListener(e -> {
-            
             gui.showScreen("ArcadeLeaderboardScreen");
         });
         this.add(arcade);
 
-        settings = createButton();
-        settings.addActionListener(e -> {
-            gui.showScreen("SelectAVinScreen"); // keep or replace later
+        logout = createButton();
+        logout.addActionListener(e -> {
+            // Clear the logged-in account so no times are recorded
+            // until someone logs in again. Does NOT delete the account file.
+            FileHandler.setCurrentUser(null);
+            gui.showScreen("LoginScreen");
         });
-        this.add(settings);
+        this.add(logout);
 
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -78,7 +81,7 @@ public class MainMenu extends JPanel {
         arcade.setBounds((int)(w * 0.39), (int)(h * 0.57),
                 (int)(w * 0.22), (int)(h * 0.08));
 
-        settings.setBounds((int)(w * 0.39), (int)(h * 0.71),
+        logout.setBounds((int)(w * 0.39), (int)(h * 0.71),
                 (int)(w * 0.22), (int)(h * 0.08));
     }
 

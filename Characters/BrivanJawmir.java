@@ -4,16 +4,16 @@ import Foundation.*;
 
 public class BrivanJawmir extends GameCharacter {
 
-    private Skill riftCleaverThrust;
-    private Skill crescentReaver;
-    private Skill emberVault;
+    private CharacterSkills riftCleaverThrust;
+    private CharacterSkills crescentReaver;
+    private CharacterSkills emberVault;
 
     public BrivanJawmir() {
         super("Brivan Jawmir", "Human", "Arcane Warden", 160, 60, 100);
 
-        riftCleaverThrust = new Skill("Rift Cleaver Thrust", 20, 0, 10, 0,0);
-        crescentReaver = new Skill("Crescent Reaver", 45, 20, 0, 3,0);
-        emberVault = new Skill("Ember Vault", 80, 50, 0, 999,4);
+        riftCleaverThrust = new CharacterSkills("Rift Cleaver Thrust", 20, 0, 10, 0,0);
+        crescentReaver = new CharacterSkills("Crescent Reaver", 45, 20, 0, 3,0);
+        emberVault = new CharacterSkills("Ember Vault", 80, 50, 0, 999,4);
     }
 
     @Override
@@ -95,9 +95,9 @@ public class BrivanJawmir extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() { return this.riftCleaverThrust; }
+    public CharacterSkills getSkill1() { return this.riftCleaverThrust; }
     @Override
-    public Skill getSkill2() { return this.crescentReaver; }
+    public CharacterSkills getSkill2() { return this.crescentReaver; }
     @Override
-    public Skill getSkill3() { return this.emberVault; }
+    public CharacterSkills getSkill3() { return this.emberVault; }
 }

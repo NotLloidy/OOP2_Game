@@ -35,7 +35,7 @@ public class BattleSystem extends BattleSystemAbs {
             return (isPlayer ? "You" : attacker.getCharacterName()) + " are preparing to block!";
         }
 
-        Skill skill = switch (action) {
+        CharacterSkills skill = switch (action) {
             case 1 -> attacker.getSkill1();
             case 2 -> attacker.getSkill2();
             case 3 -> attacker.getSkill3();

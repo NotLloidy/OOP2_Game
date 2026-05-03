@@ -4,9 +4,9 @@ import Foundation.*;
 
 public class Zakkarr extends GameCharacter {
 
-    private Skill guardiansBlade;
-    private Skill shieldOfValor;
-    private Skill deathsReturn;
+    private CharacterSkills guardiansBlade;
+    private CharacterSkills shieldOfValor;
+    private CharacterSkills deathsReturn;
 
     private int bladeStacks = 0;
     private boolean hasRevived = false;
@@ -16,9 +16,9 @@ public class Zakkarr extends GameCharacter {
     public Zakkarr() {
         super("Zakkarr", "Spirit", "Warrior", 250, 20, 100);
 
-        guardiansBlade = new Skill("Guardian's Blade", 20, 0, 5, 0,0);
-        shieldOfValor = new Skill("Shield of Valor", 35, 0, 0, 2,0);
-        deathsReturn = new Skill("Death's Return", 0, 50, 0, 999,4);
+        guardiansBlade = new CharacterSkills("Guardian's Blade", 8, 0, 5, 0,0);
+        shieldOfValor = new CharacterSkills("Shield of Valor", 15, 0, 0, 2,0);
+        deathsReturn = new CharacterSkills("Death's Return", 0, 50, 0, 999,4);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class Zakkarr extends GameCharacter {
 
     @Override
     public String useSkill(int skillNumber, GameCharacter target) {
-        Skill skillToUse = null;
+        CharacterSkills skillToUse = null;
         int damage = 0;
         String msg = "";
 
@@ -110,9 +110,9 @@ public class Zakkarr extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() { return guardiansBlade; }
+    public CharacterSkills getSkill1() { return guardiansBlade; }
     @Override
-    public Skill getSkill2() { return shieldOfValor; }
+    public CharacterSkills getSkill2() { return shieldOfValor; }
     @Override
-    public Skill getSkill3() { return deathsReturn; }
+    public CharacterSkills getSkill3() { return deathsReturn; }
 }

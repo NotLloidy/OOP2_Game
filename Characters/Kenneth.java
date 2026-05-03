@@ -4,17 +4,17 @@ import Foundation.*;
 
 public class Kenneth extends GameCharacter {
 
-    private Skill aimedShot;
-    private Skill overwatchStance;
-    private Skill suppressiveVolley;
+    private CharacterSkills aimedShot;
+    private CharacterSkills overwatchStance;
+    private CharacterSkills suppressiveVolley;
     private boolean overwatchReady;
 
     public Kenneth() {
         super("Kenneth", "Human", "Marksman", 150, 30, 60);
 
-        aimedShot = new Skill("Aimed Shot", 20, 10, 10, 0,0);
-        overwatchStance = new Skill("Overwatch Stance", 0, 15, 0, 2,0);
-        suppressiveVolley = new Skill("Suppressive Volley", 70, 20, 0, 999,4);
+        aimedShot = new CharacterSkills("Aimed Shot", 20, 10, 10, 0,0);
+        overwatchStance = new CharacterSkills("Overwatch Stance", 0, 15, 0, 2,0);
+        suppressiveVolley = new CharacterSkills("Suppressive Volley", 70, 20, 0, 999,4);
 
         overwatchReady = false;
     }
@@ -112,9 +112,9 @@ public class Kenneth extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() { return aimedShot; }
+    public CharacterSkills getSkill1() { return aimedShot; }
     @Override
-    public Skill getSkill2() { return overwatchStance; }
+    public CharacterSkills getSkill2() { return overwatchStance; }
     @Override
-    public Skill getSkill3() { return suppressiveVolley; }
+    public CharacterSkills getSkill3() { return suppressiveVolley; }
 }

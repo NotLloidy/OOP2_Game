@@ -3,22 +3,22 @@ package Characters;
 import Foundation.*;
 
 public class AVin extends GameCharacter {
-    private Skill codeJab;
-    private Skill codeSurge;
-    private Skill overClock;
-    private Skill logicCrash;
+    private CharacterSkills codeJab;
+    private CharacterSkills codeSurge;
+    private CharacterSkills overClock;
+    private CharacterSkills logicCrash;
     private boolean isOverclocked;
     private boolean usedUlt;
-    private Skill lastSkillUsed;
+    private CharacterSkills lastSkillUsed;
     private int codeJabCounter;
 
     public AVin() {
         super("A-Vin", "Dalek", "Time Manipulator", 150, 40, 80);
         
-        codeJab = new Skill("Code Jab", 20, 0, 10, 0,0);
-        codeSurge = new Skill("Code Surge", 45, 10, 0, 0,0);
-        overClock = new Skill("Overclock", 0, 15, 0, 3,0);
-        logicCrash = new Skill("Logic Crash", 50, 60, 0, 999,4);
+        codeJab = new CharacterSkills("Code Jab", 20, 0, 10, 0,0);
+        codeSurge = new CharacterSkills("Code Surge", 45, 10, 0, 0,0);
+        overClock = new CharacterSkills("Overclock", 10, 15, 0, 3,0);
+        logicCrash = new CharacterSkills("Logic Crash", 70, 60, 0, 999,4);
 
         isOverclocked = false;
         usedUlt = false;
@@ -76,6 +76,7 @@ public class AVin extends GameCharacter {
                     return target.block(target);
                 }
                 if(overClock.isSkillAvailable() && (getCharacterCurrentMana() >= overClock.getSkillManaCost())) {
+                    target.takeDamage(overClock.getSkillDamage());
                     useMana(overClock.getSkillManaCost());
                     regenMana(overClock.getSkillManaRegen());
                     overClock.triggerSkillCooldown();
@@ -111,7 +112,7 @@ public class AVin extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() {
+    public CharacterSkills getSkill1() {
         if(lastSkillUsed == codeSurge) {
             return codeSurge;
         } else {
@@ -120,8 +121,8 @@ public class AVin extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill2() { return this.overClock; }
+    public CharacterSkills getSkill2() { return this.overClock; }
 
     @Override
-    public Skill getSkill3() { return this.logicCrash; }
+    public CharacterSkills getSkill3() { return this.logicCrash; }
 }

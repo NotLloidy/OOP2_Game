@@ -4,9 +4,9 @@ import Foundation.*;
 
 public class SoleilMooncrest extends GameCharacter {
 
-    private Skill moonStrike;
-    private Skill moonlightShine;
-    private Skill shadowBlast;
+    private CharacterSkills moonStrike;
+    private CharacterSkills moonlightShine;
+    private CharacterSkills shadowBlast;
     private int moonsBlessingCooldown = 0;  
     private boolean eclipseEmpowermentUsed = false;
     private boolean reversePowerUsed = false;
@@ -15,9 +15,9 @@ public class SoleilMooncrest extends GameCharacter {
     public SoleilMooncrest() {
         super("Soleil Mooncrest", "Human", "Moonlit Witch", 200, 50, 100);
 
-        moonStrike = new Skill("Moon Strike", 20, 0, 10, 0,0);
-        moonlightShine = new Skill("Moonlight Shine", 45, 30, 0, 2,0);
-        shadowBlast = new Skill("Shadow Blast", 80, 50, 0, 999,4);
+        moonStrike = new CharacterSkills("Moon Strike", 20, 0, 10, 0,0);
+        moonlightShine = new CharacterSkills("Moonlight Shine", 45, 30, 0, 2,0);
+        shadowBlast = new CharacterSkills("Shadow Blast", 80, 50, 0, 999,4);
     }
 
     @Override
@@ -112,9 +112,9 @@ public class SoleilMooncrest extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() { return moonStrike; }
+    public CharacterSkills getSkill1() { return moonStrike; }
     @Override
-    public Skill getSkill2() { return moonlightShine; }
+    public CharacterSkills getSkill2() { return moonlightShine; }
     @Override
-    public Skill getSkill3() { return shadowBlast; }
+    public CharacterSkills getSkill3() { return shadowBlast; }
 }

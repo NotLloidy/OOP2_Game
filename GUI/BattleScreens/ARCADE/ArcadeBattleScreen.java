@@ -572,7 +572,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         if (getWidth() > 0) layoutUI();
     }
 
-    private static String fmtSkill(Foundation.Skill sk) {
+    private static String fmtSkill(CharacterSkills sk) {
         return sk.getSkillName()
              + " | DMG: "  + sk.getSkillDamage()
              + "  MP: "    + sk.getSkillManaCost()
@@ -592,10 +592,10 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         layoutUI();
     }
 
-    @Override protected int playerCharCenterX() { return spX + spW / 2; }
-    @Override protected int playerCharCenterY() { return spY + spH / 2; }
-    @Override protected int enemyCharCenterX()  { return enX + enW / 2; }
-    @Override protected int enemyCharCenterY()  { return enY + enH / 2; }
+    @Override public int playerCharCenterX() { return spX + spW / 2; }
+    @Override public int playerCharCenterY() { return spY + spH / 2; }
+    @Override public int enemyCharCenterX()  { return enX + enW / 2; }
+    @Override public int enemyCharCenterY()  { return enY + enH / 2; }
 
     @Override
     protected void paintComponent(Graphics g) {

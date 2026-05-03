@@ -43,10 +43,8 @@ public class MainMenu extends JPanel {
 
         logout = createButton();
         logout.addActionListener(e -> {
-            // Clear the logged-in account so no times are recorded
-            // until someone logs in again. Does NOT delete the account file.
             FileHandler.setCurrentUser(null);
-            gui.showScreen("LoginScreen");
+            gui.showScreen("TitleScreen");
         });
         this.add(logout);
 

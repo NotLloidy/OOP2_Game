@@ -11,7 +11,7 @@ public class KijEl extends GameCharacter {
     public KijEl() {
         super("Kij-EL", "Human", "Arcane Mage", 200, 50, 100);
         
-        arcaneBlast = new CharacterSkills("Arcane Blast", 30, 0, 10, 0,0);
+        arcaneBlast = new CharacterSkills("Arcane Blast", 20, 0, 10, 0,0);
         cinderLance = new CharacterSkills("Cinder Lance", 45, 30, 0, 2,0);
         cataclysmSigil = new CharacterSkills("Cataclysm Sigil", 80, 70, 0, 999,4);
     }   

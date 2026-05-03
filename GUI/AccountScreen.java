@@ -3,6 +3,7 @@ package GUI;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import UTILS.SoundManager;
 
 public class AccountScreen extends JPanel {
 
@@ -20,19 +21,31 @@ public class AccountScreen extends JPanel {
         bgImage = icon.getImage();
 
         loginBtn = createButton();
-        loginBtn.addActionListener(e -> gui.showScreen("LoginScreen"));
+        loginBtn.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
+            gui.showScreen("LoginScreen");
+        });
         this.add(loginBtn);
 
         registerBtn = createButton();
-        registerBtn.addActionListener(e -> gui.showScreen("RegisterScreen"));
+        registerBtn.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
+            gui.showScreen("RegisterScreen");
+        });
         this.add(registerBtn);
 
         backBtn = createButton();
-        backBtn.addActionListener(e -> gui.showScreen("TitleScreen"));
+        backBtn.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
+            gui.showScreen("TitleScreen");
+        });
         this.add(backBtn);
 
         guestBtn = createButton();
-        guestBtn.addActionListener(e -> gui.showScreen("MainMenu"));
+        guestBtn.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
+            gui.showScreen("MainMenu");
+        });
         this.add(guestBtn);
 
         // Resize listener

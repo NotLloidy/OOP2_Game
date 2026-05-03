@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import UTILS.FileHandler;
+import UTILS.SoundManager;
 
 public class LoginScreen extends JPanel {
 
@@ -13,9 +14,10 @@ public class LoginScreen extends JPanel {
 
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private final GameGUI gameGUI;
 
     public LoginScreen(GameGUI gui) {
-
+        this.gameGUI = gui;
         this.setLayout(null);
 
         bgImage = new ImageIcon("Assets/navigation/accountLogin.gif").getImage();
@@ -39,19 +41,23 @@ public class LoginScreen extends JPanel {
         this.add(passwordField);
 
         back = createButton();
-        back.addActionListener(e -> gui.showScreen("AccountScreen"));
+        back.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
+            gui.showScreen("AccountScreen");
+        });
         this.add(back);
 
         enterButton = createButton();
         this.add(enterButton);
 
         enterButton.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
 
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword()).trim();
 
             if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Fill all fields!");
+                gameGUI.showNotification("Fill all fields!");
                 return;
             }
 

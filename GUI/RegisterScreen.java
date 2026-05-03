@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import UTILS.FileHandler;
+import UTILS.SoundManager;
 
 public class RegisterScreen extends JPanel {
 
@@ -13,9 +14,11 @@ public class RegisterScreen extends JPanel {
 
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private final GameGUI gameGUI;
+
 
     public RegisterScreen(GameGUI gui) {
-
+        this.gameGUI = gui;
         this.setLayout(null);
 
         ImageIcon icon = new ImageIcon("Assets/navigation/accountRegistration.gif");
@@ -40,25 +43,27 @@ public class RegisterScreen extends JPanel {
         this.add(passwordField);
 
         back = createButton();
-        back.addActionListener(e -> gui.showScreen("AccountScreen"));
+        back.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
+            gui.showScreen("AccountScreen");
+        });
         this.add(back);
 
         register = createButton();
 
         register.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
 
             String username = usernameField.getText().trim();
             String password = new String(passwordField.getPassword()).trim();
 
-            if (username.length() < 3 || username.length() > 20 ||
-                password.length() < 3 || password.length() > 20) {
-
-                JOptionPane.showMessageDialog(this, "Username and password must be 3 to 20 characters!");
-                 return;
+            if (username.length() < 3 || username.length() > 20 || password.length() < 3 || password.length() > 20) {
+                gameGUI.showNotification("Username and password must be 3 to 20 characters!");
+                return;
             }
 
             if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Fill all fields!");
+                gameGUI.showNotification("Fill all fields!");
                 return;
             }
 
@@ -67,7 +72,7 @@ public class RegisterScreen extends JPanel {
             if (success) {
                 gui.showScreen("AccountScreen");
             } else {
-                JOptionPane.showMessageDialog(this, "Username already exists!");
+                gameGUI.showNotification("Username already exists!");
             }
         });
 

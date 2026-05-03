@@ -4,6 +4,7 @@ import Foundation.*;
 import GameEngines.*;
 import GUI.BattleScreens.BaseBattleScreen;
 import GUI.GameGUI;
+import UTILS.SoundManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,10 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
     private boolean p1DefendDisabled = false;
     private boolean p2DefendDisabled = false;
+
+    /** Sprite visibility — set to false for 2s when a character dies. */
+    private boolean p1SpriteVisible = true;
+    private boolean p2SpriteVisible = true;
 
     private GameCharacter player1;
     private GameCharacter player2;
@@ -50,7 +55,6 @@ public class PVPBattleScreen extends BaseBattleScreen {
         setLayout(null);
         session = GameSession.getInstance();
         system  = new BattleSystem();
-        // PVE/PVP arena background
         bgImage = new ImageIcon("Assets/battle_sprites/pvp_pve_battlearena.gif").getImage();
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -78,11 +82,10 @@ public class PVPBattleScreen extends BaseBattleScreen {
             return;
         }
 
-        // Fully restore both characters so a rematch always starts at full HP/MP
         player1.resetForNewRound();
         player2.resetForNewRound();
-        player1.getSkill1().resetCooldown(); player1.getSkill2().resetCooldown(); player1.getSkill3().resetCooldown();
-        player2.getSkill1().resetCooldown();  player2.getSkill2().resetCooldown();  player2.getSkill3().resetCooldown();
+        resetSkillsForNewBattle(player1);
+        resetSkillsForNewBattle(player2);
 
         p1Sprite = new ImageIcon(IDLE_LEFT_DIR  + player1.getSpriteKey() + IDLE_L_SFX).getImage();
         p2Sprite = new ImageIcon(IDLE_RIGHT_DIR + player2.getSpriteKey() + IDLE_R_SFX).getImage();
@@ -188,9 +191,12 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         int animDelay = 0;
         if (action >= 1 && action <= 3) {
+            SoundManager.playSFX(SoundManager.skillSFX(atk.getCharacterName(), action));
             if (isP1) showPlayerSkillAnim(atk.getSpriteKey(), action);
             else      showEnemySkillAnim(atk.getSpriteKey(), action);
             animDelay = 1500;
+        } else {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
         }
 
         String result = system.performAction(atk, def, action, isP1);
@@ -204,11 +210,18 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         if (!def.isCharacterAlive()) {
             if (isP1) p1Wins++; else p2Wins++;
-            endRound((isP1 ? "P1" : "P2") + " wins round " + round + "!");
+            // Hide the dead character's sprite immediately
+            if (isP1) { p2SpriteVisible = false; } else { p1SpriteVisible = false; }
+            repaint();
+            disableButtons();
+            Timer deathPause = new Timer(2000, e ->
+                endRound((isP1 ? "P1" : "P2") + " wins round " + round + "! "
+                       + atk.getCharacterName() + " is victorious!"));
+            deathPause.setRepeats(false);
+            deathPause.start();
             return;
         }
 
-        // Disable all buttons while the skill animation plays
         btnFight.setEnabled(false);
         btnDefend.setEnabled(false);
         btnCheck.setEnabled(false);
@@ -232,18 +245,13 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private void resetRound() {
         round++;
 
-        player1.resetForNewRound();
-        player2.resetForNewRound();
-
-        player1.getSkill1().resetCooldown();
-        player1.getSkill2().resetCooldown();
-        player1.getSkill3().resetCooldown();
-        player2.getSkill1().resetCooldown();
-        player2.getSkill2().resetCooldown();
-        player2.getSkill3().resetCooldown();
+        resetCharForRound(player1);
+        resetCharForRound(player2);
 
         p1DefendDisabled = false;
         p2DefendDisabled = false;
+        p1SpriteVisible  = true;
+        p2SpriteVisible  = true;
         currentTurn = 1;
         state = ActionState.MAIN;
 
@@ -252,6 +260,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         log("-- Round " + round + " --");
         updateButtons();
         roundLabel.setText("ROUND " + round);
+        repaint();
     }
 
     private void endRound(String message) {
@@ -267,8 +276,9 @@ public class PVPBattleScreen extends BaseBattleScreen {
         String winner = p1Won ? player1.getCharacterName() : player2.getCharacterName();
         String loser  = p1Won ? player2.getCharacterName() : player1.getCharacterName();
 
+        SoundManager.playSFX(SoundManager.SFX_GAME_WIN);
         log(winner + " wins the match!");
-        turnLabel.setText(winner + " wins!");
+        turnLabel.setText(winner + " wins the match!");
         turnLabel.setForeground(new Color(255, 220, 30));
         disableButtons();
 
@@ -289,6 +299,39 @@ public class PVPBattleScreen extends BaseBattleScreen {
     private void log(String text) {
         dialogue.append("\n" + text);
         scrollToBottom();
+    }
+
+    // ── Cooldown helpers ──────────────────────────────────────────────────
+
+    /** At match start: skills 1 & 2 reset to 0, ultimate set to first-use CD of 4. */
+    private static void resetSkillsForNewBattle(GameCharacter c) {
+        c.getSkill1().resetCooldown();
+        c.getSkill2().resetCooldown();
+        CharacterSkills ult = c.getSkill3();
+        if (ult.getSkillMaxCooldown() == 999) {
+            ult.setSkillCurrentCooldown(4);
+        } else {
+            ult.resetCooldown();
+        }
+    }
+
+    /** At round start: skills 1 & 2 reset; ultimate stays locked if already used (CD 999). */
+    private static void resetCharForRound(GameCharacter c) {
+        c.resetForNewRoundWithStartingMana();
+        c.getSkill1().resetCooldown();
+        c.getSkill2().resetCooldown();
+        CharacterSkills ult = c.getSkill3();
+        if (ult.getSkillMaxCooldown() == 999) {
+            if (ult.getSkillCurrentCooldown() == 999) {
+                // already used — keep it locked permanently
+            } else if (ult.getSkillCurrentCooldown() == 0) {
+                // not yet used — restore first-use delay
+                ult.setSkillCurrentCooldown(4);
+            }
+            // counting down (1–3): leave it
+        } else {
+            ult.resetCooldown();
+        }
     }
 
     // ── State machine ─────────────────────────────────────────────────────
@@ -321,9 +364,9 @@ public class PVPBattleScreen extends BaseBattleScreen {
                 btnCheck .setEnabled(true);
                 btnBack  .setEnabled(false);
 
-                btnFight .addActionListener(e -> switchState(ActionState.FIGHT));
-                btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
-                btnCheck .addActionListener(e -> switchState(ActionState.CHECK));
+                btnFight .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.FIGHT); });
+                btnDefend.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.DEFEND); });
+                btnCheck .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.CHECK); });
             }
 
             case FIGHT -> {
@@ -345,7 +388,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
                 btnFight .addActionListener(e -> doTurn(1));
                 btnDefend.addActionListener(e -> doTurn(2));
                 btnCheck .addActionListener(e -> doTurn(3));
-                btnBack  .addActionListener(e -> switchState(ActionState.MAIN));
+                btnBack  .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.MAIN); });
             }
 
             case DEFEND -> {
@@ -443,6 +486,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         initialized      = false; player1 = null; player2 = null;
         p1Wins           = 0;     p2Wins  = 0;    round = 1;
         p1DefendDisabled = false; p2DefendDisabled = false;
+        p1SpriteVisible  = true;  p2SpriteVisible  = true;
         currentTurn      = 1;     matchOver = false;
         state            = ActionState.MAIN;
         playerAnimating  = false; enemyAnimating = false;
@@ -469,9 +513,9 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         g.drawImage(bgImage, 0, 0, w, h, this);
 
-        if (p1Sprite != null && !playerAnimating)
+        if (p1Sprite != null && !playerAnimating && p1SpriteVisible)
             g.drawImage(p1Sprite, p1X, p1Y, p1W, p1H, this);
-        if (p2Sprite != null && !enemyAnimating)
+        if (p2Sprite != null && !enemyAnimating && p2SpriteVisible)
             g.drawImage(p2Sprite, p2X, p2Y, p2W, p2H, this);
 
         int barW = (int)(w * 0.22);

@@ -10,6 +10,7 @@ import Foundation.BattleMode;
 
 import java.awt.*;
 import java.awt.event.*;
+import UTILS.SoundManager;
 
 public class SelectKijElScreen extends JPanel {
 
@@ -28,23 +29,24 @@ public class SelectKijElScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_related/character_select/kijelSelect.gif").getImage();
 
         next = createButton();
-        next.addActionListener(e -> gui.showScreen("SelectSoleilScreen"));
+        next.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectSoleilScreen"); });
         this.add(next);
 
         prev = createButton();
-        prev.addActionListener(e -> gui.showScreen("SelectKennethScreen"));
+        prev.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectKennethScreen"); });
         this.add(prev);
 
         info = createButton();
-        info.addActionListener(e -> gui.showScreen("KijElInfoScreen"));
+        info.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("KijElInfoScreen"); });
         this.add(info);
 
         exit = createButton();
-        exit.addActionListener(e -> gui.showScreen("MainMenu"));
+        exit.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("MainMenu"); });
         this.add(exit);
 
         select = createButton();
         select.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
 
             GameSession session = GameSession.getInstance();
 
@@ -67,12 +69,7 @@ public class SelectKijElScreen extends JPanel {
                 } else {
                     // P2 picks AVin — check not same as P1
                     if (session.getPlayer1().getCharacterName().equals(new KijEl().getCharacterName())) {
-                        JOptionPane.showMessageDialog(
-                                SelectKijElScreen.this,
-                                "Player 2 cannot pick the same character as Player 1!",
-                                "Invalid Selection",
-                                JOptionPane.WARNING_MESSAGE
-                        );
+                        gui.showNotification("Cannot choose same character as Player 1!");
                         return;
                     }
                     session.setPlayer2(new KijEl());

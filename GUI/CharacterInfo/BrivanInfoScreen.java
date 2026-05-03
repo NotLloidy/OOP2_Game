@@ -10,6 +10,7 @@ import Foundation.BattleMode;
 
 import java.awt.*;
 import java.awt.event.*;
+import UTILS.SoundManager;
 
 public class BrivanInfoScreen extends JPanel {
 
@@ -48,12 +49,7 @@ public class BrivanInfoScreen extends JPanel {
                 } else {
                     // P2 picks Brivan — check not same as P1
                     if (session.getPlayer1().getCharacterName().equals(new BrivanJawmir().getCharacterName())) {
-                        JOptionPane.showMessageDialog(
-                                BrivanInfoScreen.this,
-                                "Player 2 cannot pick the same character as Player 1!",
-                                "Invalid Selection",
-                                JOptionPane.WARNING_MESSAGE
-                        );
+                        gui.showNotification("Cannot choose same character as Player 1!");
                         return;
                     }
                     session.setPlayer2(new BrivanJawmir());
@@ -76,7 +72,7 @@ public class BrivanInfoScreen extends JPanel {
         this.add(play);
 
         back = createButton();
-        back.addActionListener(e -> gui.showScreen("SelectBrivanScreen"));
+        back.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectBrivanScreen"); });
         this.add(back);
 
         this.addComponentListener(new ComponentAdapter() {
@@ -123,4 +119,3 @@ public class BrivanInfoScreen extends JPanel {
         g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
     }
 }
-

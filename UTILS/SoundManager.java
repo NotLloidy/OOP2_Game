@@ -15,16 +15,23 @@ import java.io.IOException;
 public class SoundManager {
 
     // ── BGM paths ─────────────────────────────────────────────────────────
-    public static final String BGM_MENU   = "Assets/audio/bgm_menu.wav";
-    public static final String BGM_BATTLE = "Assets/audio/bgm_battle.wav";
+    public static final String BGM_MENU   = "Assets/audio/misc/bgm_menu.wav";
+    public static final String BGM_BATTLE = "Assets/audio/misc/bgm_battle.wav";
 
     // ── SFX paths ─────────────────────────────────────────────────────────
-    public static final String SFX_BUTTON   = "Assets/audio/sfx_button.wav";
-    public static final String SFX_SKILL_1  = "Assets/audio/sfx_skill1.wav";
-    public static final String SFX_SKILL_2  = "Assets/audio/sfx_skill2.wav";
-    public static final String SFX_SKILL_3  = "Assets/audio/sfx_skill3.wav";
-    public static final String SFX_GAME_WIN = "Assets/audio/sfx_game_win.wav";
-    public static final String SFX_GAME_OVER= "Assets/audio/sfx_game_over.wav";
+    public static final String SFX_BUTTON   = "Assets/audio/misc/sfx_button.wav";
+    public static final String SFX_GAME_WIN = "Assets/audio/misc/sfx_game_win.wav";
+    public static final String SFX_GAME_OVER= "Assets/audio/misc/sfx_game_over.wav";
+
+    // ── Character names ─────────────────
+    public static final String CHAR_A_VIN          = "A-Vin";
+    public static final String CHAR_BRIVAN_JAWMIR  = "Brivan Jawmir";
+    public static final String CHAR_CHUNG_MYUNG    = "Chung Myung";
+    public static final String CHAR_KENNETH        = "Kenneth";
+    public static final String CHAR_KIJEL          = "KijEl";
+    public static final String CHAR_SOLEIL         = "Soleil Mooncrest";
+    public static final String CHAR_SUNG_JIN_WOO   = "Sung Jin Woo";
+    public static final String CHAR_ZAKKARR        = "Zakkarr";
 
     // ── Internal state ────────────────────────────────────────────────────
     private static Clip   bgmClip        = null;
@@ -95,16 +102,18 @@ public class SoundManager {
     }
 
     /**
-     * Returns the SFX path for a given skill number (1, 2, or 3).
-     * Falls back to SFX_SKILL_1 for unknown numbers.
-     */
-    public static String skillSFX(int skillNumber) {
-        return switch (skillNumber) {
-            case 1 -> SFX_SKILL_1;
-            case 2 -> SFX_SKILL_2;
-            case 3 -> SFX_SKILL_3;
-            default -> SFX_SKILL_1;
+    * Returns the SFX path for a given character and skill number.
+    * Example: skillSFX("Sung Jin Woo", 2)
+    *          → "Assets/audio/Sung Jin Woo/sfx_skill2.wav"
+    */
+    public static String skillSFX(String characterName, int skillNumber) {
+        String file = switch (skillNumber) {
+            case 1 -> "sfx_skill1.wav";
+            case 2 -> "sfx_skill2.wav";
+            case 3 -> "sfx_skill3.wav";
+            default -> "sfx_skill1.wav";
         };
+        return "Assets/audio/skillSFX" + characterName + "/" + file;
     }
 
     // ── Volume ────────────────────────────────────────────────────────────

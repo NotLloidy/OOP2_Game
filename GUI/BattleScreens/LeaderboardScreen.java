@@ -34,6 +34,7 @@ public class LeaderboardScreen extends JPanel {
     private final JLabel[] nameLabels = new JLabel[MAX_ROWS];
     private final JLabel[] timeLabels = new JLabel[MAX_ROWS];
 
+    @SuppressWarnings("unused")
     private final GameGUI gui;
 
     private JButton back;

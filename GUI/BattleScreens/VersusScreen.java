@@ -1,12 +1,7 @@
 package GUI.BattleScreens;
 
-import Foundation.GameCharacter;
-import GameEngines.BattleSystem;
-import GameEngines.GameSession;
-
 import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.*;
 
 /**
  * VersusScreen — animated character-reveal screen shown before every battle.

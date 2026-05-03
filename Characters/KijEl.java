@@ -4,21 +4,21 @@ import Foundation.*;
 
 public class KijEl extends GameCharacter {
 
-    private Skill arcaneBlast;
-    private Skill cinderLance;
-    private Skill cataclysmSigil;
+    private CharacterSkills arcaneBlast;
+    private CharacterSkills cinderLance;
+    private CharacterSkills cataclysmSigil;
 
     public KijEl() {
         super("Kij-EL", "Human", "Arcane Mage", 200, 50, 100);
         
-        arcaneBlast = new Skill("Arcane Blast", 30, 0, 10, 0,0);
-        cinderLance = new Skill("Cinder Lance", 45, 30, 0, 2,0);
-        cataclysmSigil = new Skill("Cataclysm Sigil", 80, 70, 0, 999,4);
+        arcaneBlast = new CharacterSkills("Arcane Blast", 30, 0, 10, 0,0);
+        cinderLance = new CharacterSkills("Cinder Lance", 45, 30, 0, 2,0);
+        cataclysmSigil = new CharacterSkills("Cataclysm Sigil", 80, 70, 0, 999,4);
     }   
 
     @Override
     public String useSkill(int skillNumber, GameCharacter target) {
-        Skill skillToUse = null;
+        CharacterSkills skillToUse = null;
         
         if(getIsStunned()) {
             setIsStunned(false);
@@ -55,9 +55,9 @@ public class KijEl extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() { return this.arcaneBlast; }
+    public CharacterSkills getSkill1() { return this.arcaneBlast; }
     @Override
-    public Skill getSkill2() { return this.cinderLance; }
+    public CharacterSkills getSkill2() { return this.cinderLance; }
     @Override
-    public Skill getSkill3() { return this.cataclysmSigil; }
+    public CharacterSkills getSkill3() { return this.cataclysmSigil; }
 }

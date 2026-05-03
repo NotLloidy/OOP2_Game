@@ -5,7 +5,6 @@ import javax.swing.*;
 import Foundation.BattleMode;
 
 import java.awt.*;
-import java.awt.event.*;
 import GUI.GameGUI;
 import GameEngines.GameSession;
 

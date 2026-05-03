@@ -4,9 +4,9 @@ import Foundation.*;
 
 public class ChungMyung extends GameCharacter {
 
-    private Skill blossomThrust;
-    private Skill plumPetalDance;
-    private Skill saintVerdict;
+    private CharacterSkills blossomThrust;
+    private CharacterSkills plumPetalDance;
+    private CharacterSkills saintVerdict;
 
     private int plumResolveStacks = 0; 
     private boolean lastSkillWasBlossom = false; 
@@ -14,9 +14,9 @@ public class ChungMyung extends GameCharacter {
     public ChungMyung() {
         super("Chung-Myung", "Human", "Sword Saint", 190, 50, 100);
 
-        blossomThrust = new Skill("Blossom Thrust", 15, 0, 5, 0,0);
-        plumPetalDance = new Skill("Plum Petal Dance", 25, 20, 0, 3,0);
-        saintVerdict = new Skill("Saint's Verdict", 70, 70, 0, 999,4);
+        blossomThrust = new CharacterSkills("Blossom Thrust", 15, 0, 5, 0,0);
+        plumPetalDance = new CharacterSkills("Plum Petal Dance", 25, 20, 0, 3,0);
+        saintVerdict = new CharacterSkills("Saint's Verdict", 60, 70, 0, 999,4);
     }
 
     @Override
@@ -124,9 +124,9 @@ public class ChungMyung extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() { return this.blossomThrust; }
+    public CharacterSkills getSkill1() { return this.blossomThrust; }
     @Override
-    public Skill getSkill2() { return this.plumPetalDance; }
+    public CharacterSkills getSkill2() { return this.plumPetalDance; }
     @Override
-    public Skill getSkill3() { return this.saintVerdict; }
+    public CharacterSkills getSkill3() { return this.saintVerdict; }
 }

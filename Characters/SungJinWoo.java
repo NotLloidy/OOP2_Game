@@ -4,9 +4,9 @@ import Foundation.*;
 
 public class SungJinWoo extends GameCharacter {
     
-    private Skill shadowSlash;
-    private Skill shadowExtraction;
-    private Skill summonIgris;
+    private CharacterSkills shadowSlash;
+    private CharacterSkills shadowExtraction;
+    private CharacterSkills summonIgris;
     private boolean isIgrisSummoned;
     private boolean isShadowSummoned;
     private int shadowMasteryStacks;
@@ -14,9 +14,9 @@ public class SungJinWoo extends GameCharacter {
     public SungJinWoo() {
         super("Sung Jin-Woo", "Primordial", "Shadow Monarch", 180, 40, 80);
 
-        shadowSlash = new Skill("Shadow Slash", 15, 5, 0, 0,0);
-        shadowExtraction = new Skill("Shadow Extraction", 25, 20, 8, 2,0);
-        summonIgris = new Skill("Summon Igris", 60, 50, 0, 999,4);
+        shadowSlash = new CharacterSkills("Shadow Slash", 15, 5, 0, 0,0);
+        shadowExtraction = new CharacterSkills("Shadow Extraction", 25, 20, 8, 2,0);
+        summonIgris = new CharacterSkills("Summon Igris", 60, 50, 0, 999,4);
 
         isIgrisSummoned = false;
         isShadowSummoned = false;
@@ -130,9 +130,9 @@ public class SungJinWoo extends GameCharacter {
     }
 
     @Override
-    public Skill getSkill1() { return this.shadowSlash; }
+    public CharacterSkills getSkill1() { return this.shadowSlash; }
     @Override
-    public Skill getSkill2() { return this.shadowExtraction; }
+    public CharacterSkills getSkill2() { return this.shadowExtraction; }
     @Override
-    public Skill getSkill3() { return this.summonIgris; }
+    public CharacterSkills getSkill3() { return this.summonIgris; }
 }

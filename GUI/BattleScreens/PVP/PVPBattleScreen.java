@@ -152,7 +152,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         if (w == 0 || h == 0) return;
 
         p1W = (int)(w * 0.28); p1H = (int)(h * 0.47);
-        p1X = (int)(w * 0.08); p1Y = (int)(h * 0.13);
+        p1X = (int)(w * 0.08); p1Y = (int)(h * 0.35);
         p2W = p1W;              p2H = p1H;
         p2X = (int)(w * 0.64); p2Y = p1Y;
 
@@ -186,9 +186,11 @@ public class PVPBattleScreen extends BaseBattleScreen {
         GameCharacter def = defender();
         boolean isP1      = currentTurn == 1;
 
+        int animDelay = 0;
         if (action >= 1 && action <= 3) {
             if (isP1) showPlayerSkillAnim(atk.getSpriteKey(), action);
             else      showEnemySkillAnim(atk.getSpriteKey(), action);
+            animDelay = 1500;
         }
 
         String result = system.performAction(atk, def, action, isP1);
@@ -206,13 +208,23 @@ public class PVPBattleScreen extends BaseBattleScreen {
             return;
         }
 
-        state = ActionState.MAIN;
-        currentTurn = isP1 ? 2 : 1;
-        turnLabel.setText("PLAYER " + currentTurn + "'s turn");
-        turnLabel.setForeground(currentTurn == 1
-                ? new Color(80, 180, 255)
-                : new Color(255, 100, 100));
-        updateButtons();
+        // Disable all buttons while the skill animation plays
+        btnFight.setEnabled(false);
+        btnDefend.setEnabled(false);
+        btnCheck.setEnabled(false);
+        btnBack.setEnabled(false);
+
+        Timer switchDelay = new Timer(animDelay, e -> {
+            state = ActionState.MAIN;
+            currentTurn = isP1 ? 2 : 1;
+            turnLabel.setText("PLAYER " + currentTurn + "'s turn");
+            turnLabel.setForeground(currentTurn == 1
+                    ? new Color(80, 180, 255)
+                    : new Color(255, 100, 100));
+            updateButtons();
+        });
+        switchDelay.setRepeats(false);
+        switchDelay.start();
     }
 
     // ── Round / match management ──────────────────────────────────────────
@@ -397,13 +409,13 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
     private static boolean skillReady(GameCharacter c, int slot) {
         if (c == null) return false;
-        Skill sk = switch (slot) {
+        CharacterSkills sk = switch (slot) {
             case 1 -> c.getSkill1(); case 2 -> c.getSkill2(); default -> c.getSkill3();
         };
         return sk.getSkillCurrentCooldown() == 0 && c.getCharacterCurrentMana() >= sk.getSkillManaCost();
     }
 
-    private static String fmtSkill(Skill sk) {
+    private static String fmtSkill(CharacterSkills sk) {
         return sk.getSkillName()
              + " | DMG: "  + sk.getSkillDamage()
              + "  MP: "    + sk.getSkillManaCost()

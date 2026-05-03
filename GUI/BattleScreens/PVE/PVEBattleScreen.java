@@ -134,7 +134,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         if (w == 0 || h == 0) return;
 
         spW = (int)(w * 0.28); spH = (int)(h * 0.48);
-        spX = (int)(w * 0.08); spY = (int)(h * 0.13);
+        spX = (int)(w * 0.08); spY = (int)(h * 0.35);
         enW = spW;              enH = spH;
         enX = (int)(w * 0.64); enY = spY;
 
@@ -181,6 +181,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         btnFight.setEnabled(false);
         btnDefend.setEnabled(false);
         btnCheck.setEnabled(false);
+        btnBack.setEnabled(false);
 
         Timer aiDelay = new Timer(animDelay, e -> {
             aiTurn();
@@ -384,13 +385,13 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
     private static boolean skillReady(GameCharacter c, int slot) {
         if (c == null) return false;
-        Foundation.Skill sk = switch (slot) {
+        CharacterSkills sk = switch (slot) {
             case 1 -> c.getSkill1(); case 2 -> c.getSkill2(); default -> c.getSkill3();
         };
         return sk.getSkillCurrentCooldown() == 0 && c.getCharacterCurrentMana() >= sk.getSkillManaCost();
     }
 
-    private static String fmtSkill(Foundation.Skill sk) {
+    private static String fmtSkill(CharacterSkills sk) {
         return sk.getSkillName()
              + " | DMG: "  + sk.getSkillDamage()
              + "  MP: "    + sk.getSkillManaCost()
@@ -435,28 +436,28 @@ public class PVEBattleScreen extends BaseBattleScreen {
         super.doLayout();
         layoutUI();
     }
-
+ 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         int w = getWidth(), h = getHeight();
-
+ 
         g.drawImage(bgImage, 0, 0, w, h, this);
-
+ 
         if (playerSprite != null && !playerAnimating)
             g.drawImage(playerSprite, spX, spY, spW, spH, this);
         if (enemySprite  != null && !enemyAnimating)
             g.drawImage(enemySprite,  enX, enY, enW, enH, this);
-
+ 
         int barW = (int)(w * 0.22);
         drawBars(g, player, spX, (int)(h * 0.02), barW);
         drawBars(g, enemy,  enX, (int)(h * 0.02), barW);
-
+ 
         if (player != null && enemy != null)
             drawWinCounter(g, "P", playerWins, enemyWins, "CPU",
                w / 2,
                (int)(h * 0.15));
-
+ 
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.62), (int)(w * 0.82), (int)(h * 0.18), 12, 12);
     }

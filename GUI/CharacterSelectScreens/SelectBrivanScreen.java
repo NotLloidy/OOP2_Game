@@ -28,7 +28,7 @@ public class SelectBrivanScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_related/character_select/brivanjawmirSelect.gif").getImage();
 
         next = createButton();
-        next.addActionListener(e -> gui.showScreen("SelectChungScreen"));
+        next.addActionListener(e -> gui.showScreen("SelectChungMyungScreen"));
         this.add(next);
 
         prev = createButton();

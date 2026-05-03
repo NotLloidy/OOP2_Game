@@ -1,6 +1,6 @@
 package Foundation;
 
-public abstract class GameCharacter {
+public abstract class GameCharacter implements Skill {
     private String characterName;
     private String characterRace;
     private String characterClass;
@@ -120,11 +120,4 @@ public abstract class GameCharacter {
     public String getSpriteKey() {
         return this.characterName.toLowerCase().replaceAll("[^a-z0-9]", "");
     }
-
-    // ── Abstract skill interface ──────────────────────────────────────────
-
-    public abstract Skill getSkill1();
-    public abstract Skill getSkill2();
-    public abstract Skill getSkill3();
-    public abstract String useSkill(int skillNumber, GameCharacter target);
 }

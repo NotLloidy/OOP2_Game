@@ -5,8 +5,6 @@ import Foundation.GameCharacter;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 /**
  * Abstract base for all three battle screens.
@@ -72,7 +70,7 @@ public abstract class BaseBattleScreen extends JPanel {
      * Creates a borderless image button. The icon is scaled to a consistent
      * height ({@link #computeButtonHeight()} px) while preserving aspect ratio.
      */
-    protected JButton makeButton(String tooltip, String imagePath) {
+    public JButton makeButton(String tooltip, String imagePath) {
         JButton btn = new JButton();
         if (imagePath != null) {
             applyScaledIcon(btn, imagePath);
@@ -91,7 +89,7 @@ public abstract class BaseBattleScreen extends JPanel {
      * Swaps the icon on an existing button, scaling it to the consistent
      * button height so all buttons in a row share the same height.
      */
-    protected void setButtonLabel(JButton btn, String tooltip, String imagePath) {
+    public void setButtonLabel(JButton btn, String tooltip, String imagePath) {
         if (imagePath != null) {
             applyScaledIcon(btn, imagePath);
             btn.setToolTipText(tooltip);
@@ -106,7 +104,7 @@ public abstract class BaseBattleScreen extends JPanel {
      * Scales an icon to the target button height (preserving aspect ratio)
      * and applies it to the button.
      */
-    protected void applyScaledIcon(JButton btn, String imagePath) {
+    public void applyScaledIcon(JButton btn, String imagePath) {
         ImageIcon raw = new ImageIcon(imagePath);
         int targetH = computeButtonHeight();
         int targetW = (int)(targetH * BTN_ASPECT);
@@ -124,7 +122,7 @@ public abstract class BaseBattleScreen extends JPanel {
      * Same as applyScaledIcon but returns the icon for use as a
      * disabled icon — forced to the same uniform size.
      */
-    protected ImageIcon makeScaledIcon(String imagePath) {
+    public ImageIcon makeScaledIcon(String imagePath) {
         ImageIcon raw = new ImageIcon(imagePath);
         int targetH = computeButtonHeight();
         int targetW = (int)(targetH * BTN_ASPECT);
@@ -137,7 +135,7 @@ public abstract class BaseBattleScreen extends JPanel {
      * Computes the current target button height from the panel size.
      * Falls back to BTN_H_MIN when the panel has not been laid out yet.
      */
-    protected int computeButtonHeight() {
+    public int computeButtonHeight() {
         int h = getHeight();
         if (h <= 0) return BTN_H_MIN;
         return Math.min(BTN_H_MAX, Math.max(BTN_H_MIN, (int)(h * BTN_H_FRAC)));
@@ -147,18 +145,18 @@ public abstract class BaseBattleScreen extends JPanel {
      * Positions a button at (x, y) using its preferred size (which has already
      * been set to the scaled icon dimensions by {@link #applyScaledIcon}).
      */
-    protected void sizeToIcon(JButton btn, int x, int y) {
+    public void sizeToIcon(JButton btn, int x, int y) {
         Dimension d = btn.getPreferredSize();
         int bw = (d != null && d.width  > 0) ? d.width  : 100;
         int bh = (d != null && d.height > 0) ? d.height : computeButtonHeight();
         btn.setBounds(x, y, bw, bh);
     }
 
-    protected void clearListeners(JButton btn) {
+    public void clearListeners(JButton btn) {
         for (ActionListener al : btn.getActionListeners()) btn.removeActionListener(al);
     }
 
-    protected String blockPath(int remaining) {
+    public String blockPath(int remaining) {
         if (remaining >= 2) return BTN_BLOCK2;
         if (remaining == 1) return BTN_BLOCK1;
         return BTN_BLOCK0;
@@ -166,7 +164,7 @@ public abstract class BaseBattleScreen extends JPanel {
 
     // ── Stat bar renderer ─────────────────────────────────────────────────
 
-    protected void drawBars(Graphics g, GameCharacter c, int x, int y, int barW) {
+    public void drawBars(Graphics g, GameCharacter c, int x, int y, int barW) {
         if (c == null) return;
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -208,7 +206,7 @@ public abstract class BaseBattleScreen extends JPanel {
         g2.drawString("MP " + mp + "/" + maxMp, x + 3, y + BAR_H - 2);
     }
 
-    protected void drawWinCounter(Graphics g, String left, int lWins, int rWins,
+    public void drawWinCounter(Graphics g, String left, int lWins, int rWins,
                                   String right, int cx, int cy) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setFont(WIN_FONT);
@@ -224,7 +222,7 @@ public abstract class BaseBattleScreen extends JPanel {
 
     // ── Skill animation helpers ───────────────────────────────────────────
 
-    protected String getSkillAnimPath(String spriteKey, int skillNum, boolean isLeft) {
+    public String getSkillAnimPath(String spriteKey, int skillNum, boolean isLeft) {
         String dir = isLeft ? "left" : "right";
         String sfx = isLeft ? "L" : "R";
         return ANIM_BASE + dir + "/" + spriteKey + "Skill" + skillNum + sfx + ".gif";
@@ -237,38 +235,38 @@ public abstract class BaseBattleScreen extends JPanel {
      * @param cx  horizontal centre of the character's sprite (pixels)
      * @param cy  vertical centre of the character's sprite (pixels)
      */
-    private void placeAnimLabel(JLabel label, String path, int cx, int cy) {
+    public void placeAnimLabel(JLabel label, String path, int cx, int cy) {
         ImageIcon raw = new ImageIcon(path);
         int natW = raw.getIconWidth();
         int natH = raw.getIconHeight();
         if (natW <= 0 || natH <= 0) { label.setIcon(raw); return; }
-
+ 
         int panelW = getWidth();
         int panelH = getHeight();
-
+ 
         // Max display size: 55% of panel width, 70% of panel height
         int maxW = (int)(panelW * 0.55f);
         int maxH = (int)(panelH * 0.70f);
-
+ 
         // Scale proportionally to fit within the cap
         float scale = Math.min((float) maxW / natW, (float) maxH / natH);
         int dispW = (int)(natW * scale);
         int dispH = (int)(natH * scale);
-
+ 
         // Scale the icon so the JLabel renders it at the right size
         Image scaled = raw.getImage().getScaledInstance(dispW, dispH, Image.SCALE_DEFAULT);
         label.setIcon(new ImageIcon(scaled));
-
+ 
         // Centre on the character, then clamp inside panel bounds
         int x = cx - dispW / 2;
         int y = cy - dispH / 2;
         x = Math.max(0, Math.min(x, panelW - dispW));
         y = Math.max(0, Math.min(y, panelH - dispH));
-
+ 
         label.setBounds(x, y, dispW, dispH);
     }
-
-    protected void showPlayerSkillAnim(String spriteKey, int skillNum) {
+ 
+    public void showPlayerSkillAnim(String spriteKey, int skillNum) {
         if (playerAnimLabel == null) return;
         playerAnimating = true;
         String path = getSkillAnimPath(spriteKey, skillNum, true);
@@ -285,8 +283,8 @@ public abstract class BaseBattleScreen extends JPanel {
         t.setRepeats(false);
         t.start();
     }
-
-    protected void showEnemySkillAnim(String spriteKey, int skillNum) {
+ 
+    public void showEnemySkillAnim(String spriteKey, int skillNum) {
         if (enemyAnimLabel == null) return;
         enemyAnimating = true;
         String path = getSkillAnimPath(spriteKey, skillNum, false);
@@ -303,10 +301,10 @@ public abstract class BaseBattleScreen extends JPanel {
         t.setRepeats(false);
         t.start();
     }
-
+ 
     /** Override in each subclass to return the pixel centre of the player sprite. */
-    protected int playerCharCenterX() { return getWidth()  / 4; }
-    protected int playerCharCenterY() { return getHeight() / 2; }
-    protected int enemyCharCenterX()  { return getWidth()  * 3 / 4; }
-    protected int enemyCharCenterY()  { return getHeight() / 2; }
+    public int playerCharCenterX() { return getWidth()  / 4; }
+    public int playerCharCenterY() { return getHeight() / 2; }
+    public int enemyCharCenterX()  { return getWidth()  * 3 / 4; }
+    public int enemyCharCenterY()  { return getHeight() / 2; }
 }

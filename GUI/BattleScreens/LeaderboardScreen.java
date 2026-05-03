@@ -32,12 +32,12 @@ public class LeaderboardScreen extends JPanel {
     private final JLabel[] nameLabels = new JLabel[MAX_ROWS];
     private final JLabel[] timeLabels = new JLabel[MAX_ROWS];
 
-    private final GameGUI gui;
+    
 
     private JButton back;
 
     public LeaderboardScreen(GameGUI gui) {
-        this.gui = gui;
+        
         setLayout(null);
         setOpaque(true); // paintComponent draws the bg image
 

@@ -24,8 +24,6 @@ public class GameOverScreen extends JPanel {
     private int   phase         = 0;
 
     private boolean playerWon   = false;
-    private String  winnerName  = "";
-    private String  loserName   = "";
     private String  customTitle = null;
 
     private static final int PARTICLE_COUNT = 60;
@@ -69,8 +67,6 @@ public class GameOverScreen extends JPanel {
 
     private void showInternal(String winnerCharName, String loserCharName,
                                boolean playerWon, Runnable afterAnimation) {
-        this.winnerName  = winnerCharName;
-        this.loserName   = loserCharName;
         this.playerWon   = playerWon;
         this.onComplete  = afterAnimation; // GameGUI passes a runnable that shows PlayOrExitScreen
 

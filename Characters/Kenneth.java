@@ -12,7 +12,7 @@ public class Kenneth extends GameCharacter {
     public Kenneth() {
         super("Kenneth", "Human", "Marksman", 150, 30, 60);
 
-        aimedShot = new Skill("Aimed Shot", 20, 10, 10, 0,0);
+        aimedShot = new Skill("Aimed Shot", 15, 10, 10, 0,0);
         overwatchStance = new Skill("Overwatch Stance", 0, 15, 0, 2,0);
         suppressiveVolley = new Skill("Suppressive Volley", 40, 20, 0, 4,4);
 

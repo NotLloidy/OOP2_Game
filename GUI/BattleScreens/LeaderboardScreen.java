@@ -36,6 +36,8 @@ public class LeaderboardScreen extends JPanel {
 
     private final GameGUI gui;
 
+    private JButton back;
+
     public LeaderboardScreen(GameGUI gui) {
         this.gui = gui;
         setLayout(null);
@@ -51,7 +53,21 @@ public class LeaderboardScreen extends JPanel {
                 layoutEntries();
             }
         });
+
+        back = createButton();
+        back.addActionListener(e -> gui.showScreen("ArcadeLeaderboardScreen"));
+        this.add(back);
     }
+
+    private JButton createButton() {
+        JButton btn = new JButton();
+        btn.setOpaque(false);
+        btn.setContentAreaFilled(false);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        return btn;
+    }
+
 
     // ─────────────────────────────────────────────────────────────────────
     // LABEL CREATION
@@ -152,6 +168,16 @@ public class LeaderboardScreen extends JPanel {
     public void doLayout() {
         super.doLayout();
         layoutEntries();
+
+        double scaleX = getWidth() / 960.0;
+        double scaleY = getHeight() / 540.0;
+
+        back.setBounds(
+            (int)(885 * scaleX),
+            (int)(10 * scaleY),
+            (int)(60 * scaleX),
+            (int)(50 * scaleY)
+        );
     }
 
     @Override

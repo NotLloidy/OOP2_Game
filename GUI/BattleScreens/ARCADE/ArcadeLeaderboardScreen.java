@@ -37,9 +37,6 @@ public class ArcadeLeaderboardScreen extends JPanel{
         back.addActionListener(e -> gui.showScreen("MainMenu"));
         this.add(back);
 
-        play.setBounds(240, 360, 300, 80);
-        leaderboard.setBounds(240, 260, 300, 80);
-        back.setBounds(720, 10, 50, 50);
     }
 
         private JButton createButton() {
@@ -49,6 +46,33 @@ public class ArcadeLeaderboardScreen extends JPanel{
         btn.setBorderPainted(false);
         btn.setFocusPainted(false);
         return btn;
+    }
+
+    @Override
+    public void doLayout() {
+        double scaleX = getWidth() / 960.0;
+        double scaleY = getHeight() / 540.0;
+
+        play.setBounds(
+            (int)(300 * scaleX),
+            (int)(350 * scaleY),
+            (int)(355 * scaleX),
+            (int)(80 * scaleY)
+        );
+
+        leaderboard.setBounds(
+            (int)(300 * scaleX),
+            (int)(250 * scaleY),
+            (int)(355 * scaleX),
+            (int)(80 * scaleY)
+        );
+
+        back.setBounds(
+            (int)(885 * scaleX),
+            (int)(10 * scaleY),
+            (int)(60 * scaleX),
+            (int)(50 * scaleY)
+        );
     }
 
   

@@ -185,7 +185,7 @@ public class VersusScreen extends JPanel {
 
             // Target X positions — left char in left half, right char in right half
             float leftTarget  = (float)(w / 2 - leftDispW)  * 0.10f + w * 0.02f;
-            float rightTarget = (float)(w / 2 - rightDispW) * 0.14f + w * 0.02f;
+            float rightTarget = (float)(w / 2) + (float)(w / 2 - rightDispW) * 0.90f;
 
             // ── Step animation state ───────────────────────────────────────
             final float newLeftX  = leftX  + (leftTarget  - leftX)  * 0.12f;

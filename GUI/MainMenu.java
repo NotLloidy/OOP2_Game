@@ -36,8 +36,8 @@ public class MainMenu extends JPanel {
 
         arcade = createButton();
         arcade.addActionListener(e -> {
-            GameSession.getInstance().setMode(BattleMode.ARCADE);
-            gui.showScreen("SelectAVinScreen");
+            
+            gui.showScreen("ArcadeLeaderboardScreen");
         });
         this.add(arcade);
 

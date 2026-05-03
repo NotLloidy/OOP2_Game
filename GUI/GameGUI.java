@@ -1,9 +1,11 @@
 package GUI;
 
 import GUI.BattleScreens.ARCADE.ArcadeBattleScreen;
+import GUI.BattleScreens.ARCADE.ArcadeLeaderboardScreen;
 import GUI.BattleScreens.PVP.PVPBattleScreen;
 import GUI.BattleScreens.VersusScreen;
 import GUI.BattleScreens.GameOverScreen;
+import GUI.BattleScreens.LeaderboardScreen;
 import GUI.BattleScreens.PlayOrExitScreen;
 import GUI.CharacterSelectScreens.*;
 import GUI.BattleScreens.PVE.PVEBattleScreen;
@@ -24,6 +26,8 @@ public class GameGUI extends JFrame {
     private final VersusScreen     versusScreen;
     private final GameOverScreen   gameOverScreen;
     private final PlayOrExitScreen playOrExitScreen; // shown after the Game Over animation
+    private final ArcadeLeaderboardScreen arcadeLeaderboardScreen;
+    private final LeaderboardScreen leaderboardScreen;
 
     // Floating banner shown during character select
     private final JLabel selectionBanner = new JLabel("", SwingConstants.CENTER);
@@ -122,6 +126,12 @@ public class GameGUI extends JFrame {
         playOrExitScreen = new PlayOrExitScreen();
         container.add(playOrExitScreen, "PlayOrExitScreen");
 
+        arcadeLeaderboardScreen = new ArcadeLeaderboardScreen(this);
+        container.add(arcadeLeaderboardScreen, "ArcadeLeaderboardScreen");
+
+        leaderboardScreen = new LeaderboardScreen(this);
+        container.add(leaderboardScreen, "LeaderboardScreen");
+
         pveScreen = new PVEBattleScreen();
         container.add(pveScreen, "PVEBattleScreen");
         pveScreen.setGameGUI(this);
@@ -134,6 +144,8 @@ public class GameGUI extends JFrame {
         container.add(arcadeScreen, "ArcadeBattleScreen");
         arcadeScreen.setVersusScreen(versusScreen, cardLayout, container);
         arcadeScreen.setGameGUI(this);
+
+        container.add(new KijElInfoScreen(this),      "KijElInfoScreen");
 
         this.setIconImage(new ImageIcon("Assets/others/gameLogo.gif").getImage());
         this.setVisible(true);

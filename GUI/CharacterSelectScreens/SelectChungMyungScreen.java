@@ -131,8 +131,7 @@ public class SelectChungMyungScreen extends JPanel {
     @Override
     public void doLayout() {
         super.doLayout();
-        revalidate();
-        repaint();
+        updatePositions();
     }
 
     @Override

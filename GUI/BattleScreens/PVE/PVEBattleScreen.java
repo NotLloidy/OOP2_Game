@@ -128,13 +128,10 @@ public class PVEBattleScreen extends BaseBattleScreen {
         if (w == 0 || h == 0) return;
 
         spW = (int)(w * 0.28); spH = (int)(h * 0.48);
-        spX = (int)(w * 0.08); spY = (int)(h * 0.13);
+        spX = (int)(w * 0.08); spY = (int)(h * 0.35);
         enW = spW;              enH = spH;
         enX = (int)(w * 0.64); enY = spY;
 
-        int animW = spW * 2, animH = spH * 2;
-        playerAnimLabel.setBounds(spX - spW / 2, spY - spH / 2, animW, animH);
-        enemyAnimLabel .setBounds(enX - enW / 2, enY - enH / 2, animW, animH);
 
         dialogueScroll.setBounds((int)(w * 0.10), (int)(h * 0.63), (int)(w * 0.80), (int)(h * 0.16));
 
@@ -429,6 +426,11 @@ public class PVEBattleScreen extends BaseBattleScreen {
         super.doLayout();
         layoutUI();
     }
+
+    @Override protected int playerCharCenterX() { return spX + spW / 2; }
+    @Override protected int playerCharCenterY() { return spY + spH / 2; }
+    @Override protected int enemyCharCenterX()  { return enX + enW / 2; }
+    @Override protected int enemyCharCenterY()  { return enY + enH / 2; }
 
     @Override
     protected void paintComponent(Graphics g) {

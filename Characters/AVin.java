@@ -13,10 +13,10 @@ public class AVin extends GameCharacter {
     private int codeJabCounter;
 
     public AVin() {
-        super("A-Vin", "Dalek", "Time Manipulator", 140, 40, 80);
+        super("A-Vin", "Dalek", "Time Manipulator", 150, 40, 80);
         
         codeJab = new Skill("Code Jab", 20, 0, 10, 0,0);
-        codeSurge = new Skill("Code Surge", 40, 10, 0, 0,0);
+        codeSurge = new Skill("Code Surge", 45, 10, 0, 0,0);
         overClock = new Skill("Overclock", 0, 15, 0, 3,0);
         logicCrash = new Skill("Logic Crash", 50, 60, 0, 999,4);
 
@@ -89,7 +89,7 @@ public class AVin extends GameCharacter {
                     return target.block(target);
                 }
                 if(logicCrash.isSkillAvailable() && (getCharacterCurrentMana() >= logicCrash.getSkillManaCost())) {
-                    int bonusDamage = isOverclocked ? 10 : 0;
+                    int bonusDamage = isOverclocked ? 20 : 0;
                     int totalDamage = logicCrash.getSkillDamage() + bonusDamage;
                     
                     target.takeDamage(totalDamage);

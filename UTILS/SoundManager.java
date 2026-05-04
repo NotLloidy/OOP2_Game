@@ -113,7 +113,7 @@ public class SoundManager {
             case 3 -> "sfx_skill3.wav";
             default -> "sfx_skill1.wav";
         };
-        return "Assets/audio/skillSFX" + characterName + "/" + file;
+        return "Assets/audio/skillSFX/" + characterName + "/" + file;
     }
 
     // ── Volume ────────────────────────────────────────────────────────────

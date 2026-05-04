@@ -1,6 +1,7 @@
 package GUI.BattleScreens;
 
 import Foundation.GameCharacter;
+import UTILS.SoundManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -266,7 +267,14 @@ public abstract class BaseBattleScreen extends JPanel {
         label.setBounds(x, y, dispW, dispH);
     }
  
-    public void showPlayerSkillAnim(String spriteKey, int skillNum) {
+    /**
+     * Shows the player's skill animation and plays its SFX at the same moment.
+     *
+     * @param characterName exact character name used to locate the SFX file
+     * @param spriteKey     sprite key used to locate the animation GIF
+     * @param skillNum      1, 2, or 3
+     */
+    public void showPlayerSkillAnim(String characterName, String spriteKey, int skillNum) {
         if (playerAnimLabel == null) return;
         playerAnimating = true;
         String path = getSkillAnimPath(spriteKey, skillNum, true);
@@ -274,6 +282,7 @@ public abstract class BaseBattleScreen extends JPanel {
         int cy = playerCharCenterY();
         placeAnimLabel(playerAnimLabel, path, cx, cy);
         playerAnimLabel.setVisible(true);
+        SoundManager.playSFX(SoundManager.skillSFX(characterName, skillNum)); // timed with anim
         repaint();
         Timer t = new Timer(1500, e -> {
             playerAnimating = false;
@@ -283,8 +292,15 @@ public abstract class BaseBattleScreen extends JPanel {
         t.setRepeats(false);
         t.start();
     }
- 
-    public void showEnemySkillAnim(String spriteKey, int skillNum) {
+
+    /**
+     * Shows the enemy's skill animation and plays its SFX at the same moment.
+     *
+     * @param characterName exact character name used to locate the SFX file
+     * @param spriteKey     sprite key used to locate the animation GIF
+     * @param skillNum      1, 2, or 3
+     */
+    public void showEnemySkillAnim(String characterName, String spriteKey, int skillNum) {
         if (enemyAnimLabel == null) return;
         enemyAnimating = true;
         String path = getSkillAnimPath(spriteKey, skillNum, false);
@@ -292,6 +308,7 @@ public abstract class BaseBattleScreen extends JPanel {
         int cy = enemyCharCenterY();
         placeAnimLabel(enemyAnimLabel, path, cx, cy);
         enemyAnimLabel.setVisible(true);
+        SoundManager.playSFX(SoundManager.skillSFX(characterName, skillNum)); // timed with anim
         repaint();
         Timer t = new Timer(1500, e -> {
             enemyAnimating = false;

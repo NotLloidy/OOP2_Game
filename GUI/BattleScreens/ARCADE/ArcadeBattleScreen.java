@@ -292,8 +292,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         int animDelay = 0;
         if (action >= 1 && action <= 3) {
-            SoundManager.playSFX(SoundManager.skillSFX(player.getCharacterName(), action));
-            showPlayerSkillAnim(player.getSpriteKey(), action);
+            showPlayerSkillAnim(player.getCharacterName(), player.getSpriteKey(), action);
             animDelay = 1500;
         } else {
             SoundManager.playSFX(SoundManager.SFX_BUTTON);
@@ -339,8 +338,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void aiTurn() {
         int aiAction = system.getAIAction(enemy);
         if (aiAction >= 1 && aiAction <= 3) {
-            SoundManager.playSFX(SoundManager.skillSFX(enemy.getCharacterName(), aiAction));
-            showEnemySkillAnim(enemy.getSpriteKey(), aiAction);
+            showEnemySkillAnim(enemy.getCharacterName(), enemy.getSpriteKey(), aiAction);
         }
 
         String result = system.performAction(enemy, player, aiAction, false);

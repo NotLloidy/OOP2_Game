@@ -191,9 +191,8 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
         int animDelay = 0;
         if (action >= 1 && action <= 3) {
-            SoundManager.playSFX(SoundManager.skillSFX(atk.getCharacterName(), action));
-            if (isP1) showPlayerSkillAnim(atk.getSpriteKey(), action);
-            else      showEnemySkillAnim(atk.getSpriteKey(), action);
+            if (isP1) showPlayerSkillAnim(atk.getCharacterName(), atk.getSpriteKey(), action);
+            else      showEnemySkillAnim(atk.getCharacterName(), atk.getSpriteKey(), action);
             animDelay = 1500;
         } else {
             SoundManager.playSFX(SoundManager.SFX_BUTTON);

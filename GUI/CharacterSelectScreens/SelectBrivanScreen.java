@@ -29,7 +29,7 @@ public class SelectBrivanScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_related/character_select/brivanjawmirSelect.gif").getImage();
 
         next = createButton();
-        next.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectChungScreen"); });
+        next.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectChungMyungScreen"); });
         this.add(next);
 
         prev = createButton();

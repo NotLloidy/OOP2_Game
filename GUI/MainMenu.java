@@ -5,6 +5,7 @@ import java.awt.*;
 import GameEngines.GameSession;
 import Foundation.BattleMode;
 import UTILS.FileHandler;
+import UTILS.SoundManager;
 
 public class MainMenu extends JPanel {
 
@@ -23,6 +24,7 @@ public class MainMenu extends JPanel {
 
         pve = createButton();
         pve.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
             GameSession.getInstance().setMode(BattleMode.PVE);
             gui.showScreen("SelectAVinScreen");
         });
@@ -30,6 +32,7 @@ public class MainMenu extends JPanel {
 
         pvp = createButton();
         pvp.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
             GameSession.getInstance().setMode(BattleMode.PVP);
             gui.showScreen("SelectAVinScreen");
         });
@@ -37,16 +40,16 @@ public class MainMenu extends JPanel {
 
         arcade = createButton();
         arcade.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
             gui.showScreen("ArcadeLeaderboardScreen");
         });
         this.add(arcade);
 
         logout = createButton();
         logout.addActionListener(e -> {
-            // Clear the logged-in account so no times are recorded
-            // until someone logs in again. Does NOT delete the account file.
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
             FileHandler.setCurrentUser(null);
-            gui.showScreen("LoginScreen");
+            gui.showScreen("TitleScreen");
         });
         this.add(logout);
 

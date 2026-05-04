@@ -8,6 +8,7 @@ import Characters.AVin;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import UTILS.SoundManager;
 
 public class SelectAVinScreen extends JPanel {
 
@@ -27,24 +28,25 @@ public class SelectAVinScreen extends JPanel {
 
         // ── NEXT button ───────────────────────────────────────────────────────
         next = createButton();
-        next.addActionListener(e -> gui.showScreen("SelectBrivanScreen"));
+        next.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectBrivanScreen"); });
         this.add(next);
 
         // ── PREV button ───────────────────────────────────────────────────────
         // Goes back to MainMenu only if P1 is still picking; otherwise back to
         // the start of character select so P2 can repick from the beginning.
         prev = createButton();
-        prev.addActionListener(e -> gui.showScreen("SelectZakkarrScreen"));
+        prev.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectZakkarrScreen"); });
         this.add(prev);
 
         // ── INFO button ───────────────────────────────────────────────────────
         info = createButton();
-        info.addActionListener(e -> gui.showScreen("AVinInfoScreen"));
+        info.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("AVinInfoScreen"); });
         this.add(info);
 
         // ── SELECT button ─────────────────────────────────────────────────────
         select = createButton();
         select.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
 
             GameSession session = GameSession.getInstance();
 
@@ -67,12 +69,7 @@ public class SelectAVinScreen extends JPanel {
                 } else {
                     // P2 picks AVin — check not same as P1
                     if (session.getPlayer1().getCharacterName().equals(new AVin().getCharacterName())) {
-                        JOptionPane.showMessageDialog(
-                                SelectAVinScreen.this,
-                                "Player 2 cannot pick the same character as Player 1!",
-                                "Invalid Selection",
-                                JOptionPane.WARNING_MESSAGE
-                        );
+                        gui.showNotification("Cannot choose same character as Player 1!");
                         return;
                     }
                     session.setPlayer2(new AVin());
@@ -102,7 +99,7 @@ public class SelectAVinScreen extends JPanel {
         });
 
         exit = createButton();
-        exit.addActionListener(e -> gui.showScreen("MainMenu"));
+        exit.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("MainMenu"); });
         this.add(exit);
     }
 

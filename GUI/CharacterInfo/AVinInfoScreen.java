@@ -10,6 +10,7 @@ import Foundation.BattleMode;
 
 import java.awt.*;
 import java.awt.event.*;
+import UTILS.SoundManager;
 
 public class AVinInfoScreen extends JPanel {
 
@@ -48,12 +49,7 @@ public class AVinInfoScreen extends JPanel {
                 } else {
                     // P2 picks AVin — check not same as P1
                     if (session.getPlayer1().getCharacterName().equals(new AVin().getCharacterName())) {
-                        JOptionPane.showMessageDialog(
-                                AVinInfoScreen.this,
-                                "Player 2 cannot pick the same character as Player 1!",
-                                "Invalid Selection",
-                                JOptionPane.WARNING_MESSAGE
-                        );
+                        gui.showNotification("Cannot choose same character as Player 1!");
                         return;
                     }
                     session.setPlayer2(new AVin());
@@ -76,7 +72,7 @@ public class AVinInfoScreen extends JPanel {
         this.add(play);
 
         back = createButton();
-        back.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
+        back.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectAVinScreen"); });
         this.add(back);
 
         this.addComponentListener(new ComponentAdapter() {

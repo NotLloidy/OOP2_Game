@@ -10,6 +10,7 @@ import Foundation.BattleMode;
 
 import java.awt.*;
 import java.awt.event.*;
+import UTILS.SoundManager;
 
 public class SelectBrivanScreen extends JPanel {
 
@@ -28,23 +29,24 @@ public class SelectBrivanScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_related/character_select/brivanjawmirSelect.gif").getImage();
 
         next = createButton();
-        next.addActionListener(e -> gui.showScreen("SelectChungMyungScreen"));
+        next.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectChungScreen"); });
         this.add(next);
 
         prev = createButton();
-        prev.addActionListener(e -> gui.showScreen("SelectAVinScreen"));
+        prev.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectAVinScreen"); });
         this.add(prev);
 
         info = createButton();
-        info.addActionListener(e -> gui.showScreen("BrivanInfoScreen"));
+        info.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("BrivanInfoScreen"); });
         this.add(info);
 
         exit = createButton();
-        exit.addActionListener(e -> gui.showScreen("MainMenu"));
+        exit.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("MainMenu"); });
         this.add(exit);
 
         select = createButton();
         select.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
 
             GameSession session = GameSession.getInstance();
 
@@ -67,12 +69,7 @@ public class SelectBrivanScreen extends JPanel {
                 } else {
                     // P2 picks Brivan — check not same as P1
                     if (session.getPlayer1().getCharacterName().equals(new BrivanJawmir().getCharacterName())) {
-                        JOptionPane.showMessageDialog(
-                                SelectBrivanScreen.this,
-                                "Player 2 cannot pick the same character as Player 1!",
-                                "Invalid Selection",
-                                JOptionPane.WARNING_MESSAGE
-                        );
+                        gui.showNotification("Cannot choose same character as Player 1!");
                         return;
                     }
                     session.setPlayer2(new BrivanJawmir());

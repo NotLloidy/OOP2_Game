@@ -4,6 +4,7 @@ import Foundation.*;
 import GUI.BattleScreens.BaseBattleScreen;
 import GUI.GameGUI;
 import GameEngines.*;
+import UTILS.SoundManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,6 +22,11 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private GameCharacter player;
     private GameCharacter enemy;
     private boolean defendDisabled = false;
+
+    /** Sprite visibility — set to false for 2s when a character dies. */
+    private boolean playerSpriteVisible = true;
+    private boolean enemySpriteVisible  = true;
+
     private ActionState state = ActionState.MAIN;
     private JLabel roundLabel;
 
@@ -41,7 +47,6 @@ public class PVEBattleScreen extends BaseBattleScreen {
         setLayout(null);
         session = GameSession.getInstance();
         system  = new BattleSystem();
-        // PVE/PVP arena background
         bgImage = new ImageIcon("Assets/battle_sprites/pvp_pve_battlearena.gif").getImage();
         createUI();
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -67,11 +72,10 @@ public class PVEBattleScreen extends BaseBattleScreen {
             return;
         }
 
-        // Fully restore both characters so a rematch always starts at full HP/MP
         player.resetForNewRound();
         enemy.resetForNewRound();
-        player.getSkill1().resetCooldown(); player.getSkill2().resetCooldown(); player.getSkill3().resetCooldown();
-        enemy.getSkill1().resetCooldown();  enemy.getSkill2().resetCooldown();  enemy.getSkill3().resetCooldown();
+        resetSkillsForNewBattle(player);
+        resetSkillsForNewBattle(enemy);
 
         playerSprite = new ImageIcon(IDLE_LEFT_DIR  + player.getSpriteKey() + IDLE_L_SFX).getImage();
         enemySprite  = new ImageIcon(IDLE_RIGHT_DIR + enemy.getSpriteKey()  + IDLE_R_SFX).getImage();
@@ -160,8 +164,11 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         int animDelay = 0;
         if (action >= 1 && action <= 3) {
+            SoundManager.playSFX(SoundManager.skillSFX(player.getCharacterName(), action));
             showPlayerSkillAnim(player.getSpriteKey(), action);
             animDelay = 1500;
+        } else {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
         }
 
         String result = system.performAction(player, enemy, action, true);
@@ -172,7 +179,13 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         if (!enemy.isCharacterAlive()) {
             playerWins++;
-            endRound("You win round " + round + "!");
+            enemySpriteVisible = false;
+            repaint();
+            disableButtons();
+            Timer deathPause = new Timer(2000, e ->
+                endRound("You win round " + round + "! " + player.getCharacterName() + " is victorious!"));
+            deathPause.setRepeats(false);
+            deathPause.start();
             return;
         }
 
@@ -195,7 +208,10 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
     private void aiTurn() {
         int aiAction = system.getAIAction(enemy);
-        if (aiAction >= 1 && aiAction <= 3) showEnemySkillAnim(enemy.getSpriteKey(), aiAction);
+        if (aiAction >= 1 && aiAction <= 3) {
+            SoundManager.playSFX(SoundManager.skillSFX(enemy.getCharacterName(), aiAction));
+            showEnemySkillAnim(enemy.getSpriteKey(), aiAction);
+        }
 
         String result = system.performAction(enemy, player, aiAction, false);
         dialogue.append("\n" + enemy.getCharacterName() + ": " + result);
@@ -204,7 +220,15 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
         if (!player.isCharacterAlive()) {
             enemyWins++;
-            endRound(enemy.getCharacterName() + " wins round " + round + "!");
+            playerSpriteVisible = false;
+            repaint();
+            disableButtons();
+            Timer deathPause = new Timer(2000, e ->
+                endRound(enemy.getCharacterName() + " wins round " + round + "! "
+                       + enemy.getCharacterName() + " is victorious!"));
+            deathPause.setRepeats(false);
+            deathPause.start();
+            return;
         }
         repaint();
     }
@@ -220,17 +244,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private void resetRound() {
         round++;
 
-        player.resetForNewRound();
-        enemy.resetForNewRound();
+        resetCharForRound(player);
+        resetCharForRound(enemy);
 
-        player.getSkill1().resetCooldown();
-        player.getSkill2().resetCooldown();
-        player.getSkill3().resetCooldown();
-        enemy.getSkill1().resetCooldown();
-        enemy.getSkill2().resetCooldown();
-        enemy.getSkill3().resetCooldown();
-
-        defendDisabled = false;
+        defendDisabled      = false;
+        playerSpriteVisible = true;
+        enemySpriteVisible  = true;
         state = ActionState.MAIN;
         dialogue.setText("-- Round " + round + " --\nWhat will " + player.getCharacterName() + " do?");
         scrollToBottom();
@@ -244,7 +263,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
         scrollToBottom();
 
         if (playerWins == 2) {
-            dialogue.append("\nYOU WON THE MATCH!");
+            SoundManager.playSFX(SoundManager.SFX_GAME_WIN);
+            dialogue.append("\n" + player.getCharacterName() + " wins the match!");
             scrollToBottom();
             disableButtons();
             delay(900, () -> gameGUI.showGameOver(
@@ -252,7 +272,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
             return;
         }
         if (enemyWins == 2) {
-            dialogue.append("\nYOU LOST THE MATCH!");
+            SoundManager.playSFX(SoundManager.SFX_GAME_OVER);
+            dialogue.append("\n" + enemy.getCharacterName() + " wins the match!");
             scrollToBottom();
             disableButtons();
             delay(900, () -> gameGUI.showGameOver(
@@ -271,6 +292,37 @@ public class PVEBattleScreen extends BaseBattleScreen {
         Timer t = new Timer(ms, e -> r.run());
         t.setRepeats(false);
         t.start();
+    }
+
+    // ── Cooldown helpers ──────────────────────────────────────────────────
+
+    /** At match start: skills 1 & 2 reset to 0, ultimate set to first-use CD of 4. */
+    private static void resetSkillsForNewBattle(GameCharacter c) {
+        c.getSkill1().resetCooldown();
+        c.getSkill2().resetCooldown();
+        CharacterSkills ult = c.getSkill3();
+        if (ult.getSkillMaxCooldown() == 999) {
+            ult.setSkillCurrentCooldown(4);
+        } else {
+            ult.resetCooldown();
+        }
+    }
+
+    /** At round start: skills 1 & 2 reset; ultimate stays locked if already used (CD 999). */
+    private static void resetCharForRound(GameCharacter c) {
+        c.resetForNewRoundWithStartingMana();
+        c.getSkill1().resetCooldown();
+        c.getSkill2().resetCooldown();
+        CharacterSkills ult = c.getSkill3();
+        if (ult.getSkillMaxCooldown() == 999) {
+            if (ult.getSkillCurrentCooldown() == 999) {
+                // already used — keep locked
+            } else if (ult.getSkillCurrentCooldown() == 0) {
+                ult.setSkillCurrentCooldown(4);
+            }
+        } else {
+            ult.resetCooldown();
+        }
     }
 
     // ── State machine ─────────────────────────────────────────────────────
@@ -301,9 +353,9 @@ public class PVEBattleScreen extends BaseBattleScreen {
                 btnCheck .setEnabled(true);
                 btnBack  .setEnabled(false);
 
-                btnFight .addActionListener(e -> switchState(ActionState.FIGHT));
-                btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
-                btnCheck .addActionListener(e -> switchState(ActionState.CHECK));
+                btnFight .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.FIGHT); });
+                btnDefend.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.DEFEND); });
+                btnCheck .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.CHECK); });
             }
 
             case FIGHT -> {
@@ -325,7 +377,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
                 btnFight .addActionListener(e -> playerTurn(1));
                 btnDefend.addActionListener(e -> playerTurn(2));
                 btnCheck .addActionListener(e -> playerTurn(3));
-                btnBack  .addActionListener(e -> switchState(ActionState.MAIN));
+                btnBack  .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.MAIN); });
             }
 
             case DEFEND -> {
@@ -416,11 +468,12 @@ public class PVEBattleScreen extends BaseBattleScreen {
     // ── Full reset ────────────────────────────────────────────────────────
 
     public void reset() {
-        initialized     = false;
-        player          = null; enemy         = null;
-        playerWins      = 0;    enemyWins     = 0;    round = 1;
-        defendDisabled  = false; state        = ActionState.MAIN;
-        playerAnimating = false; enemyAnimating = false;
+        initialized         = false;
+        player              = null; enemy           = null;
+        playerWins          = 0;    enemyWins       = 0;    round = 1;
+        defendDisabled      = false; state          = ActionState.MAIN;
+        playerSpriteVisible = true;  enemySpriteVisible = true;
+        playerAnimating     = false; enemyAnimating  = false;
         playerAnimLabel.setVisible(false);
         enemyAnimLabel .setVisible(false);
         dialogue.setText("");
@@ -436,28 +489,28 @@ public class PVEBattleScreen extends BaseBattleScreen {
         super.doLayout();
         layoutUI();
     }
- 
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         int w = getWidth(), h = getHeight();
- 
+
         g.drawImage(bgImage, 0, 0, w, h, this);
- 
-        if (playerSprite != null && !playerAnimating)
+
+        if (playerSprite != null && !playerAnimating && playerSpriteVisible)
             g.drawImage(playerSprite, spX, spY, spW, spH, this);
-        if (enemySprite  != null && !enemyAnimating)
+        if (enemySprite  != null && !enemyAnimating && enemySpriteVisible)
             g.drawImage(enemySprite,  enX, enY, enW, enH, this);
- 
+
         int barW = (int)(w * 0.22);
         drawBars(g, player, spX, (int)(h * 0.02), barW);
         drawBars(g, enemy,  enX, (int)(h * 0.02), barW);
- 
+
         if (player != null && enemy != null)
             drawWinCounter(g, "P", playerWins, enemyWins, "CPU",
                w / 2,
                (int)(h * 0.15));
- 
+
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.62), (int)(w * 0.82), (int)(h * 0.18), 12, 12);
     }

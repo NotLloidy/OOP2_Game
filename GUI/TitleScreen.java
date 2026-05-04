@@ -1,6 +1,9 @@
 package GUI;
 
 import javax.swing.*;
+
+import UTILS.SoundManager;
+
 import java.awt.*;
 
 public class TitleScreen extends JPanel {
@@ -19,7 +22,10 @@ public class TitleScreen extends JPanel {
         start.setOpaque(false);
         start.setContentAreaFilled(false);
         start.setBorderPainted(false);
-        start.addActionListener(e -> gui.showScreen("AccountScreen"));
+        start.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
+            gui.showScreen("AccountScreen");
+        });
 
         this.add(start);
     }

@@ -10,6 +10,7 @@ import Foundation.BattleMode;
 
 import java.awt.*;
 import java.awt.event.*;
+import UTILS.SoundManager;
 
 public class SelectSungJinWooScreen extends JPanel {
 
@@ -28,23 +29,24 @@ public class SelectSungJinWooScreen extends JPanel {
         bgImage = new ImageIcon("Assets/character_related/character_select/sungjinwooSelect.gif").getImage();
 
         next = createButton();
-        next.addActionListener(e -> gui.showScreen("SelectZakkarrScreen"));
+        next.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectZakkarrScreen"); });
         this.add(next);
 
         exit = createButton();
-        exit.addActionListener(e -> gui.showScreen("MainMenu"));
+        exit.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("MainMenu"); });
         this.add(exit);
 
         prev = createButton();
-        prev.addActionListener(e -> gui.showScreen("SelectSoleilScreen"));
+        prev.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectSoleilScreen"); });
         this.add(prev);
 
         info = createButton();
-        info.addActionListener(e -> gui.showScreen("SungJinWooInfoScreen"));
+        info.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SungJinWooInfoScreen"); });
         this.add(info);
 
         select = createButton();
         select.addActionListener(e -> {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
 
             GameSession session = GameSession.getInstance();
 
@@ -67,12 +69,7 @@ public class SelectSungJinWooScreen extends JPanel {
                 } else {
                     // P2 picks SungJinWoo — check not same as P1
                     if (session.getPlayer1().getCharacterName().equals(new SungJinWoo().getCharacterName())) {
-                        JOptionPane.showMessageDialog(
-                                SelectSungJinWooScreen.this,
-                                "Player 2 cannot pick the same character as Player 1!",
-                                "Invalid Selection",
-                                JOptionPane.WARNING_MESSAGE
-                        );
+                        gui.showNotification("Cannot choose same character as Player 1!");
                         return;
                     }
                     session.setPlayer2(new SungJinWoo());

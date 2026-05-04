@@ -115,6 +115,20 @@ public abstract class GameCharacter implements Skill {
         this.isStunned                    = false;
     }
 
+    /**
+     * Resets this character for a new round, restoring HP to max but keeping
+     * mana at its declared starting value (not max). Use this for PvP/PvE/Arcade
+     * round resets so mana is not gifted at full every round.
+     */
+    public void resetForNewRoundWithStartingMana() {
+        this.characterCurrentHealthPoints = this.characterMaxHealthPoints;
+        this.isCharacterAlive             = true;
+        this.isBlocking                   = false;
+        this.remainingBlocks              = 2;
+        this.isMarked                     = false;
+        this.isStunned                    = false;
+    }
+
     // ── Sprite key ────────────────────────────────────────────────────────
 
     public String getSpriteKey() {

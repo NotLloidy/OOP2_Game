@@ -13,6 +13,7 @@ import GUI.CharacterInfo.*;
 import GameEngines.*;
 import Foundation.BattleMode;
 import Foundation.GameCharacter;
+import UTILS.SoundManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,11 +30,19 @@ public class GameGUI extends JFrame {
     private final ArcadeLeaderboardScreen arcadeLeaderboardScreen;
     private final LeaderboardScreen leaderboardScreen;
 
+    // Yellow banner — shows which player is picking on select screens
     private final JLabel selectionBanner = new JLabel("", SwingConstants.CENTER);
+
+    // Red top-of-screen notification (replaces JOptionPane for same-char errors etc.)
+    private final NotificationBanner notificationBanner = new NotificationBanner();
 
     private final ArcadeBattleScreen arcadeScreen;
     private final PVEBattleScreen    pveScreen;
     private final PVPBattleScreen    pvpScreen;
+
+    // Screens where battle BGM plays
+    private static final java.util.Set<String> BATTLE_SCREENS = java.util.Set.of(
+            "PVPBattleScreen", "PVEBattleScreen", "ArcadeBattleScreen", "VersusScreen");
 
     private boolean isFullScreen = false;
 
@@ -44,6 +53,7 @@ public class GameGUI extends JFrame {
         this.setResizable(true);
         installFullScreenToggle();
 
+        // ── Selection banner ─────────────────────────────────────────────
         selectionBanner.setFont(new Font("Impact", Font.PLAIN, 24));
         selectionBanner.setForeground(new Color(255, 220, 30));
         selectionBanner.setBackground(new Color(0, 0, 0, 180));
@@ -59,6 +69,7 @@ public class GameGUI extends JFrame {
                 int w = getWidth(), h = getHeight();
                 container.setBounds(0, 0, w, h);
                 selectionBanner.setBounds(0, 0, w, 40);
+                notificationBanner.reposition(w);
                 for (Component child : container.getComponents()) {
                     child.setBounds(0, 0, w, h);
                     if (child instanceof JPanel p) {
@@ -72,8 +83,9 @@ public class GameGUI extends JFrame {
         };
         layered.setLayout(null);
         container.setBounds(0, 0, 800, 600);
-        layered.add(container,       JLayeredPane.DEFAULT_LAYER);
-        layered.add(selectionBanner, JLayeredPane.PALETTE_LAYER);
+        layered.add(container,           JLayeredPane.DEFAULT_LAYER);
+        layered.add(selectionBanner,     JLayeredPane.PALETTE_LAYER);
+        layered.add(notificationBanner,  JLayeredPane.POPUP_LAYER);
         this.setContentPane(layered);
 
         this.addComponentListener(new ComponentAdapter() {
@@ -84,7 +96,7 @@ public class GameGUI extends JFrame {
             }
         });
 
-        // ── Screens ───────────────────────────────────────────────────────────
+        // ── Screens ───────────────────────────────────────────────────────
         container.add(new TitleScreen(this),    "TitleScreen");
         container.add(new AccountScreen(this),  "AccountScreen");
         container.add(new LoginScreen(this),    "LoginScreen");
@@ -121,7 +133,6 @@ public class GameGUI extends JFrame {
         arcadeLeaderboardScreen = new ArcadeLeaderboardScreen(this);
         container.add(arcadeLeaderboardScreen, "ArcadeLeaderboardScreen");
 
-        // LeaderboardScreen — refresh() is called in showScreen() before revealing it
         leaderboardScreen = new LeaderboardScreen(this);
         container.add(leaderboardScreen, "LeaderboardScreen");
 
@@ -139,7 +150,23 @@ public class GameGUI extends JFrame {
         arcadeScreen.setGameGUI(this);
 
         this.setIconImage(new ImageIcon("Assets/others/gameLogo.gif").getImage());
+        this.setTitle("Crucible Clash");
         this.setVisible(true);
+
+        // Start menu BGM on launch
+        SoundManager.playBGM(SoundManager.BGM_MENU);
+    }
+
+    // =========================================================================
+    // PUBLIC API
+    // =========================================================================
+
+    /**
+     * Shows a non-blocking red notification banner at the top of the screen.
+     * Use instead of JOptionPane for in-game messages like "Cannot choose same character".
+     */
+    public void showNotification(String message) {
+        SwingUtilities.invokeLater(() -> notificationBanner.show(message));
     }
 
     // =========================================================================
@@ -184,6 +211,7 @@ public class GameGUI extends JFrame {
 
     public void showScreen(String name) {
         updateSelectionBanner(name);
+        updateBGM(name);
 
         switch (name) {
 
@@ -239,7 +267,6 @@ public class GameGUI extends JFrame {
                 });
             }
 
-            // Refresh leaderboard data every time the screen is opened
             case "LeaderboardScreen" -> {
                 leaderboardScreen.refresh();
                 cardLayout.show(container, "LeaderboardScreen");
@@ -275,6 +302,7 @@ public class GameGUI extends JFrame {
 
         playOrExitScreen.setup(playAgain, exit);
         cardLayout.show(container, "GameOverScreen");
+        updateBGM("GameOverScreen");
         gameOverScreen.show(winnerName, loserName, playerWon,
                 () -> cardLayout.show(container, "PlayOrExitScreen"));
     }
@@ -301,6 +329,7 @@ public class GameGUI extends JFrame {
 
         playOrExitScreen.setup(playAgain, exit);
         cardLayout.show(container, "GameOverScreen");
+        updateBGM("GameOverScreen");
         gameOverScreen.show(winnerName, loserName, playerWon, customTitle,
                 () -> cardLayout.show(container, "PlayOrExitScreen"));
     }
@@ -333,6 +362,7 @@ public class GameGUI extends JFrame {
 
         playOrExitScreen.setup(playAgain, exit);
         cardLayout.show(container, "GameOverScreen");
+        updateBGM("GameOverScreen");
         gameOverScreen.show(winnerName, loserName, playerWon,
                 () -> cardLayout.show(container, "PlayOrExitScreen"));
     }
@@ -367,6 +397,18 @@ public class GameGUI extends JFrame {
         }
 
         selectionBanner.setVisible(true);
+    }
+
+    // =========================================================================
+    // BGM
+    // =========================================================================
+
+    private void updateBGM(String screen) {
+        if (BATTLE_SCREENS.contains(screen)) {
+            SoundManager.playBGM(SoundManager.BGM_BATTLE);
+        } else {
+            SoundManager.playBGM(SoundManager.BGM_MENU);
+        }
     }
 
     // =========================================================================

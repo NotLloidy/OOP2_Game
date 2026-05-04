@@ -5,6 +5,7 @@ import GUI.BattleScreens.BaseBattleScreen;
 import GUI.BattleScreens.VersusScreen;
 import GameEngines.*;
 import UTILS.FileHandler;
+import UTILS.SoundManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,6 +28,10 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private int enX, enY, enW, enH;
 
     private boolean defendDisabled = false;
+
+    /** Sprite visibility — set to false for 2s when a character dies. */
+    private boolean playerSpriteVisible = true;
+    private boolean enemySpriteVisible  = true;
 
     private GameCharacter player;
     private GameCharacter enemy;
@@ -53,13 +58,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private GUI.GameGUI gameGUI;
     private JLabel roundLabel;
 
-    // ── Arcade run timer ──────────────────────────────────────────────────
-    // Counts elapsed whole seconds from the moment initBattle() is called
-    // until arcadeClear() fires. Displayed live in the status label.
-    private Timer  runTimer;          // fires every 1 000 ms
+    private Timer  runTimer;
     private int    elapsedSeconds = 0;
-    private JLabel timerLabel;        // live display, e.g. "Time: 2:05"
-    // ─────────────────────────────────────────────────────────────────────
+    private JLabel timerLabel;
 
     public ArcadeBattleScreen() {
         setLayout(null);
@@ -113,28 +114,21 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         prepared    = false;
         initialized = true;
 
-        startRunTimer(); //start timing the full arcade run
-
+        startRunTimer();
         loadNextOpponent();
         roundLabel.setText("ROUND " + round);
     }
 
-    // ── Run timer helpers ─────────────────────────────────────────────────
+    // ── Run timer ─────────────────────────────────────────────────────────
 
-    /** Starts (or restarts) the 1-second elapsed-time ticker. */
     private void startRunTimer() {
         stopRunTimer();
         elapsedSeconds = 0;
         updateTimerLabel();
-
-        runTimer = new Timer(1000, e -> {
-            elapsedSeconds++;
-            updateTimerLabel();
-        });
+        runTimer = new Timer(1000, e -> { elapsedSeconds++; updateTimerLabel(); });
         runTimer.start();
     }
 
-    /** Stops the ticker without resetting the elapsed count. */
     private void stopRunTimer() {
         if (runTimer != null && runTimer.isRunning()) runTimer.stop();
     }
@@ -143,14 +137,13 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         timerLabel.setText("Time: " + FileHandler.formatTime(elapsedSeconds));
     }
 
-    // ─────────────────────────────────────────────────────────────────────
+    // ── Opponent management ───────────────────────────────────────────────
 
     private void buildOpponentOrder() {
         opponentOrder.clear();
         List<Integer> all = new ArrayList<>();
         for (int i = 1; i <= opponentCount; i++) all.add(i);
         Collections.shuffle(all);
-
         for (int id : all) {
             GameCharacter candidate = system.selectCharacter(id);
             if (candidate != null && !candidate.getCharacterName().equals(player.getCharacterName())) {
@@ -170,11 +163,11 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         enemy = system.selectCharacter(opponentOrder.get(currentOpponentIndex));
         session.setPlayer2(enemy);
 
-        // Fully restore the player before each new opponent so HP/MP/cooldowns are fresh
         player.resetForNewRound();
-        player.getSkill1().resetCooldown();
-        player.getSkill2().resetCooldown();
-        player.getSkill3().resetCooldown();
+        resetSkillsForNewBattle(player);
+
+        playerSpriteVisible = true;
+        enemySpriteVisible  = true;
 
         String leftKey  = toFileKey(player.getCharacterName());
         String rightKey = toFileKey(enemy.getCharacterName());
@@ -237,12 +230,10 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         roundLabel.setFont(new Font("Impact", Font.PLAIN, 26));
         add(roundLabel);
 
-        // ── Timer label ───────────────────────────────────────────────────
         timerLabel = new JLabel("Time: 0:00", SwingConstants.CENTER);
         timerLabel.setForeground(new Color(255, 255, 255));
         timerLabel.setFont(new Font("Impact", Font.PLAIN, 18));
         add(timerLabel);
-        // ─────────────────────────────────────────────────────────────────
 
         playerAnimLabel = new JLabel();
         playerAnimLabel.setVisible(false);
@@ -280,19 +271,18 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         statusLabel.setBounds(
             roundLabel.getX(),
             roundLabel.getY() + roundLabel.getHeight() + spacing,
-            roundLabel.getWidth(),
-            28
-        );
+            roundLabel.getWidth(), 28);
 
-        // ── Timer label position ──────────────────────────────────────────
-        // Sits just below the status label. Move by adjusting the fraction.
         timerLabel.setBounds(
             roundLabel.getX(),
             statusLabel.getY() + statusLabel.getHeight() + spacing,
-            roundLabel.getWidth(),
-            24
-        );
-        // ─────────────────────────────────────────────────────────────────
+            roundLabel.getWidth(), 24);
+
+        int animW = spW * 2, animH = spH * 2;
+        if (playerAnimLabel != null)
+            playerAnimLabel.setBounds(spX - spW / 2, spY - spH / 2, animW, animH);
+        if (enemyAnimLabel != null)
+            enemyAnimLabel .setBounds(enX - enW / 2, enY - enH / 2, animW, animH);
     }
 
     // ── Turn logic ────────────────────────────────────────────────────────
@@ -302,8 +292,11 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
         int animDelay = 0;
         if (action >= 1 && action <= 3) {
+            SoundManager.playSFX(SoundManager.skillSFX(player.getCharacterName(), action));
             showPlayerSkillAnim(player.getSpriteKey(), action);
             animDelay = 1500;
+        } else {
+            SoundManager.playSFX(SoundManager.SFX_BUTTON);
         }
 
         String result = system.performAction(player, enemy, action, true);
@@ -315,7 +308,16 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         repaint();
 
         if (!enemy.isCharacterAlive()) {
-            playerWins++; updateStatusLabel(); endRound("You win round " + round + "!"); return;
+            playerWins++;
+            updateStatusLabel();
+            enemySpriteVisible = false;
+            repaint();
+            disableButtons();
+            Timer deathPause = new Timer(2000, e ->
+                endRound("You win round " + round + "! " + player.getCharacterName() + " is victorious!"));
+            deathPause.setRepeats(false);
+            deathPause.start();
+            return;
         }
 
         if (action != 4) switchState(ActionState.MAIN);
@@ -336,7 +338,10 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void aiTurn() {
         int aiAction = system.getAIAction(enemy);
-        if (aiAction >= 1 && aiAction <= 3) showEnemySkillAnim(enemy.getSpriteKey(), aiAction);
+        if (aiAction >= 1 && aiAction <= 3) {
+            SoundManager.playSFX(SoundManager.skillSFX(enemy.getCharacterName(), aiAction));
+            showEnemySkillAnim(enemy.getSpriteKey(), aiAction);
+        }
 
         String result = system.performAction(enemy, player, aiAction, false);
         dialogue.append("\n" + result);
@@ -346,8 +351,17 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         enemy.getSkill3().reduceSkillCooldown();
 
         if (!player.isCharacterAlive()) {
-            enemyWins++; updateStatusLabel();
-            endRound(enemy.getCharacterName() + " wins round " + round + "!");
+            enemyWins++;
+            updateStatusLabel();
+            playerSpriteVisible = false;
+            repaint();
+            disableButtons();
+            Timer deathPause = new Timer(2000, e ->
+                endRound(enemy.getCharacterName() + " wins round " + round + "! "
+                       + enemy.getCharacterName() + " is victorious!"));
+            deathPause.setRepeats(false);
+            deathPause.start();
+            return;
         }
         repaint();
     }
@@ -357,17 +371,12 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void resetRound() {
         round++;
 
-        player.resetForNewRound();
-        enemy.resetForNewRound();
+        resetCharForRound(player);
+        resetCharForRound(enemy);
 
-        player.getSkill1().resetCooldown();
-        player.getSkill2().resetCooldown();
-        player.getSkill3().resetCooldown();
-        enemy.getSkill1().resetCooldown();
-        enemy.getSkill2().resetCooldown();
-        enemy.getSkill3().resetCooldown();
-
-        defendDisabled = false;
+        defendDisabled      = false;
+        playerSpriteVisible = true;
+        enemySpriteVisible  = true;
         state = ActionState.MAIN;
         dialogue.append("\n-- Round " + round + " --");
         scrollToBottom();
@@ -411,10 +420,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void arcadeClear() {
         arcadeOver = true;
-        stopRunTimer(); //stop the clock
-
-        // Save best time for the logged-in account
+        stopRunTimer();
         FileHandler.saveArcadeTime(elapsedSeconds);
+        SoundManager.playSFX(SoundManager.SFX_GAME_WIN);
 
         dialogue.setText("ARCADE CLEAR! You defeated all opponents!\nTime: "
                 + FileHandler.formatTime(elapsedSeconds));
@@ -432,7 +440,8 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void gameOver() {
         arcadeOver = true;
-        stopRunTimer(); //stop the clock (no save — player didn't clear)
+        stopRunTimer();
+        SoundManager.playSFX(SoundManager.SFX_GAME_OVER);
 
         dialogue.setText("GAME OVER");
         scrollToBottom();
@@ -455,6 +464,37 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private void disableButtons() {
         btnFight.setEnabled(false); btnDefend.setEnabled(false);
         btnCheck.setEnabled(false); btnBack.setEnabled(false);
+    }
+
+    // ── Cooldown helpers ──────────────────────────────────────────────────
+
+    /** At match start / new opponent: skills 1 & 2 reset to 0, ultimate set to first-use CD of 4. */
+    private static void resetSkillsForNewBattle(GameCharacter c) {
+        c.getSkill1().resetCooldown();
+        c.getSkill2().resetCooldown();
+        CharacterSkills ult = c.getSkill3();
+        if (ult.getSkillMaxCooldown() == 999) {
+            ult.setSkillCurrentCooldown(4);
+        } else {
+            ult.resetCooldown();
+        }
+    }
+
+    /** At round start: skills 1 & 2 reset; ultimate stays locked if already used (CD 999). */
+    private static void resetCharForRound(GameCharacter c) {
+        c.resetForNewRoundWithStartingMana();
+        c.getSkill1().resetCooldown();
+        c.getSkill2().resetCooldown();
+        CharacterSkills ult = c.getSkill3();
+        if (ult.getSkillMaxCooldown() == 999) {
+            if (ult.getSkillCurrentCooldown() == 999) {
+                // already used — keep locked
+            } else if (ult.getSkillCurrentCooldown() == 0) {
+                ult.setSkillCurrentCooldown(4);
+            }
+        } else {
+            ult.resetCooldown();
+        }
     }
 
     // ── State machine ─────────────────────────────────────────────────────
@@ -482,9 +522,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                 btnCheck .setEnabled(true);
                 btnBack  .setEnabled(false);
 
-                btnFight .addActionListener(e -> switchState(ActionState.FIGHT));
-                btnDefend.addActionListener(e -> switchState(ActionState.DEFEND));
-                btnCheck .addActionListener(e -> switchState(ActionState.CHECK));
+                btnFight .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.FIGHT); });
+                btnDefend.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.DEFEND); });
+                btnCheck .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.CHECK); });
             }
 
             case FIGHT -> {
@@ -513,7 +553,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
                 btnFight .addActionListener(e -> playerTurn(1));
                 btnDefend.addActionListener(e -> playerTurn(2));
                 btnCheck .addActionListener(e -> playerTurn(3));
-                btnBack  .addActionListener(e -> switchState(ActionState.MAIN));
+                btnBack  .addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); switchState(ActionState.MAIN); });
             }
 
             case DEFEND -> {
@@ -587,10 +627,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     // ── Paint ─────────────────────────────────────────────────────────────
 
     @Override
-    public void doLayout() {
-        super.doLayout();
-        layoutUI();
-    }
+    public void doLayout() { super.doLayout(); layoutUI(); }
 
     @Override public int playerCharCenterX() { return spX + spW / 2; }
     @Override public int playerCharCenterY() { return spY + spH / 2; }
@@ -602,9 +639,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         super.paintComponent(g);
         g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
 
-        if (playerSprite != null && !playerAnimating)
+        if (playerSprite != null && !playerAnimating && playerSpriteVisible)
             g.drawImage(playerSprite, spX, spY, spW, spH, this);
-        if (enemySprite != null && !enemyAnimating)
+        if (enemySprite != null && !enemyAnimating && enemySpriteVisible)
             g.drawImage(enemySprite, enX, enY, enW, enH, this);
 
         int w = getWidth(), h = getHeight();
@@ -615,8 +652,6 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         g.setColor(new Color(0, 0, 0, 140));
         g.fillRoundRect((int)(w * 0.09), (int)(h * 0.64), (int)(w * 0.82), (int)(h * 0.17), 12, 12);
     }
-
-    // ── Scroll dialogue to latest entry ──────────────────────────────────
 
     private void scrollToBottom() {
         if (dialogueScroll == null) return;
@@ -631,12 +666,12 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     public void reset() {
         stopRunTimer();
         elapsedSeconds       = 0;
-
         initialized          = false; arcadeOver           = false;
         prepared             = false;
         currentOpponentIndex = 0;     playerWins           = 0;
         enemyWins            = 0;     round                = 1;
         defendDisabled       = false; state                = ActionState.MAIN;
+        playerSpriteVisible  = true;  enemySpriteVisible   = true;
         playerAnimating      = false; enemyAnimating       = false;
         opponentOrder.clear();
         if (playerAnimLabel != null) playerAnimLabel.setVisible(false);

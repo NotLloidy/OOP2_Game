@@ -72,7 +72,7 @@ public class ChungInfoScreen extends JPanel {
         this.add(play);
 
         back = createButton();
-        back.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectChungScreen"); });
+        back.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectChungMyungScreen"); });
         this.add(back);
 
         this.addComponentListener(new ComponentAdapter() {

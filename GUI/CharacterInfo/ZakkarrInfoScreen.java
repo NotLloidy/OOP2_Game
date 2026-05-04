@@ -72,7 +72,7 @@ public class ZakkarrInfoScreen extends JPanel {
         this.add(play);
 
         back = createButton();
-        back.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectZakkarScreen"); });
+        back.addActionListener(e -> { SoundManager.playSFX(SoundManager.SFX_BUTTON); gui.showScreen("SelectZakkarrScreen"); });
         this.add(back);
 
         this.addComponentListener(new ComponentAdapter() {

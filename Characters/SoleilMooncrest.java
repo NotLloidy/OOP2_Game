@@ -11,11 +11,11 @@ public class SoleilMooncrest extends GameCharacter {
     private boolean lunarEmpowered;
 
     public SoleilMooncrest() {
-        super("Soleil Mooncrest", "Human", "Moonlit Witch", 200, 50, 100);
+        super("Soleil Mooncrest", "Human", "Moonlit Witch", 120, 25, 50);
 
-        moonStrike = new CharacterSkills("Moon Strike", 15, 0, 10, 0,0);
-        moonlightShine = new CharacterSkills("Moonlight Shine", 30, 30, 0, 2,0);
-        shadowBlast = new CharacterSkills("Shadow Blast", 65, 50, 0, 999,4);
+        moonStrike = new CharacterSkills("Moon Strike", 5, 0, 10, 0,0);
+        moonlightShine = new CharacterSkills("Moonlight Shine", 15, 30, 0, 4,0);
+        shadowBlast = new CharacterSkills("Shadow Blast", 50, 50, 0, 999,4);
 
         lunarTurnCounter = 0;
         lunarEmpowered = false;
@@ -53,7 +53,7 @@ public class SoleilMooncrest extends GameCharacter {
 
                     if (lunarEmpowered) {
                         damage += 10;
-                        heal(10);
+                        heal(15);
                         lunarEmpowered = false;
                     }
 
@@ -74,7 +74,7 @@ public class SoleilMooncrest extends GameCharacter {
 
                     if (lunarEmpowered) {
                         damage += 10;
-                        heal(10);
+                        heal(15);
                         lunarEmpowered = false;
                     }
 
@@ -95,7 +95,7 @@ public class SoleilMooncrest extends GameCharacter {
 
                     if(lunarEmpowered) {
                         damage += 10;
-                        heal(10);
+                        heal(15);
                         lunarEmpowered = false;
                     }
 

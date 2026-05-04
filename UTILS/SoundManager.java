@@ -26,11 +26,11 @@ public class SoundManager {
     // ── Character names ─────────────────
     public static final String CHAR_A_VIN          = "A-Vin";
     public static final String CHAR_BRIVAN_JAWMIR  = "Brivan Jawmir";
-    public static final String CHAR_CHUNG_MYUNG    = "Chung Myung";
+    public static final String CHAR_CHUNG_MYUNG    = "Chung-Myung";
     public static final String CHAR_KENNETH        = "Kenneth";
-    public static final String CHAR_KIJEL          = "KijEl";
+    public static final String CHAR_KIJEL          = "Kij-EL";
     public static final String CHAR_SOLEIL         = "Soleil Mooncrest";
-    public static final String CHAR_SUNG_JIN_WOO   = "Sung Jin Woo";
+    public static final String CHAR_SUNG_JIN_WOO   = "Sung Jin-Woo";
     public static final String CHAR_ZAKKARR        = "Zakkarr";
 
     // ── Internal state ────────────────────────────────────────────────────

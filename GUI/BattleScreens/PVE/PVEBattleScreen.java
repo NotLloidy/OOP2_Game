@@ -34,7 +34,8 @@ public class PVEBattleScreen extends BaseBattleScreen {
     private int enemyWins  = 0;
     private int round      = 1;
 
-    private boolean initialized = false;
+    private boolean initialized      = false;
+    private boolean actionInProgress = false;
     private GameGUI gameGUI;
 
     private final BattleSystem system;
@@ -160,7 +161,9 @@ public class PVEBattleScreen extends BaseBattleScreen {
     // ── Turn logic ────────────────────────────────────────────────────────
 
     private void playerTurn(int action) {
-        if (player == null || enemy == null) return;
+        if (player == null || enemy == null || actionInProgress) return;
+        if (!player.isCharacterAlive()) return;
+        actionInProgress = true;
 
         int animDelay = 0;
         if (action >= 1 && action <= 3) {
@@ -181,8 +184,10 @@ public class PVEBattleScreen extends BaseBattleScreen {
             enemySpriteVisible = false;
             repaint();
             disableButtons();
-            Timer deathPause = new Timer(2000, e ->
-                endRound("You win round " + round + "! " + player.getCharacterName() + " is victorious!"));
+            Timer deathPause = new Timer(2000, e -> {
+                actionInProgress = false;
+                endRound("You win round " + round + "! " + player.getCharacterName() + " is victorious!");
+            });
             deathPause.setRepeats(false);
             deathPause.start();
             return;
@@ -198,6 +203,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
         Timer aiDelay = new Timer(animDelay, e -> {
             aiTurn();
             if (player != null && player.isCharacterAlive() && enemy != null && enemy.isCharacterAlive()) {
+                actionInProgress = false;
                 updateButtons();
             }
         });
@@ -241,7 +247,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
     private void resetRound() {
         round++;
-
+        actionInProgress    = false;
         resetCharForRound(player);
         resetCharForRound(enemy);
 
@@ -467,6 +473,7 @@ public class PVEBattleScreen extends BaseBattleScreen {
 
     public void reset() {
         initialized         = false;
+        actionInProgress    = false;
         player              = null; enemy           = null;
         playerWins          = 0;    enemyWins       = 0;    round = 1;
         defendDisabled      = false; state          = ActionState.MAIN;

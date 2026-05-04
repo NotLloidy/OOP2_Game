@@ -16,9 +16,9 @@ public class AVin extends GameCharacter {
         super("A-Vin", "Dalek", "Time Manipulator", 150, 40, 80);
         
         codeJab = new CharacterSkills("Code Jab", 20, 0, 10, 0,0);
-        codeSurge = new CharacterSkills("Code Surge", 45, 10, 0, 0,0);
-        overClock = new CharacterSkills("Overclock", 10, 15, 0, 3,0);
-        logicCrash = new CharacterSkills("Logic Crash", 70, 60, 0, 999,4);
+        codeSurge = new CharacterSkills("Code Surge", 35, 10, 0, 0,0);
+        overClock = new CharacterSkills("Overclock", 15, 15, 0, 3,0);
+        logicCrash = new CharacterSkills("Logic Crash", 60, 60, 0, 999,4);
 
         isOverclocked = false;
         usedUlt = false;

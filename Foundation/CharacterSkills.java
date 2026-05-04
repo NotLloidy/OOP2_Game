@@ -54,7 +54,8 @@ public class CharacterSkills {
     }
 
     public void reduceSkillCooldown() {
-        if(this.skillCurrentCooldown > 0) {
+        // 999 is the permanent-lock sentinel for one-time ultimates — never decrement it
+        if(this.skillCurrentCooldown > 0 && this.skillCurrentCooldown != 999) {
             this.skillCurrentCooldown--;
         }
     }

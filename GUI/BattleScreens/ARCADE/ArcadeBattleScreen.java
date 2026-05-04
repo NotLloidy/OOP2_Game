@@ -48,9 +48,10 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     private int currentOpponentIndex    = 0;
     private int opponentCount           = 8;
 
-    private boolean initialized = false;
-    private boolean prepared    = false;
-    private boolean arcadeOver  = false;
+    private boolean initialized      = false;
+    private boolean prepared         = false;
+    private boolean arcadeOver       = false;
+    private boolean actionInProgress = false;
 
     private VersusScreen versusScreen;
     private CardLayout cardLayout;
@@ -178,6 +179,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         playerWins     = 0; enemyWins = 0; round = 1;
         roundLabel.setText("ROUND " + round);
         defendDisabled = false; state = ActionState.MAIN;
+        actionInProgress = false;
 
         playerAnimating = false;
         enemyAnimating  = false;
@@ -288,7 +290,9 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
     // ── Turn logic ────────────────────────────────────────────────────────
 
     private void playerTurn(int action) {
-        if (arcadeOver || player == null || enemy == null) return;
+        if (arcadeOver || player == null || enemy == null || actionInProgress) return;
+        if (!player.isCharacterAlive()) return;
+        actionInProgress = true;
 
         int animDelay = 0;
         if (action >= 1 && action <= 3) {
@@ -312,8 +316,10 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
             enemySpriteVisible = false;
             repaint();
             disableButtons();
-            Timer deathPause = new Timer(2000, e ->
-                endRound("You win round " + round + "! " + player.getCharacterName() + " is victorious!"));
+            Timer deathPause = new Timer(2000, e -> {
+                actionInProgress = false;
+                endRound("You win round " + round + "! " + player.getCharacterName() + " is victorious!");
+            });
             deathPause.setRepeats(false);
             deathPause.start();
             return;
@@ -328,6 +334,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         Timer aiDelay = new Timer(animDelay, e -> {
             aiTurn();
             if (player != null && player.isCharacterAlive() && enemy != null && enemy.isCharacterAlive()) {
+                actionInProgress = false;
                 updateButtons();
             }
         });
@@ -368,7 +375,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
 
     private void resetRound() {
         round++;
-
+        actionInProgress    = false;
         resetCharForRound(player);
         resetCharForRound(enemy);
 
@@ -665,7 +672,7 @@ public class ArcadeBattleScreen extends BaseBattleScreen {
         stopRunTimer();
         elapsedSeconds       = 0;
         initialized          = false; arcadeOver           = false;
-        prepared             = false;
+        prepared             = false; actionInProgress     = false;
         currentOpponentIndex = 0;     playerWins           = 0;
         enemyWins            = 0;     round                = 1;
         defendDisabled       = false; state                = ActionState.MAIN;

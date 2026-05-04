@@ -48,6 +48,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
 
     private boolean initialized = false;
     private boolean matchOver   = false;
+    private boolean actionInProgress = false;
 
     private GameGUI gameGUI;
 
@@ -183,7 +184,9 @@ public class PVPBattleScreen extends BaseBattleScreen {
     // ── Turn execution ────────────────────────────────────────────────────
 
     private void doTurn(int action) {
-        if (matchOver || attacker() == null) return;
+        if (matchOver || attacker() == null || actionInProgress) return;
+        if (!attacker().isCharacterAlive()) return;   // dead player cannot act
+        actionInProgress = true;
 
         GameCharacter atk = attacker();
         GameCharacter def = defender();
@@ -213,9 +216,11 @@ public class PVPBattleScreen extends BaseBattleScreen {
             if (isP1) { p2SpriteVisible = false; } else { p1SpriteVisible = false; }
             repaint();
             disableButtons();
-            Timer deathPause = new Timer(2000, e ->
+            Timer deathPause = new Timer(2000, e -> {
+                actionInProgress = false;
                 endRound((isP1 ? "P1" : "P2") + " wins round " + round + "! "
-                       + atk.getCharacterName() + " is victorious!"));
+                       + atk.getCharacterName() + " is victorious!");
+            });
             deathPause.setRepeats(false);
             deathPause.start();
             return;
@@ -227,6 +232,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         btnBack.setEnabled(false);
 
         Timer switchDelay = new Timer(animDelay, e -> {
+            actionInProgress = false;
             state = ActionState.MAIN;
             currentTurn = isP1 ? 2 : 1;
             turnLabel.setText("PLAYER " + currentTurn + "'s turn");
@@ -486,7 +492,7 @@ public class PVPBattleScreen extends BaseBattleScreen {
         p1Wins           = 0;     p2Wins  = 0;    round = 1;
         p1DefendDisabled = false; p2DefendDisabled = false;
         p1SpriteVisible  = true;  p2SpriteVisible  = true;
-        currentTurn      = 1;     matchOver = false;
+        currentTurn      = 1;     matchOver = false; actionInProgress = false;
         state            = ActionState.MAIN;
         playerAnimating  = false; enemyAnimating = false;
         playerAnimLabel.setVisible(false); enemyAnimLabel.setVisible(false);

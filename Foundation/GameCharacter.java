@@ -7,6 +7,7 @@ public abstract class GameCharacter implements Skill {
     private int characterMaxHealthPoints;
     private int characterCurrentHealthPoints;
     private int characterMaxMana;
+    private int characterStartingMana;
     private int characterCurrentMana;
     private boolean isCharacterAlive;
     private boolean isBlocking;
@@ -22,6 +23,7 @@ public abstract class GameCharacter implements Skill {
         this.characterMaxHealthPoints     = characterMaxHealthPoints;
         this.characterCurrentHealthPoints = characterMaxHealthPoints;
         this.characterMaxMana             = characterMaxMana;
+        this.characterStartingMana        = characterCurrentMana;
         this.characterCurrentMana         = characterCurrentMana;
         this.isCharacterAlive             = true;
         this.isBlocking                   = false;
@@ -107,7 +109,7 @@ public abstract class GameCharacter implements Skill {
      */
     public void resetForNewRound() {
         this.characterCurrentHealthPoints = this.characterMaxHealthPoints;
-        this.characterCurrentMana         = this.characterMaxMana;
+        this.characterCurrentMana         = this.characterStartingMana;
         this.isCharacterAlive             = true;
         this.isBlocking                   = false;
         this.remainingBlocks              = 2;
@@ -116,12 +118,12 @@ public abstract class GameCharacter implements Skill {
     }
 
     /**
-     * Resets this character for a new round, restoring HP to max but keeping
-     * mana at its declared starting value (not max). Use this for PvP/PvE/Arcade
-     * round resets so mana is not gifted at full every round.
+     * Resets this character for a new round, restoring HP to max and mana
+     * to its declared starting value. Use this for PvP/PvE/Arcade round resets.
      */
     public void resetForNewRoundWithStartingMana() {
         this.characterCurrentHealthPoints = this.characterMaxHealthPoints;
+        this.characterCurrentMana         = this.characterStartingMana;
         this.isCharacterAlive             = true;
         this.isBlocking                   = false;
         this.remainingBlocks              = 2;

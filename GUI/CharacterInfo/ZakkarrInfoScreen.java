@@ -23,7 +23,7 @@ public class ZakkarrInfoScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_info/infoZakkarr.png").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_info/infoZakkarr.png").getImage();
 
         play = createButton();
         play.addActionListener(e -> {

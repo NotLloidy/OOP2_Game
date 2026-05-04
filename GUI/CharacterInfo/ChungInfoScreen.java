@@ -23,7 +23,7 @@ public class ChungInfoScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_info/infoChungMyung.png").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_info/infoChungMyung.png").getImage();
 
         play = createButton();
         play.addActionListener(e -> {

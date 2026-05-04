@@ -23,7 +23,7 @@ public class BrivanInfoScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_info/infoBrivanJawmir.png").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_info/infoBrivanJawmir.png").getImage();
 
         play = createButton();
         play.addActionListener(e -> {

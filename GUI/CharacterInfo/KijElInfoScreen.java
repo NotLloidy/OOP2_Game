@@ -23,7 +23,7 @@ public class KijElInfoScreen extends JPanel {
 
         this.setLayout(null);
 
-        bgImage = new ImageIcon("Assets/character_info/infoKijEl.png").getImage();
+        bgImage = new ImageIcon("Assets/character_related/character_info/infoKijEl.png").getImage();
 
         play = createButton();
         play.addActionListener(e -> {
